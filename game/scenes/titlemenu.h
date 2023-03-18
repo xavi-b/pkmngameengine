@@ -18,6 +18,8 @@ public:
 private:
     SDL_Surface* bgSurface;
     SDL_Texture* bgTexture;
+
+    Inputs inputs;
 };
 
 #endif // TITLEMENU_H

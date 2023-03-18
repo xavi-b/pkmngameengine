@@ -12,7 +12,7 @@ include_directories(${SDL2_INCLUDE_DIRS})
 target_link_libraries(${MODULE_NAME} ${SDL2_LIBRARIES})
 find_package(SDL2_IMAGE REQUIRED)
 find_package(SDL2_TTF REQUIRED)
-target_link_libraries(${MODULE_NAME} SDL2_image SDL2_ttf)
+target_link_libraries(${MODULE_NAME} SDL2_image SDL2_ttf SDL2_mixer)
 
 get_cmake_property(_variableNames VARIABLES)
 list (SORT _variableNames)

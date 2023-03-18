@@ -3,6 +3,7 @@
 
 #include "scene.h"
 #include <SDL_image.h>
+#include <SDL_mixer.h>
 
 class TitleScene : public Scene
 {
@@ -10,12 +11,14 @@ public:
     TitleScene(SDL_Renderer* renderer);
     virtual ~TitleScene();
 
+    virtual void init() override;
     virtual void sendInputs(const Inputs* inputs) override;
     virtual void draw(const Fps* fps) override;
 
     virtual std::unique_ptr<Scene> nextScene() const override;
 
 private:
+    Mix_Music*   music;
     SDL_Surface* bgSurface;
     SDL_Texture* bgTexture;
     SDL_Surface* startSurface;

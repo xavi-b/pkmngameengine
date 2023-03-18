@@ -12,6 +12,7 @@ public:
     Scene(SDL_Renderer* renderer);
     virtual ~Scene();
 
+    virtual void init();
     virtual void sendInputs(const Inputs* inputs) = 0;
     virtual void draw(const Fps* fps)             = 0;
 

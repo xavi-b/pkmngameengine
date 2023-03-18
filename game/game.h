@@ -6,6 +6,7 @@
 #include <string>
 #include <SDL.h>
 #include <SDL_ttf.h>
+#include <SDL_mixer.h>
 #include "scene.h"
 #include "fps.h"
 

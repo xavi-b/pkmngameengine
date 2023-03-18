@@ -9,6 +9,11 @@ Scene::~Scene()
 {
 }
 
+void Scene::init()
+{
+
+}
+
 std::unique_ptr<Scene> Scene::nextScene() const
 {
     return nullptr;

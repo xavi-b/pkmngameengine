@@ -5,6 +5,7 @@
 TitleScene::TitleScene(SDL_Renderer* renderer)
     : Scene(renderer)
 {
+    music        = Mix_LoadMUS("resources/Audio/BGM/Title.ogg");
     bgSurface    = IMG_Load("resources/Graphics/Titles/title.png");
     bgTexture    = SDL_CreateTextureFromSurface(renderer, bgSurface);
     startSurface = IMG_Load("resources/Graphics/Titles/start.png");
@@ -13,10 +14,16 @@ TitleScene::TitleScene(SDL_Renderer* renderer)
 
 TitleScene::~TitleScene()
 {
+    Mix_FreeMusic(music);
     SDL_DestroyTexture(bgTexture);
     SDL_FreeSurface(bgSurface);
     SDL_DestroyTexture(startTexture);
     SDL_FreeSurface(startSurface);
+}
+
+void TitleScene::init()
+{
+    Mix_PlayMusic(music, -1);
 }
 
 void TitleScene::sendInputs(const Inputs* inputs)

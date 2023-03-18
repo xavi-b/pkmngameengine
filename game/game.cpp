@@ -9,8 +9,9 @@ Game::Game(int argc, char* argv[])
 {
     debug = std::find(arguments.begin(), arguments.end(), "--debug") != arguments.end();
 
-    SDL_Init(SDL_INIT_VIDEO);
+    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
     TTF_Init();
+    Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024);
 
     window = SDL_CreateWindow(
         WINDOW_TITLE,
@@ -23,12 +24,15 @@ Game::Game(int argc, char* argv[])
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
     currentScene = std::make_unique<TitleScene>(renderer);
+    currentScene->init();
 }
 
 Game::~Game()
 {
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
+    Mix_Quit();
+    IMG_Quit();
     SDL_Quit();
 }
 
@@ -55,7 +59,10 @@ int Game::exec()
 
         auto nextScene = currentScene->nextScene();
         if (nextScene)
+        {
             currentScene.swap(nextScene);
+            currentScene->init();
+        }
 
         SDL_RenderClear(renderer);
 

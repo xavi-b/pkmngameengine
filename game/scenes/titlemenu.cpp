@@ -1,5 +1,7 @@
 #include "titlemenu.h"
 
+#include "titlescene.h"
+
 TitleMenu::TitleMenu(SDL_Renderer* renderer)
     : Scene(renderer)
 {
@@ -15,8 +17,7 @@ TitleMenu::~TitleMenu()
 
 void TitleMenu::sendInputs(const Inputs* inputs)
 {
-    //    if (inputs->B)
-    //        goToNextScene = true;
+    this->inputs = *inputs;
 }
 
 void TitleMenu::draw(const Fps* fps)
@@ -26,5 +27,7 @@ void TitleMenu::draw(const Fps* fps)
 
 std::unique_ptr<Scene> TitleMenu::nextScene() const
 {
+    if (inputs.B)
+        return std::make_unique<TitleScene>(renderer);
     return nullptr;
 }
