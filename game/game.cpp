@@ -90,6 +90,8 @@ int Game::exec()
 
         if (fps->tick)
         {
+            data.time.incrementTicks();
+
             if (inputs->debug)
                 printDebug();
 
