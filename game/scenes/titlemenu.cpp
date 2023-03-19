@@ -3,6 +3,7 @@
 #include "titlescene.h"
 #include "game.h"
 #include "settings.h"
+#include "utils.h"
 
 TitleMenu::TitleMenu(SDL_Renderer* renderer)
     : Scene(renderer)
@@ -64,13 +65,13 @@ void TitleMenu::update(const Inputs* inputs)
     }
 }
 
-void TitleMenu::draw(const Fps* fps, RenderSizes rs)
+void TitleMenu::draw(const Fps* /*fps*/, RenderSizes rs)
 {
     // Background
     SDL_RenderCopy(renderer, bgTexture, NULL, NULL);
 
-    SDL_Color color   = {255, 255, 255};
-    SDL_Color bgColor = {127, 127, 127};
+    SDL_Color color   = {255, 255, 255, 255};
+    SDL_Color bgColor = {127, 127, 127, 255};
 
     SDL_Rect srcRect;
     SDL_Rect dstRect;
@@ -97,7 +98,7 @@ void TitleMenu::draw(const Fps* fps, RenderSizes rs)
         dstRect.w = srcRect.w * rs.ww / rs.aw;
         dstRect.h = srcRect.h * rs.wh / rs.ah;
         SDL_RenderCopy(renderer, panelTexture, &srcRect, &dstRect);
-        RenderUtils::drawText(renderer, rs, "Continue", color, bgColor, dstRect.x + 40 * rs.ww / rs.aw, dstRect.y + (12 * rs.wh / rs.ah));
+        RenderUtils::drawText(renderer, rs, lc::translate("Continue"), color, bgColor, dstRect.x + 40 * rs.ww / rs.aw, dstRect.y + (12 * rs.wh / rs.ah));
     }
 
     y = y + dstRect.h + spacing;
@@ -111,7 +112,7 @@ void TitleMenu::draw(const Fps* fps, RenderSizes rs)
     dstRect.w = srcRect.w * rs.ww / rs.aw;
     dstRect.h = srcRect.h * rs.wh / rs.ah;
     SDL_RenderCopy(renderer, panelTexture, &srcRect, &dstRect);
-    RenderUtils::drawText(renderer, rs, "New Game", color, bgColor, dstRect.x + 40 * rs.ww / rs.aw, dstRect.y + (dstRect.h - RenderUtils::FontSize * rs.wh / rs.ah) / 2);
+    RenderUtils::drawText(renderer, rs, lc::translate("New Game"), color, bgColor, dstRect.x + 40 * rs.ww / rs.aw, dstRect.y + (dstRect.h - RenderUtils::FontSize * rs.wh / rs.ah) / 2);
 
     y = y + dstRect.h + spacing;
     // Options
@@ -124,7 +125,7 @@ void TitleMenu::draw(const Fps* fps, RenderSizes rs)
     dstRect.w = srcRect.w * rs.ww / rs.aw;
     dstRect.h = srcRect.h * rs.wh / rs.ah;
     SDL_RenderCopy(renderer, panelTexture, &srcRect, &dstRect);
-    RenderUtils::drawText(renderer, rs, "Options", color, bgColor, dstRect.x + 40 * rs.ww / rs.aw, dstRect.y + (dstRect.h - RenderUtils::FontSize * rs.wh / rs.ah) / 2);
+    RenderUtils::drawText(renderer, rs, lc::translate("Options"), color, bgColor, dstRect.x + 40 * rs.ww / rs.aw, dstRect.y + (dstRect.h - RenderUtils::FontSize * rs.wh / rs.ah) / 2);
 
     y = y + dstRect.h + spacing;
     // Quit
@@ -137,7 +138,7 @@ void TitleMenu::draw(const Fps* fps, RenderSizes rs)
     dstRect.w = srcRect.w * rs.ww / rs.aw;
     dstRect.h = srcRect.h * rs.wh / rs.ah;
     SDL_RenderCopy(renderer, panelTexture, &srcRect, &dstRect);
-    RenderUtils::drawText(renderer, rs, "Quit", color, bgColor, dstRect.x + 40 * rs.ww / rs.aw, dstRect.y + (dstRect.h - RenderUtils::FontSize * rs.wh / rs.ah) / 2);
+    RenderUtils::drawText(renderer, rs, lc::translate("Quit"), color, bgColor, dstRect.x + 40 * rs.ww / rs.aw, dstRect.y + (dstRect.h - RenderUtils::FontSize * rs.wh / rs.ah) / 2);
 }
 
 std::unique_ptr<Scene> TitleMenu::nextScene() const

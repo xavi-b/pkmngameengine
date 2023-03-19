@@ -8,6 +8,7 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include <SDL_mixer.h>
+#include <boost/locale.hpp>
 #include "scene.h"
 #include "fps.h"
 
@@ -29,7 +30,7 @@ private:
     constexpr static int aw = 512;
     constexpr static int ah = 384;
 
-    std::vector<std::string> arguments;
+    boost::locale::generator gen;
 
     SDL_Window*   window;
     SDL_Renderer* renderer;

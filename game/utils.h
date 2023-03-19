@@ -9,4 +9,8 @@
 #define WINDOWS
 #endif
 
+#include <boost/locale.hpp>
+
+namespace lc = boost::locale;
+
 #endif // DEFINES_H

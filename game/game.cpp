@@ -5,15 +5,40 @@
 
 #include <algorithm>
 #include <iostream>
+#include <boost/program_options.hpp>
 
 Game* Game::sInstance = nullptr;
 
+namespace po = boost::program_options;
+
 Game::Game(int argc, char* argv[])
-    : arguments(argv + 1, argv + argc)
 {
     sInstance = this;
 
-    debug = std::find(arguments.begin(), arguments.end(), "--debug") != arguments.end();
+    po::options_description desc("Allowed options");
+    desc.add_options()("help", "help")("locale", po::value<std::string>(), "locale")("debug", "debug");
+
+    po::variables_map vm;
+    po::store(po::command_line_parser(argc, argv).options(desc).run(), vm);
+    po::notify(vm);
+
+    if (vm.count("help"))
+    {
+        std::cout << desc << std::endl;
+        exit(0);
+    }
+    else if (vm.count("debug"))
+    {
+        debug = true;
+    }
+    else if (vm.count("locale"))
+    {
+        vm["locale"].as<std::string>();
+        std::locale::global(gen("locale"));
+    }
+
+    gen.add_messages_path(".");
+    gen.add_messages_domain(PROJECT_NAME);
 
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
     TTF_Init();

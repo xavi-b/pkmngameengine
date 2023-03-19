@@ -15,7 +15,7 @@ find_package(SDL2_TTF REQUIRED)
 target_link_libraries(${MODULE_NAME} SDL2_image SDL2_ttf SDL2_mixer)
 
 # boost
-find_package(Boost REQUIRED)
+find_package(Boost COMPONENTS locale program_options REQUIRED)
 include_directories(${Boost_INCLUDE_DIR})
 target_link_libraries(${MODULE_NAME} ${Boost_LIBRARIES})
 
