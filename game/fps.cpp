@@ -15,8 +15,7 @@ Fps::Fps(SDL_Renderer* renderer)
 
 Fps::~Fps()
 {
-    SDL_FreeSurface(surface);
-    SDL_DestroyTexture(texture);
+    TTF_CloseFont(font);
 }
 
 void Fps::draw()
