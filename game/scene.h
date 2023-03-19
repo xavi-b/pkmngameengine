@@ -1,6 +1,7 @@
 #ifndef SCENE_H
 #define SCENE_H
 
+#include "renderutils.h"
 #include "inputs.h"
 #include "fps.h"
 #include <SDL.h>
@@ -13,8 +14,8 @@ public:
     virtual ~Scene();
 
     virtual void init();
-    virtual void update(const Inputs* inputs)       = 0;
-    virtual void draw(const Fps* fps, int w, int h) = 0;
+    virtual void update(const Inputs* inputs)         = 0;
+    virtual void draw(const Fps* fps, RenderSizes rs) = 0;
 
     virtual bool popScene() const;
     virtual bool pushScene() const;

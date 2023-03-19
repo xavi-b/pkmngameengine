@@ -18,6 +18,11 @@ bool Settings::musicOn()
     return pt.get<bool>("General.musicOn", false);
 }
 
+bool Settings::savedGame()
+{
+    return pt.get<bool>("General.savedGame", false);
+}
+
 Settings::Settings()
 {
     std::string appName = PROJECT_NAME;

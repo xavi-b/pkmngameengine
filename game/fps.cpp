@@ -7,18 +7,13 @@ Fps::Fps(SDL_Renderer* renderer)
 {
     previous = SDL_GetTicks();
     next     = SDL_GetTicks() + TickDelay;
-
-    font = TTF_OpenFont("resources/Fonts/power clear.ttf", 24);
-    if (font == NULL)
-        std::cerr << TTF_GetError() << std::endl;
 }
 
 Fps::~Fps()
 {
-    TTF_CloseFont(font);
 }
 
-void Fps::draw()
+void Fps::draw(RenderSizes rs)
 {
     accumulate++;
 
@@ -39,21 +34,8 @@ void Fps::draw()
 
     previous = SDL_GetTicks();
 
-    SDL_Color color = {255, 255, 255};
-
-    auto fpsStr = "FPS: " + std::to_string(value);
-    surface     = TTF_RenderText_Solid(font, fpsStr.c_str(), color);
-
-    texture = SDL_CreateTextureFromSurface(renderer, surface);
-
-    SDL_Rect rect;
-    rect.x = 0;
-    rect.y = 0;
-    rect.w = surface->w;
-    rect.h = surface->h;
-
-    SDL_RenderCopy(renderer, texture, NULL, &rect);
-
-    SDL_DestroyTexture(texture);
-    SDL_FreeSurface(surface);
+    auto      fpsStr  = "FPS: " + std::to_string(value);
+    SDL_Color color   = {255, 255, 255};
+    SDL_Color bgColor = {127, 127, 127};
+    RenderUtils::drawText(renderer, rs, fpsStr, color, bgColor, 0, 0);
 }

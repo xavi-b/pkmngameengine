@@ -1,6 +1,7 @@
 #include "game.h"
 
 #include "scenes/titlescene.h"
+#include "renderutils.h"
 
 #include <algorithm>
 #include <iostream>
@@ -24,7 +25,7 @@ Game::Game(int argc, char* argv[])
         SDL_WINDOWPOS_UNDEFINED,
         640,
         480,
-        0);
+        SDL_WINDOW_RESIZABLE);
 
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
@@ -92,10 +93,11 @@ int Game::exec()
 
         int w, h;
         SDL_GetRendererOutputSize(renderer, &w, &h);
-        scenes.back()->draw(fps.get(), w, h);
+        RenderSizes rs = {w, h, aw, ah};
+        scenes.back()->draw(fps.get(), rs);
 
         if (debug)
-            fps->draw();
+            fps->draw(rs);
 
         SDL_RenderPresent(renderer);
 

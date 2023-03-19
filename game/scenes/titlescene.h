@@ -1,6 +1,7 @@
 #ifndef TITLESCENE_H
 #define TITLESCENE_H
 
+#include "renderutils.h"
 #include "scene.h"
 #include <SDL_image.h>
 #include <SDL_mixer.h>
@@ -13,7 +14,7 @@ public:
 
     virtual void init() override;
     virtual void update(const Inputs* inputs) override;
-    virtual void draw(const Fps* fps, int w, int h) override;
+    virtual void draw(const Fps* fps, RenderSizes rs) override;
 
     virtual std::unique_ptr<Scene> nextScene() const override;
 

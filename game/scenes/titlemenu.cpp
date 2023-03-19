@@ -2,6 +2,7 @@
 
 #include "titlescene.h"
 #include "game.h"
+#include "settings.h"
 
 TitleMenu::TitleMenu(SDL_Renderer* renderer)
     : Scene(renderer)
@@ -11,10 +12,7 @@ TitleMenu::TitleMenu(SDL_Renderer* renderer)
     panelSurface = IMG_Load("resources/Graphics/Pictures/loadPanels.png");
     panelTexture = SDL_CreateTextureFromSurface(renderer, panelSurface);
 
-    // TODO
-    bool savedGame = true;
-
-    currentIndex = static_cast<Index>(!savedGame ? static_cast<char>(NewGame) : static_cast<char>(Continue));
+    currentIndex = static_cast<Index>(!Settings::instance()->savedGame() ? static_cast<char>(NewGame) : static_cast<char>(Continue));
 }
 
 TitleMenu::~TitleMenu()
@@ -36,10 +34,7 @@ void TitleMenu::update(const Inputs* inputs)
 
     if (inputs->up)
     {
-        // TODO
-        bool savedGame = true;
-
-        int lowest = !savedGame ? static_cast<char>(NewGame) : static_cast<char>(Continue);
+        int lowest = !Settings::instance()->savedGame() ? static_cast<char>(NewGame) : static_cast<char>(Continue);
 
         if (currentIndex > lowest)
             currentIndex = static_cast<Index>(static_cast<char>(currentIndex) - 1);
@@ -69,28 +64,28 @@ void TitleMenu::update(const Inputs* inputs)
     }
 }
 
-void TitleMenu::draw(const Fps* fps, int w, int h)
+void TitleMenu::draw(const Fps* fps, RenderSizes rs)
 {
     // Background
     SDL_RenderCopy(renderer, bgTexture, NULL, NULL);
+
+    SDL_Color color   = {255, 255, 255};
+    SDL_Color bgColor = {127, 127, 127};
 
     SDL_Rect srcRect;
     SDL_Rect dstRect;
     dstRect.y = 0;
     dstRect.h = 0;
 
-    int spacing = 16 * h / bgSurface->h;
-    int padding = ((bgSurface->w - panelSurface->w) / 2) * w / bgSurface->w;
+    int spacing = 16 * rs.wh / rs.ah;
+    int padding = ((rs.aw - panelSurface->w) / 2) * rs.ww / rs.aw;
     int offset  = 0;
     int y       = spacing;
 
-    // TODO
-    bool savedGame = true;
-
-    if (savedGame)
+    if (Settings::instance()->savedGame())
     {
         if (currentIndex > static_cast<char>(NewGame))
-            offset = spacing + (222 + 46 * 3) * h / bgSurface->h + spacing * 4 - h;
+            offset = spacing + (222 + 46 * 3) * rs.wh / rs.ah + spacing * 4 - rs.wh;
 
         // Continue
         srcRect.x = 0;
@@ -99,9 +94,10 @@ void TitleMenu::draw(const Fps* fps, int w, int h)
         srcRect.h = 222;
         dstRect.x = padding;
         dstRect.y = y - offset;
-        dstRect.w = srcRect.w * w / bgSurface->w;
-        dstRect.h = srcRect.h * h / bgSurface->h;
+        dstRect.w = srcRect.w * rs.ww / rs.aw;
+        dstRect.h = srcRect.h * rs.wh / rs.ah;
         SDL_RenderCopy(renderer, panelTexture, &srcRect, &dstRect);
+        RenderUtils::drawText(renderer, rs, "Continue", color, bgColor, dstRect.x + 40 * rs.ww / rs.aw, dstRect.y + (12 * rs.wh / rs.ah));
     }
 
     y = y + dstRect.h + spacing;
@@ -112,9 +108,10 @@ void TitleMenu::draw(const Fps* fps, int w, int h)
     srcRect.h = 46;
     dstRect.x = padding;
     dstRect.y = y - offset;
-    dstRect.w = srcRect.w * w / bgSurface->w;
-    dstRect.h = srcRect.h * h / bgSurface->h;
+    dstRect.w = srcRect.w * rs.ww / rs.aw;
+    dstRect.h = srcRect.h * rs.wh / rs.ah;
     SDL_RenderCopy(renderer, panelTexture, &srcRect, &dstRect);
+    RenderUtils::drawText(renderer, rs, "New Game", color, bgColor, dstRect.x + 40 * rs.ww / rs.aw, dstRect.y + (dstRect.h - RenderUtils::FontSize * rs.wh / rs.ah) / 2);
 
     y = y + dstRect.h + spacing;
     // Options
@@ -124,9 +121,10 @@ void TitleMenu::draw(const Fps* fps, int w, int h)
     srcRect.h = 46;
     dstRect.x = padding;
     dstRect.y = y - offset;
-    dstRect.w = srcRect.w * w / bgSurface->w;
-    dstRect.h = srcRect.h * h / bgSurface->h;
+    dstRect.w = srcRect.w * rs.ww / rs.aw;
+    dstRect.h = srcRect.h * rs.wh / rs.ah;
     SDL_RenderCopy(renderer, panelTexture, &srcRect, &dstRect);
+    RenderUtils::drawText(renderer, rs, "Options", color, bgColor, dstRect.x + 40 * rs.ww / rs.aw, dstRect.y + (dstRect.h - RenderUtils::FontSize * rs.wh / rs.ah) / 2);
 
     y = y + dstRect.h + spacing;
     // Quit
@@ -136,9 +134,10 @@ void TitleMenu::draw(const Fps* fps, int w, int h)
     srcRect.h = 46;
     dstRect.x = padding;
     dstRect.y = y - offset;
-    dstRect.w = srcRect.w * w / bgSurface->w;
-    dstRect.h = srcRect.h * h / bgSurface->h;
+    dstRect.w = srcRect.w * rs.ww / rs.aw;
+    dstRect.h = srcRect.h * rs.wh / rs.ah;
     SDL_RenderCopy(renderer, panelTexture, &srcRect, &dstRect);
+    RenderUtils::drawText(renderer, rs, "Quit", color, bgColor, dstRect.x + 40 * rs.ww / rs.aw, dstRect.y + (dstRect.h - RenderUtils::FontSize * rs.wh / rs.ah) / 2);
 }
 
 std::unique_ptr<Scene> TitleMenu::nextScene() const

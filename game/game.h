@@ -26,6 +26,9 @@ public:
 private:
     static Game* sInstance;
 
+    constexpr static int aw = 512;
+    constexpr static int ah = 384;
+
     std::vector<std::string> arguments;
 
     SDL_Window*   window;

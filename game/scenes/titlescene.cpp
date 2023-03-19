@@ -37,7 +37,7 @@ void TitleScene::update(const Inputs* inputs)
         Game::instance()->quit();
 }
 
-void TitleScene::draw(const Fps* fps, int w, int h)
+void TitleScene::draw(const Fps* fps, RenderSizes rs)
 {
     SDL_RenderCopy(renderer, bgTexture, NULL, NULL);
     if (fps->tick)
@@ -46,9 +46,9 @@ void TitleScene::draw(const Fps* fps, int w, int h)
     {
         SDL_Rect rect;
         rect.x = 0;
-        rect.y = 0.8 * h;
-        rect.w = startSurface->w * w / bgSurface->w;
-        rect.h = startSurface->h * h / bgSurface->h;
+        rect.y = 0.8 * rs.wh;
+        rect.w = startSurface->w * rs.ww / rs.aw;
+        rect.h = startSurface->h * rs.wh / rs.ah;
         SDL_RenderCopy(renderer, startTexture, NULL, &rect);
     }
 }

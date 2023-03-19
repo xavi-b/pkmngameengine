@@ -10,6 +10,7 @@ public:
     static Settings* instance();
 
     bool musicOn();
+    bool savedGame();
 
 private:
     Settings();

@@ -11,7 +11,7 @@ void Battle::update(const Inputs* inputs)
         goToNextScene = true;
 }
 
-void Battle::draw(const Fps* fps, int w, int h)
+void Battle::draw(const Fps* fps, RenderSizes rs)
 {
     SDL_SetRenderDrawColor(renderer, 0xFF, 0x00, 0x00, 0xFF);
 }

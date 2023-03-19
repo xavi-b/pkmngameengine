@@ -11,7 +11,7 @@ public:
     virtual ~TitleMenu();
 
     virtual void update(const Inputs* inputs) override;
-    virtual void draw(const Fps* fps, int w, int h) override;
+    virtual void draw(const Fps* fps, RenderSizes rs) override;
 
     virtual std::unique_ptr<Scene> nextScene() const override;
 

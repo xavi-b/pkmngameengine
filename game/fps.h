@@ -1,9 +1,9 @@
 #ifndef FPS_H
 #define FPS_H
 
+#include "renderutils.h"
 #include <string>
 #include <SDL.h>
-#include <SDL_ttf.h>
 
 #define FPS 60.0
 
@@ -20,13 +20,10 @@ struct Fps
     size_t value      = 0;
     bool   tick       = false;
 
-    void draw();
+    void draw(RenderSizes rs);
 
 private:
     SDL_Renderer* renderer;
-    TTF_Font*     font;
-    SDL_Surface*  surface;
-    SDL_Texture*  texture;
 };
 
 #endif // FPS_H
