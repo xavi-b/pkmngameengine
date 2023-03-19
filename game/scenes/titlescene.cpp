@@ -59,3 +59,8 @@ std::unique_ptr<Scene> TitleScene::nextScene() const
         return std::make_unique<TitleMenu>(renderer);
     return nullptr;
 }
+
+std::string TitleScene::name()
+{
+    return "TitleScene";
+}

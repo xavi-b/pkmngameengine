@@ -17,6 +17,7 @@ struct Inputs
     bool right  = false;
     bool start  = false;
     bool select = false;
+    bool debug  = false;
 };
 
 #endif // ITEM_H

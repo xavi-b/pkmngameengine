@@ -15,6 +15,8 @@ public:
 
     virtual std::unique_ptr<Scene> nextScene() const override;
 
+    virtual std::string name() override;
+
 private:
     enum Index : char
     {

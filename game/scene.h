@@ -16,7 +16,12 @@ public:
     virtual void update(const Inputs* inputs)       = 0;
     virtual void draw(const Fps* fps, int w, int h) = 0;
 
+    virtual bool popScene() const;
+    virtual bool pushScene() const;
+
     virtual std::unique_ptr<Scene> nextScene() const;
+
+    virtual std::string name() = 0;
 
 protected:
     SDL_Renderer* renderer;

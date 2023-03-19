@@ -3,6 +3,7 @@
 #include "scenes/titlescene.h"
 
 #include <algorithm>
+#include <iostream>
 
 Game* Game::sInstance = nullptr;
 
@@ -27,8 +28,8 @@ Game::Game(int argc, char* argv[])
 
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
-    currentScene = std::make_unique<TitleScene>(renderer);
-    currentScene->init();
+    scenes.emplace_back(std::make_unique<TitleScene>(renderer));
+    scenes.back()->init();
 }
 
 Game::~Game()
@@ -63,22 +64,35 @@ int Game::exec()
 
         if (fps->tick)
         {
-            currentScene->update(inputs.get());
+            if (inputs->debug)
+                printDebug();
+
+            scenes.back()->update(inputs.get());
             inputs->clear();
         }
 
-        auto nextScene = currentScene->nextScene();
-        if (nextScene)
+        if (scenes.back()->popScene())
         {
-            currentScene.swap(nextScene);
-            currentScene->init();
+            scenes.pop_back();
+        }
+        else
+        {
+            auto nextScene = scenes.back()->nextScene();
+            if (nextScene)
+            {
+                if (scenes.back()->pushScene())
+                    scenes.emplace_back(std::move(nextScene));
+                else
+                    scenes.back().swap(nextScene);
+                scenes.back()->init();
+            }
         }
 
         SDL_RenderClear(renderer);
 
         int w, h;
         SDL_GetRendererOutputSize(renderer, &w, &h);
-        currentScene->draw(fps.get(), w, h);
+        scenes.back()->draw(fps.get(), w, h);
 
         if (debug)
             fps->draw();
@@ -94,4 +108,12 @@ int Game::exec()
 void Game::quit()
 {
     running = false;
+}
+
+void Game::printDebug()
+{
+    std::cout << "SCENES: ";
+    for (const auto& scene : scenes)
+        std::cout << scene->name();
+    std::cout << std::endl;
 }

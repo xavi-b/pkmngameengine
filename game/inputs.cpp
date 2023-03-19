@@ -47,6 +47,10 @@ void Inputs::update(SDL_Event event)
             select |= true;
             std::cout << "SELECT pressed" << std::endl;
             break;
+        case SDLK_p:
+            debug |= true;
+            std::cout << "DEBUG pressed" << std::endl;
+            break;
         default:
             break;
         }
@@ -63,4 +67,5 @@ void Inputs::clear()
     right  = false;
     start  = false;
     select = false;
+    debug  = false;
 }

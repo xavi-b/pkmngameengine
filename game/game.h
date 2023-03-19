@@ -2,6 +2,7 @@
 #define GAME_H
 
 #include <vector>
+#include <list>
 #include <memory>
 #include <string>
 #include <SDL.h>
@@ -20,6 +21,7 @@ public:
 
     int  exec();
     void quit();
+    void printDebug();
 
 private:
     static Game* sInstance;
@@ -29,7 +31,7 @@ private:
     SDL_Window*   window;
     SDL_Renderer* renderer;
 
-    std::unique_ptr<Scene> currentScene;
+    std::list<std::unique_ptr<Scene>> scenes;
 
     bool debug   = false;
     bool running = true;

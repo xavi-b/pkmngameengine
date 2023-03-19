@@ -23,3 +23,8 @@ std::unique_ptr<Scene> Battle::nextScene() const
         return std::make_unique<TitleScene>(renderer);
     return nullptr;
 }
+
+std::string Battle::name()
+{
+    return "Battle";
+}
