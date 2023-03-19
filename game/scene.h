@@ -13,8 +13,8 @@ public:
     virtual ~Scene();
 
     virtual void init();
-    virtual void sendInputs(const Inputs* inputs) = 0;
-    virtual void draw(const Fps* fps)             = 0;
+    virtual void update(const Inputs* inputs)       = 0;
+    virtual void draw(const Fps* fps, int w, int h) = 0;
 
     virtual std::unique_ptr<Scene> nextScene() const;
 

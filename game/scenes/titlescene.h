@@ -12,8 +12,8 @@ public:
     virtual ~TitleScene();
 
     virtual void init() override;
-    virtual void sendInputs(const Inputs* inputs) override;
-    virtual void draw(const Fps* fps) override;
+    virtual void update(const Inputs* inputs) override;
+    virtual void draw(const Fps* fps, int w, int h) override;
 
     virtual std::unique_ptr<Scene> nextScene() const override;
 

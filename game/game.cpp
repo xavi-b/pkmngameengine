@@ -4,9 +4,13 @@
 
 #include <algorithm>
 
+Game* Game::sInstance = nullptr;
+
 Game::Game(int argc, char* argv[])
     : arguments(argv + 1, argv + argc)
 {
+    sInstance = this;
+
     debug = std::find(arguments.begin(), arguments.end(), "--debug") != arguments.end();
 
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
@@ -36,6 +40,11 @@ Game::~Game()
     SDL_Quit();
 }
 
+Game* Game::instance()
+{
+    return sInstance;
+}
+
 int Game::exec()
 {
     fps    = std::make_unique<Fps>(renderer);
@@ -46,6 +55,7 @@ int Game::exec()
     {
         while (SDL_PollEvent(&event) == 1)
         {
+            // TODO show confirmation scene
             if (event.type == SDL_QUIT)
                 running = false;
             inputs->update(event);
@@ -53,7 +63,7 @@ int Game::exec()
 
         if (fps->tick)
         {
-            currentScene->sendInputs(inputs.get());
+            currentScene->update(inputs.get());
             inputs->clear();
         }
 
@@ -66,7 +76,9 @@ int Game::exec()
 
         SDL_RenderClear(renderer);
 
-        currentScene->draw(fps.get());
+        int w, h;
+        SDL_GetRendererOutputSize(renderer, &w, &h);
+        currentScene->draw(fps.get(), w, h);
 
         if (debug)
             fps->draw();
@@ -77,4 +89,15 @@ int Game::exec()
     }
 
     return 1;
+}
+
+void Game::quit()
+{
+    running = false;
+}
+
+bool Game::musicOn()
+{
+    // TODO
+    return false;
 }

@@ -10,16 +10,27 @@ public:
     TitleMenu(SDL_Renderer* renderer);
     virtual ~TitleMenu();
 
-    virtual void sendInputs(const Inputs* inputs) override;
-    virtual void draw(const Fps* fps) override;
+    virtual void update(const Inputs* inputs) override;
+    virtual void draw(const Fps* fps, int w, int h) override;
 
     virtual std::unique_ptr<Scene> nextScene() const override;
 
 private:
+    enum Index : char
+    {
+        Continue = 0,
+        NewGame,
+        Options,
+        Quit
+    };
+
     SDL_Surface* bgSurface;
     SDL_Texture* bgTexture;
+    SDL_Surface* panelSurface;
+    SDL_Texture* panelTexture;
 
-    Inputs inputs;
+    bool  goToTitleScene = false;
+    Index currentIndex   = Continue;
 };
 
 #endif // TITLEMENU_H

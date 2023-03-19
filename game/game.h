@@ -16,9 +16,15 @@ public:
     Game(int argc, char* argv[]);
     ~Game();
 
-    int exec();
+    static Game* instance();
+
+    int  exec();
+    void quit();
+    bool musicOn();
 
 private:
+    static Game* sInstance;
+
     std::vector<std::string> arguments;
 
     SDL_Window*   window;

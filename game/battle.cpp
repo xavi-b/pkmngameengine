@@ -5,13 +5,13 @@ Battle::Battle(SDL_Renderer* renderer)
 {
 }
 
-void Battle::sendInputs(const Inputs* inputs)
+void Battle::update(const Inputs* inputs)
 {
     if (inputs->B)
         goToNextScene = true;
 }
 
-void Battle::draw(const Fps* fps)
+void Battle::draw(const Fps* fps, int w, int h)
 {
     SDL_SetRenderDrawColor(renderer, 0xFF, 0x00, 0x00, 0xFF);
 }
