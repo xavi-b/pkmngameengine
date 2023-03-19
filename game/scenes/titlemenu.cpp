@@ -1,5 +1,6 @@
 #include "titlemenu.h"
 
+#include "introscene.h"
 #include "titlescene.h"
 #include "game.h"
 #include "settings.h"
@@ -53,6 +54,7 @@ void TitleMenu::update(const Inputs* inputs)
         case Continue:
             return;
         case NewGame:
+            goToIntroScene = true;
             return;
         case Options:
             return;
@@ -141,8 +143,13 @@ void TitleMenu::draw(const Fps* /*fps*/, RenderSizes rs)
     RenderUtils::drawText(renderer, rs, lc::translate("Quit"), color, bgColor, dstRect.x + 40 * rs.ww / rs.aw, dstRect.y + (dstRect.h - RenderUtils::FontSize * rs.wh / rs.ah) / 2);
 }
 
-std::unique_ptr<Scene> TitleMenu::nextScene() const
+std::unique_ptr<Scene> TitleMenu::nextScene()
 {
+    if (goToIntroScene)
+    {
+        goToIntroScene = false;
+        return std::make_unique<IntroScene>(renderer);
+    }
     if (goToTitleScene)
         return std::make_unique<TitleScene>(renderer);
     return nullptr;

@@ -40,9 +40,10 @@ void TitleScene::update(const Inputs* inputs)
 void TitleScene::draw(const Fps* fps, RenderSizes rs)
 {
     SDL_RenderCopy(renderer, bgTexture, NULL, NULL);
+    constexpr int ticksDuration = 4;
     if (fps->tick)
-        alternate = !alternate;
-    if (alternate)
+        ticks = (ticks + 1) % (ticksDuration * 2);
+    if (ticks < ticksDuration)
     {
         SDL_Rect rect;
         rect.x = 0;
@@ -53,7 +54,7 @@ void TitleScene::draw(const Fps* fps, RenderSizes rs)
     }
 }
 
-std::unique_ptr<Scene> TitleScene::nextScene() const
+std::unique_ptr<Scene> TitleScene::nextScene()
 {
     if (goToNextScene)
         return std::make_unique<TitleMenu>(renderer);

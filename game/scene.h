@@ -20,7 +20,7 @@ public:
     virtual bool popScene() const;
     virtual bool pushScene() const;
 
-    virtual std::unique_ptr<Scene> nextScene() const;
+    virtual std::unique_ptr<Scene> nextScene();
 
     virtual std::string name() = 0;
 

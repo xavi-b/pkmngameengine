@@ -13,7 +13,7 @@ public:
     virtual void update(const Inputs* inputs) override;
     virtual void draw(const Fps* fps, RenderSizes rs) override;
 
-    virtual std::unique_ptr<Scene> nextScene() const override;
+    virtual std::unique_ptr<Scene> nextScene() override;
 
     virtual std::string name() override;
 
@@ -31,6 +31,7 @@ private:
     SDL_Surface* panelSurface;
     SDL_Texture* panelTexture;
 
+    bool  goToIntroScene      = false;
     bool  goToTitleScene = false;
     Index currentIndex   = Continue;
 };

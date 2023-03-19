@@ -99,7 +99,10 @@ int Game::exec()
 
         if (scenes.back()->popScene())
         {
+            printDebug();
+            std::cout << scenes.back()->name() << " scene popped !" << std::endl;
             scenes.pop_back();
+            printDebug();
         }
         else
         {
@@ -141,6 +144,6 @@ void Game::printDebug()
 {
     std::cout << "SCENES: ";
     for (const auto& scene : scenes)
-        std::cout << scene->name();
+        std::cout << scene->name() << " ";
     std::cout << std::endl;
 }

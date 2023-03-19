@@ -23,7 +23,7 @@ bool Scene::pushScene() const
     return false;
 }
 
-std::unique_ptr<Scene> Scene::nextScene() const
+std::unique_ptr<Scene> Scene::nextScene()
 {
     return nullptr;
 }

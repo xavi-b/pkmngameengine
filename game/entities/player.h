@@ -13,8 +13,9 @@ class Player : public Entity
 public:
     Player();
 
-private:
-    std::vector<std::unique_ptr<Item>> items;
+    std::string name;
+
+    std::vector<std::unique_ptr<Item>>   items;
     std::array<std::unique_ptr<Pkmn>, 4> pkmns;
 };
 

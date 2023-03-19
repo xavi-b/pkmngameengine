@@ -11,6 +11,7 @@
 #include <boost/locale.hpp>
 #include "scene.h"
 #include "fps.h"
+#include "gamedata.h"
 
 class Game
 {
@@ -23,6 +24,8 @@ public:
     int  exec();
     void quit();
     void printDebug();
+
+    GameData data;
 
 private:
     static Game* sInstance;

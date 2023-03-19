@@ -11,13 +11,13 @@ void Battle::update(const Inputs* inputs)
         goToNextScene = true;
 }
 
-void Battle::draw(const Fps* fps, RenderSizes rs)
+void Battle::draw(const Fps* /*fps*/, RenderSizes /*rs*/)
 {
     SDL_SetRenderDrawColor(renderer, 0xFF, 0x00, 0x00, 0xFF);
 }
 
 #include "scenes/titlescene.h"
-std::unique_ptr<Scene> Battle::nextScene() const
+std::unique_ptr<Scene> Battle::nextScene()
 {
     if (goToNextScene)
         return std::make_unique<TitleScene>(renderer);
