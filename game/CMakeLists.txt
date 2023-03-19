@@ -4,7 +4,7 @@ string(REPLACE " " "_" MODULE_NAME ${MODULE_NAME})
 message("Compiling \"${MODULE_NAME}\"")
 
 add_executable(${MODULE_NAME} "")
-add_definitions(-DWINDOW_TITLE="${PROJECT_NAME}")
+add_definitions(-DPROJECT_NAME="${PROJECT_NAME}")
 
 # SDL2
 find_package(SDL2 REQUIRED)
@@ -14,6 +14,12 @@ find_package(SDL2_IMAGE REQUIRED)
 find_package(SDL2_TTF REQUIRED)
 target_link_libraries(${MODULE_NAME} SDL2_image SDL2_ttf SDL2_mixer)
 
+# boost
+find_package(Boost REQUIRED)
+include_directories(${Boost_INCLUDE_DIR})
+target_link_libraries(${MODULE_NAME} ${Boost_LIBRARIES})
+
+# VARS
 get_cmake_property(_variableNames VARIABLES)
 list (SORT _variableNames)
 foreach (_variableName ${_variableNames})

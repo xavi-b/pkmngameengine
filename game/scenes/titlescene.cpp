@@ -1,6 +1,7 @@
 #include "titlescene.h"
 
 #include "titlemenu.h"
+#include "settings.h"
 #include "game.h"
 
 TitleScene::TitleScene(SDL_Renderer* renderer)
@@ -24,7 +25,7 @@ TitleScene::~TitleScene()
 
 void TitleScene::init()
 {
-    if (Game::instance()->musicOn())
+    if (Settings::instance()->musicOn())
         Mix_PlayMusic(music, -1);
 }
 
@@ -32,6 +33,8 @@ void TitleScene::update(const Inputs* inputs)
 {
     if (inputs->A || inputs->start)
         goToNextScene = true;
+    if (inputs->B)
+        Game::instance()->quit();
 }
 
 void TitleScene::draw(const Fps* fps, int w, int h)

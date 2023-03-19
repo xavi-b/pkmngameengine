@@ -20,7 +20,6 @@ public:
 
     int  exec();
     void quit();
-    bool musicOn();
 
 private:
     static Game* sInstance;

@@ -18,7 +18,7 @@ Game::Game(int argc, char* argv[])
     Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024);
 
     window = SDL_CreateWindow(
-        WINDOW_TITLE,
+        PROJECT_NAME,
         SDL_WINDOWPOS_UNDEFINED,
         SDL_WINDOWPOS_UNDEFINED,
         640,
@@ -94,10 +94,4 @@ int Game::exec()
 void Game::quit()
 {
     running = false;
-}
-
-bool Game::musicOn()
-{
-    // TODO
-    return false;
 }
