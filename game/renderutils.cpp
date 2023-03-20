@@ -53,6 +53,9 @@ void RenderUtils::drawTextWrapped(SDL_Renderer*      renderer,
                                   int                y,
                                   int                width)
 {
+    if (text.empty())
+        return;
+
     SDL_Rect rect;
 
     SDL_Surface* bgSurface1 = TTF_RenderText_Solid_Wrapped(RenderUtils::instance()->font, text.c_str(), bgColor, width);

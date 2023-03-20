@@ -9,7 +9,7 @@
 
 struct Fps
 {
-    static const int TickDelay = 150;
+    static const int TickDelay = 100;
 
     Fps(SDL_Renderer* renderer);
     ~Fps();

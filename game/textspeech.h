@@ -8,13 +8,17 @@
 class TextSpeech
 {
 public:
-    TextSpeech(SDL_Renderer* renderer, const std::vector<std::string>& texts);
+    TextSpeech(SDL_Renderer* renderer);
     ~TextSpeech();
 
+    void init();
     void update(const Inputs* inputs);
     void draw(const Fps* fps, RenderSizes rs);
 
     bool isFinished() const;
+    void reset();
+
+    void setTexts(const std::vector<std::string>& texts);
 
 private:
     SDL_Renderer* renderer;

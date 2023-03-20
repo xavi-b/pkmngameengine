@@ -3,11 +3,8 @@
 #include "settings.h"
 #include "game.h"
 
-Keyboard::Keyboard(SDL_Renderer* renderer, std::string& playerName)
-    : Scene(renderer),
-      playerName(playerName)
+Keyboard::Keyboard(SDL_Renderer* renderer, std::string& playerName) : Scene(renderer), playerName(playerName)
 {
-    playerName = "Red";
 }
 
 Keyboard::~Keyboard()
@@ -20,8 +17,11 @@ void Keyboard::init()
 
 void Keyboard::update(const Inputs* inputs)
 {
-    if (inputs->B)
-        leave = true;
+    if (inputs->A)
+    {
+        playerName = "Red";
+        leave      = true;
+    }
 }
 
 void Keyboard::draw(const Fps* /*fps*/, RenderSizes /*rs*/)

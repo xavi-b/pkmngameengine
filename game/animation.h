@@ -19,15 +19,15 @@ class Animation
 public:
     Animation();
 
-    void start();
-    void stop();
-    void reset();
-    void restart();
-    void incrementTicks();
-    bool isRunning() const;
-    void draw(const Fps* fps, RenderSizes rs);
+    void         start();
+    void         stop();
+    void         reset();
+    void         restart();
+    virtual void incrementTicks();
+    bool         isRunning() const;
+    void         draw(const Fps* fps, RenderSizes rs);
 
-private:
+protected:
     bool         running      = false;
     unsigned int currentFrame = 0;
 

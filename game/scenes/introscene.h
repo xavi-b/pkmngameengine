@@ -21,13 +21,23 @@ public:
 
     virtual std::string name() override;
 
+    virtual void debug() override;
+
 private:
+    enum State
+    {
+        IntroSpeech,
+        KeyboardScene,
+        GenderSpeech,
+        Leave
+    };
     SDL_Surface* bgSurface;
     SDL_Texture* bgTexture;
 
-    bool showKeyboardScene = false;
+    State state = IntroSpeech;
 
-    std::unique_ptr<TextSpeech> speech;
+    std::unique_ptr<TextSpeech> introSpeech;
+    std::unique_ptr<TextSpeech> genderSpeech;
 };
 
 #endif // INTROSCENE_H

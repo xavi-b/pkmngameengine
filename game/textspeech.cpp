@@ -2,12 +2,10 @@
 
 #include "renderutils.h"
 #include <SDL_ttf.h>
+#include <iostream>
 
-TextSpeech::TextSpeech(SDL_Renderer* renderer, const std::vector<std::string>& texts) : renderer(renderer)
+TextSpeech::TextSpeech(SDL_Renderer* renderer) : renderer(renderer)
 {
-    for (const auto& text : texts)
-        animations.emplace_back(std::make_unique<TextAnimation>(renderer, text));
-
     bgSurface = IMG_Load("resources/Graphics/Windowskins/choice 1.png");
     bgTexture = SDL_CreateTextureFromSurface(renderer, bgSurface);
 }
@@ -18,15 +16,28 @@ TextSpeech::~TextSpeech()
     SDL_FreeSurface(bgSurface);
 }
 
+void TextSpeech::init()
+{
+    if (currentAnimation < animations.size())
+        animations[currentAnimation]->start();
+}
+
 void TextSpeech::update(const Inputs* inputs)
 {
-    // TODO start animation (auto for first animation)
-    if (inputs->A || inputs->B)
+    if (currentAnimation < animations.size())
     {
-        if (currentAnimation < animations.size())
+        if (inputs->A || inputs->B)
         {
             if (!animations[currentAnimation]->isRunning())
+            {
                 currentAnimation++;
+                if (currentAnimation < animations.size())
+                    animations[currentAnimation]->start();
+            }
+        }
+        else
+        {
+            animations[currentAnimation]->incrementTicks();
         }
     }
 }
@@ -54,7 +65,7 @@ void TextSpeech::draw(const Fps* fps, RenderSizes rs)
     if (currentAnimation < animations.size())
         RenderUtils::drawTextWithIntroWrapped(renderer,
                                               rs,
-                                              animations[currentAnimation]->text,
+                                              animations[currentAnimation]->currentText(),
                                               {80, 80, 80, 255},
                                               {180, 180, 180, 255},
                                               {3, 86, 252, 255},
@@ -67,4 +78,16 @@ void TextSpeech::draw(const Fps* fps, RenderSizes rs)
 bool TextSpeech::isFinished() const
 {
     return currentAnimation >= animations.size();
+}
+
+void TextSpeech::reset()
+{
+    currentAnimation = 0;
+}
+
+void TextSpeech::setTexts(const std::vector<std::string>& texts)
+{
+    animations.clear();
+    for (const auto& text : texts)
+        animations.emplace_back(std::make_unique<TextAnimation>(renderer, text));
 }

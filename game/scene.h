@@ -24,6 +24,8 @@ public:
 
     virtual std::string name() = 0;
 
+    virtual void debug();
+
 protected:
     SDL_Renderer* renderer;
 };

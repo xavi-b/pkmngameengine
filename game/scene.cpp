@@ -27,3 +27,8 @@ std::unique_ptr<Scene> Scene::nextScene()
 {
     return nullptr;
 }
+
+void Scene::debug()
+{
+
+}

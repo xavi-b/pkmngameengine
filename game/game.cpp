@@ -45,12 +45,7 @@ Game::Game(int argc, char* argv[])
     Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024);
 
     window = SDL_CreateWindow(
-        PROJECT_NAME,
-        SDL_WINDOWPOS_UNDEFINED,
-        SDL_WINDOWPOS_UNDEFINED,
-        640,
-        480,
-        SDL_WINDOW_RESIZABLE);
+        PROJECT_NAME, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, SDL_WINDOW_RESIZABLE);
 
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
@@ -97,25 +92,25 @@ int Game::exec()
 
             scenes.back()->update(inputs.get());
             inputs->clear();
-        }
 
-        if (scenes.back()->popScene())
-        {
-            printDebug();
-            std::cout << scenes.back()->name() << " scene popped !" << std::endl;
-            scenes.pop_back();
-            printDebug();
-        }
-        else
-        {
-            auto nextScene = scenes.back()->nextScene();
-            if (nextScene)
+            if (scenes.back()->popScene())
             {
-                if (scenes.back()->pushScene())
-                    scenes.emplace_back(std::move(nextScene));
-                else
-                    scenes.back().swap(nextScene);
-                scenes.back()->init();
+                printDebug();
+                std::cout << scenes.back()->name() << " scene popped !" << std::endl;
+                scenes.pop_back();
+                printDebug();
+            }
+            else
+            {
+                auto nextScene = scenes.back()->nextScene();
+                if (nextScene)
+                {
+                    if (scenes.back()->pushScene())
+                        scenes.emplace_back(std::move(nextScene));
+                    else
+                        scenes.back().swap(nextScene);
+                    scenes.back()->init();
+                }
             }
         }
 
@@ -148,4 +143,6 @@ void Game::printDebug()
     for (const auto& scene : scenes)
         std::cout << scene->name() << " ";
     std::cout << std::endl;
+    for (const auto& scene : scenes)
+        scene->debug();
 }
