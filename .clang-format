@@ -10,4 +10,4 @@ PointerBindsToType: true
 SortIncludes: false
 AllowShortLambdasOnASingleLine: None
 AlwaysBreakTemplateDeclarations: Yes
-ColumnLimit: 0
+ColumnLimit: 120

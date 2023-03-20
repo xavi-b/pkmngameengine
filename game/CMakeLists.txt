@@ -78,6 +78,16 @@ target_sources(${MODULE_NAME}
        ${INC_FILES}
 )
 
+# animations
+file(GLOB SRC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/animations/*.cpp")
+file(GLOB INC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/animations/*.h")
+
+target_sources(${MODULE_NAME}
+   PRIVATE
+       ${SRC_FILES}
+       ${INC_FILES}
+)
+
 # resources
 file(GLOB_RECURSE RC_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "${CMAKE_CURRENT_SOURCE_DIR}/resources/**")
 #set_target_properties(${MODULE_NAME} PROPERTIES RESOURCE "${RC_FILES}")

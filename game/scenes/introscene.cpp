@@ -3,11 +3,15 @@
 #include "keyboard.h"
 #include "game.h"
 
-IntroScene::IntroScene(SDL_Renderer* renderer)
-    : Scene(renderer)
+IntroScene::IntroScene(SDL_Renderer* renderer) : Scene(renderer)
 {
     bgSurface = IMG_Load("resources/Graphics/Pictures/introbg.png");
     bgTexture = SDL_CreateTextureFromSurface(renderer, bgSurface);
+
+    std::vector<std::string> texts;
+    texts.push_back("Prof: Hi !");
+    texts.push_back("Please give me your name, young person ! I need it for you to continue your adventure !");
+    speech = std::make_unique<TextSpeech>(renderer, texts);
 }
 
 IntroScene::~IntroScene()
@@ -22,13 +26,15 @@ void IntroScene::init()
 
 void IntroScene::update(const Inputs* inputs)
 {
-    if (inputs->A)
+    // TODO
+    speech->update(inputs);
+    if (speech->isFinished())
         showKeyboardScene = true;
 }
 
-void IntroScene::draw(const Fps* /*fps*/, RenderSizes /*rs*/)
+void IntroScene::draw(const Fps* fps, RenderSizes rs)
 {
-    SDL_RenderCopy(renderer, bgTexture, NULL, NULL);
+    speech->draw(fps, rs);
 }
 
 bool IntroScene::pushScene() const

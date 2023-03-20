@@ -2,6 +2,7 @@
 #define INTROSCENE_H
 
 #include "scene.h"
+#include "textspeech.h"
 #include <SDL_image.h>
 
 class IntroScene : public Scene
@@ -25,6 +26,8 @@ private:
     SDL_Texture* bgTexture;
 
     bool showKeyboardScene = false;
+
+    std::unique_ptr<TextSpeech> speech;
 };
 
 #endif // INTROSCENE_H
