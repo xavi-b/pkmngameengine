@@ -47,7 +47,7 @@ void TextSpeech::update(const Inputs* inputs)
     }
 }
 
-void TextSpeech::draw(const Fps* fps, RenderSizes rs)
+void TextSpeech::draw(const Fps* /*fps*/, RenderSizes rs)
 {
     int borderSize    = 14;
     int dstBorderSize = borderSize * rs.wh / rs.ah;

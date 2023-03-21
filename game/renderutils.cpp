@@ -72,6 +72,14 @@ void RenderUtils::drawWhiteText(
     drawText(renderer, rs, text, color, bgColor, fontSize, x, y, w);
 }
 
+void RenderUtils::drawGreyText(
+    SDL_Renderer* renderer, RenderSizes rs, const std::string& text, int fontSize, int x, int y, int w)
+{
+    SDL_Color color   = {80, 80, 80, 255};
+    SDL_Color bgColor = {180, 180, 180, 255};
+    drawText(renderer, rs, text, color, bgColor, fontSize, x, y, w);
+}
+
 void RenderUtils::drawWhiteTextCentered(
     SDL_Renderer* renderer, RenderSizes rs, const std::string& text, int fontSize, SDL_Rect textRect)
 {
