@@ -11,9 +11,11 @@ public:
 
     bool musicOn();
     bool savedGame();
+    bool autoText();
 
 private:
     Settings();
+    ~Settings();
 
     boost::property_tree::ptree pt;
 };

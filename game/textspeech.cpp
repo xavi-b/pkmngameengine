@@ -1,6 +1,7 @@
 #include "textspeech.h"
 
 #include "renderutils.h"
+#include "settings.h"
 #include <SDL_ttf.h>
 #include <iostream>
 
@@ -35,7 +36,7 @@ void TextSpeech::update(const Inputs* inputs)
                     animations[currentAnimation]->start();
             }
         }
-        else if (inputs->start)
+        else if (inputs->start || Settings::instance()->autoText())
         {
             animations[currentAnimation]->forceEnd();
         }

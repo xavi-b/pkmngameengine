@@ -23,6 +23,11 @@ bool Settings::savedGame()
     return pt.get<bool>("General.savedGame", false);
 }
 
+bool Settings::autoText()
+{
+    return pt.get<bool>("General.autoText", false);
+}
+
 Settings::Settings()
 {
     std::string appName = PROJECT_NAME;
@@ -44,4 +49,9 @@ Settings::Settings()
         std::fstream file(configPath, file.out);
 
     boost::property_tree::ini_parser::read_ini(configPath, pt);
+}
+
+Settings::~Settings()
+{
+    // TODO save
 }
