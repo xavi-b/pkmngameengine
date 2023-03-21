@@ -5,25 +5,22 @@
 #include <string>
 #include <SDL_image.h>
 
-class Keyboard : public Scene
+class Keyboard
 {
 public:
     Keyboard(SDL_Renderer* renderer, std::string& textOut, size_t maxSize = 8);
     virtual ~Keyboard();
 
-    virtual void init() override;
-    virtual void update(const Inputs* inputs) override;
-    virtual void draw(const Fps* fps, RenderSizes rs) override;
-
-    virtual bool popScene() const override;
-
-    virtual std::unique_ptr<Scene> nextScene() override;
-
-    virtual std::string name() override;
+    virtual void init();
+    virtual void update(const Inputs* inputs);
+    virtual void draw(const Fps* fps, RenderSizes rs);
+    virtual bool isFinished() const;
 
 private:
     static constexpr int NbRowBoxes = 11;
     static constexpr int MaxPos     = 'z' - 'a';
+
+    SDL_Renderer* renderer;
 
     SDL_Surface* bgSurface;
     SDL_Texture* bgTexture;

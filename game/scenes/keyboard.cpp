@@ -1,11 +1,7 @@
 #include "keyboard.h"
 
-#include "settings.h"
-#include "game.h"
-#include <iostream>
-
 Keyboard::Keyboard(SDL_Renderer* renderer, std::string& textOut, size_t maxSize)
-    : Scene(renderer), textOut(textOut), maxSize(maxSize)
+    : renderer(renderer), textOut(textOut), maxSize(maxSize)
 {
     bgSurface         = IMG_Load("resources/Graphics/Pictures/Naming/bg.png");
     bgTexture         = SDL_CreateTextureFromSurface(renderer, bgSurface);
@@ -134,7 +130,6 @@ void Keyboard::draw(const Fps* /*fps*/, RenderSizes rs)
             cursorRect.y = dstRect.y + (startY + row * boxHeight) * rs.wh / rs.ah;
             cursorRect.w = boxWidth * rs.ww / rs.aw;
             cursorRect.h = boxHeight * rs.wh / rs.ah;
-            std::cout << cursorRect.x << ' ' << cursorRect.y << ' ' << cursorRect.w << ' ' << cursorRect.h << std::endl;
             SDL_RenderCopy(renderer, cursorTexture, NULL, &cursorRect);
         }
     }
@@ -148,17 +143,7 @@ void Keyboard::draw(const Fps* /*fps*/, RenderSizes rs)
     RenderUtils::drawWhiteTextCentered(renderer, rs, text, fontSize, textRect);
 }
 
-bool Keyboard::popScene() const
+bool Keyboard::isFinished() const
 {
     return leave;
-}
-
-std::unique_ptr<Scene> Keyboard::nextScene()
-{
-    return nullptr;
-}
-
-std::string Keyboard::name()
-{
-    return "Keyboard";
 }

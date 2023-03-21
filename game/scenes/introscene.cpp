@@ -1,6 +1,6 @@
 #include "introscene.h"
 
-#include "keyboard.h"
+#include "keyboardscene.h"
 #include "game.h"
 #include "utils.h"
 
@@ -40,10 +40,10 @@ void IntroScene::update(const Inputs* inputs)
         if (introSpeech->isFinished())
         {
             Game::instance()->data.player.name.clear();
-            state = KeyboardScene;
+            state = Keyboard;
         }
         break;
-    case KeyboardScene:
+    case Keyboard:
         std::cout << "PlayerName: " << Game::instance()->data.player.name << std::endl;
         if (!Game::instance()->data.player.name.empty())
         {
@@ -76,7 +76,7 @@ void IntroScene::draw(const Fps* fps, RenderSizes rs)
     case IntroSpeech:
         introSpeech->draw(fps, rs);
         break;
-    case KeyboardScene:
+    case Keyboard:
         break;
     case GenderSpeech:
         genderSpeech->draw(fps, rs);
@@ -90,15 +90,15 @@ void IntroScene::draw(const Fps* fps, RenderSizes rs)
 
 bool IntroScene::pushScene() const
 {
-    return state == KeyboardScene;
+    return state == Keyboard;
 }
 
 std::unique_ptr<Scene> IntroScene::nextScene()
 {
-    if (state == KeyboardScene)
+    if (state == Keyboard)
     {
         introSpeech->reset();
-        return std::make_unique<Keyboard>(renderer, Game::instance()->data.player.name);
+        return std::make_unique<KeyboardScene>(renderer, Game::instance()->data.player.name);
     }
     return nullptr;
 }

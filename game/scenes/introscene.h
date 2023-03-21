@@ -27,7 +27,7 @@ private:
     enum State
     {
         IntroSpeech,
-        KeyboardScene,
+        Keyboard,
         GenderSpeech,
         Leave
     };
