@@ -8,7 +8,7 @@
 class Keyboard : public Scene
 {
 public:
-    Keyboard(SDL_Renderer* renderer, std::string& playerName);
+    Keyboard(SDL_Renderer* renderer, std::string& textOut, size_t maxSize = 8);
     virtual ~Keyboard();
 
     virtual void init() override;
@@ -22,14 +22,21 @@ public:
     virtual std::string name() override;
 
 private:
+    static constexpr int NbRowBoxes = 11;
+    static constexpr int MaxPos     = 'z' - 'a';
+
     SDL_Surface* bgSurface;
     SDL_Texture* bgTexture;
     SDL_Surface* keyboardBgSurface;
     SDL_Texture* keyboardBgTexture;
+    SDL_Surface* cursorSurface;
+    SDL_Texture* cursorTexture;
 
-    bool leave = false;
+    bool leave      = false;
+    int  currentPos = 0;
 
-    std::string& playerName;
+    std::string& textOut;
+    size_t       maxSize = 8;
 };
 
 #endif // KEYBOARD_H

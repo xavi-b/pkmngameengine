@@ -18,6 +18,9 @@ void RenderUtils::drawText(SDL_Renderer*      renderer,
                            int                y,
                            int                w)
 {
+    if (text.empty())
+        return;
+
     TTF_SetFontSize(RenderUtils::instance()->font, fontSize);
 
     int offsetX = 0;
