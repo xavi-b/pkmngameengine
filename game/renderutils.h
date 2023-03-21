@@ -16,7 +16,9 @@ struct RenderSizes
 class RenderUtils
 {
 public:
-    constexpr static int FontSize = 20;
+    constexpr static int TextSize = 24;
+
+    TTF_Font* font;
 
     static RenderUtils* instance();
 
@@ -75,8 +77,6 @@ public:
 private:
     RenderUtils();
     ~RenderUtils();
-
-    TTF_Font* font;
 };
 
 #endif // RENDERUTILS_H

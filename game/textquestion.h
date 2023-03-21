@@ -9,12 +9,18 @@
 class TextQuestion
 {
 public:
+    enum Position
+    {
+        Right,
+        Left
+    };
+
     TextQuestion(SDL_Renderer* renderer);
     ~TextQuestion();
 
     void init();
     void update(const Inputs* inputs);
-    void draw(const Fps* fps, RenderSizes rs);
+    void draw(const Fps* fps, RenderSizes rs, Position pos = Right);
 
     bool isFinished() const;
     void reset();
@@ -26,6 +32,8 @@ private:
     SDL_Renderer* renderer;
     SDL_Surface*  bgSurface;
     SDL_Texture*  bgTexture;
+    SDL_Surface*  selectionSurface;
+    SDL_Texture*  selectionTexture;
 
     bool selected     = false;
     int  currentIndex = 0;

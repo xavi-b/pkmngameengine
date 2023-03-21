@@ -3,6 +3,7 @@
 
 #include "scene.h"
 #include "textspeech.h"
+#include "textquestion.h"
 #include <SDL_image.h>
 
 class IntroScene : public Scene
@@ -29,6 +30,8 @@ private:
         IntroSpeech,
         Keyboard,
         GenderSpeech,
+        GenderQuestion,
+        OutroSpeech,
         Leave
     };
 
@@ -37,8 +40,10 @@ private:
 
     State state = IntroSpeech;
 
-    std::unique_ptr<TextSpeech> introSpeech;
-    std::unique_ptr<TextSpeech> genderSpeech;
+    std::unique_ptr<TextSpeech>   introSpeech;
+    std::unique_ptr<TextSpeech>   genderSpeech;
+    std::unique_ptr<TextQuestion> genderQuestion;
+    std::unique_ptr<TextSpeech>   outroSpeech;
 };
 
 #endif // INTROSCENE_H

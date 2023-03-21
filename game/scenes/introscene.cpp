@@ -11,13 +11,15 @@ IntroScene::IntroScene(SDL_Renderer* renderer) : Scene(renderer)
     bgSurface = IMG_Load("resources/Graphics/Pictures/introbg.png");
     bgTexture = SDL_CreateTextureFromSurface(renderer, bgSurface);
 
-    std::vector<std::string> texts;
-    texts.push_back(lc::translate("Prof: Hi !"));
-    texts.push_back(
-        lc::translate("Please give me your name, young person ! I need it for you to continue your adventure !"));
     introSpeech = std::make_unique<TextSpeech>(renderer);
-    introSpeech->setTexts(texts);
-    genderSpeech = std::make_unique<TextSpeech>(renderer);
+    introSpeech->setTexts(
+        {lc::translate("Prof: Hi !"),
+         lc::translate("Please give me your name, young person ! I need it for you to continue your adventure !")});
+    genderSpeech   = std::make_unique<TextSpeech>(renderer);
+    genderQuestion = std::make_unique<TextQuestion>(renderer);
+    genderQuestion->setTexts({lc::translate("Boy"), lc::translate("Girl")});
+    outroSpeech = std::make_unique<TextSpeech>(renderer);
+    outroSpeech->setTexts({lc::translate("Welcome then !")});
 }
 
 IntroScene::~IntroScene()
@@ -37,7 +39,7 @@ void IntroScene::update(const Inputs* inputs)
     {
     case IntroSpeech:
         introSpeech->update(inputs);
-        if (introSpeech->isFinished())
+        if (introSpeech->shouldClose())
         {
             Game::instance()->data.player.name.clear();
             state = Keyboard;
@@ -57,12 +59,34 @@ void IntroScene::update(const Inputs* inputs)
         }
         break;
     case GenderSpeech:
-        genderSpeech->update(inputs);
+        if (genderSpeech->mayClose())
+        {
+            genderQuestion->init();
+            state = GenderQuestion;
+        }
+        else
+        {
+            genderSpeech->update(inputs);
+        }
+        break;
+    case GenderQuestion:
+        genderQuestion->update(inputs);
+        if (genderQuestion->isFinished())
+        {
+            Game::instance()->data.player.gender = genderQuestion->selectedIndex();
+            outroSpeech->init();
+            state = OutroSpeech;
+        }
+        break;
+    case OutroSpeech:
+        outroSpeech->update(inputs);
+        if (outroSpeech->shouldClose())
+        {
+            state = Leave;
+        }
         break;
     case Leave:
         // TODO save game
-        break;
-    default:
         break;
     }
 }
@@ -81,9 +105,14 @@ void IntroScene::draw(const Fps* fps, RenderSizes rs)
     case GenderSpeech:
         genderSpeech->draw(fps, rs);
         break;
-    case Leave:
+    case GenderQuestion:
+        genderSpeech->draw(fps, rs);
+        genderQuestion->draw(fps, rs, TextQuestion::Right);
         break;
-    default:
+    case OutroSpeech:
+        outroSpeech->draw(fps, rs);
+        break;
+    case Leave:
         break;
     }
 }
@@ -111,5 +140,6 @@ std::string IntroScene::name()
 void IntroScene::debug()
 {
     std::cout << name() << " state: " << state << std::endl;
-    std::cout << name() << " gender finished: " << genderSpeech->isFinished() << std::endl;
+    std::cout << name() << " gender shouldClose: " << genderSpeech->shouldClose() << std::endl;
+    std::cout << name() << " gender mayClose: " << genderSpeech->mayClose() << std::endl;
 }

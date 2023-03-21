@@ -8,6 +8,8 @@
 class TextSpeech
 {
 public:
+    static constexpr int TextBoxSize = 48;
+
     TextSpeech(SDL_Renderer* renderer);
     ~TextSpeech();
 
@@ -15,7 +17,8 @@ public:
     void update(const Inputs* inputs);
     void draw(const Fps* fps, RenderSizes rs);
 
-    bool isFinished() const;
+    bool shouldClose() const;
+    bool mayClose() const;
     void reset();
 
     void setTexts(const std::vector<std::string>& texts);

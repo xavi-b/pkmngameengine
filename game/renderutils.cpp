@@ -285,7 +285,7 @@ void RenderUtils::drawBorderImage(
 
 RenderUtils::RenderUtils()
 {
-    font = TTF_OpenFont("resources/Fonts/power green.ttf", 24);
+    font = TTF_OpenFont("resources/Fonts/power green.ttf", TextSize);
     if (font == NULL)
         std::cerr << TTF_GetError() << std::endl;
 }

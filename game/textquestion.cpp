@@ -1,19 +1,24 @@
 #include "textquestion.h"
 
 #include "renderutils.h"
+#include "textspeech.h"
 #include <SDL_ttf.h>
 #include <iostream>
 
 TextQuestion::TextQuestion(SDL_Renderer* renderer) : renderer(renderer)
 {
-    bgSurface = IMG_Load("resources/Graphics/Windowskins/choice 1.png");
-    bgTexture = SDL_CreateTextureFromSurface(renderer, bgSurface);
+    bgSurface        = IMG_Load("resources/Graphics/Windowskins/choice 1.png");
+    bgTexture        = SDL_CreateTextureFromSurface(renderer, bgSurface);
+    selectionSurface = IMG_Load("resources/Graphics/Pictures/selarrow.png");
+    selectionTexture = SDL_CreateTextureFromSurface(renderer, selectionSurface);
 }
 
 TextQuestion::~TextQuestion()
 {
     SDL_DestroyTexture(bgTexture);
     SDL_FreeSurface(bgSurface);
+    SDL_DestroyTexture(selectionTexture);
+    SDL_FreeSurface(selectionSurface);
 }
 
 void TextQuestion::init()
@@ -39,27 +44,36 @@ void TextQuestion::update(const Inputs* inputs)
     }
 }
 
-void TextQuestion::draw(const Fps* /*fps*/, RenderSizes rs)
+void TextQuestion::draw(const Fps* /*fps*/, RenderSizes rs, Position pos)
 {
     int borderSize    = 14;
     int dstBorderSize = borderSize * rs.wh / rs.ah;
 
-    int height    = 2 * bgSurface->h;
+    int fontSize  = RenderUtils::TextSize;
+    int height    = texts.size() * TextSpeech::TextBoxSize;
     int dstHeight = height * rs.wh / rs.ah;
 
-    // TODO pos
-    SDL_Rect rect;
-    rect.x = 0;
-    rect.w = rs.ww;
-    rect.h = dstHeight;
-    rect.y = rs.wh - rect.h;
-    RenderUtils::drawBorderImage(renderer, rs, bgSurface, bgTexture, rect, borderSize, borderSize);
+    int maxW = 0;
+    for (const auto& text : texts)
+    {
+        int w, h;
+        TTF_SetFontSize(RenderUtils::instance()->font, fontSize);
+        TTF_SizeText(RenderUtils::instance()->font, text.c_str(), &w, &h);
+        if (w > maxW)
+            maxW = w;
+    }
 
-    int fontSize         = 24;
-    int textBoxHeight    = 2 /* lines */ * 24;
+    int textBoxHeight    = texts.size() /* lines */ * RenderUtils::TextSize;
     int dstTextBoxHeight = textBoxHeight * rs.wh / rs.ah;
-    int padding          = (height - textBoxHeight) / 2;
-    int dstPadding       = (dstHeight - dstTextBoxHeight) / 2;
+    int dstPaddingX      = (height - textBoxHeight) / 2 * rs.ww / rs.aw;
+    int dstPaddingY      = (dstHeight - dstTextBoxHeight) / 2;
+
+    SDL_Rect rect;
+    rect.w = (2 * selectionSurface->w + maxW + dstPaddingX * 2) * rs.ww / rs.aw;
+    rect.x = pos == Left ? 0 : rs.ww - rect.w;
+    rect.h = dstHeight;
+    rect.y = rs.wh - (2 * (TextSpeech::TextBoxSize * rs.wh / rs.ah)) - rect.h;
+    RenderUtils::drawBorderImage(renderer, rs, bgSurface, bgTexture, rect, borderSize, borderSize);
 
     int i = 0;
     for (const auto& text : texts)
@@ -68,12 +82,16 @@ void TextQuestion::draw(const Fps* /*fps*/, RenderSizes rs)
                                   rs,
                                   text,
                                   fontSize,
-                                  rect.x + dstPadding,
-                                  rect.y + dstPadding * 2 - dstBorderSize * 2 + i * fontSize * rs.wh / rs.ah,
-                                  rs.aw - padding * 2);
+                                  rect.x + dstPaddingX + 2 * selectionSurface->w * rs.ww / rs.aw,
+                                  rect.y + dstPaddingY * 2 - dstBorderSize * 2 + i * fontSize * rs.wh / rs.ah);
         if (i == currentIndex)
         {
-            // TODO cursor
+            SDL_Rect selRect;
+            selRect.x = rect.x + dstPaddingX;
+            selRect.y = rect.y + dstPaddingY * 2 - dstBorderSize * 2 + i * selectionSurface->h * rs.wh / rs.ah;
+            selRect.w = selectionSurface->w * rs.ww / rs.aw;
+            selRect.h = selectionSurface->h * rs.wh / rs.ah;
+            SDL_RenderCopy(renderer, selectionTexture, NULL, &selRect);
         }
         ++i;
     }

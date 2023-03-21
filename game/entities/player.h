@@ -13,6 +13,8 @@ class Player : public Entity
 public:
     Player();
 
+    int gender = 0;
+
     std::string name;
 
     std::vector<std::unique_ptr<Item>>   items;

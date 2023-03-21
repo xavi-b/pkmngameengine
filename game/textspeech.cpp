@@ -52,7 +52,7 @@ void TextSpeech::draw(const Fps* /*fps*/, RenderSizes rs)
     int borderSize    = 14;
     int dstBorderSize = borderSize * rs.wh / rs.ah;
 
-    int height    = 2 * bgSurface->h;
+    int height    = 2 * TextBoxSize;
     int dstHeight = height * rs.wh / rs.ah;
 
     SDL_Rect rect;
@@ -62,11 +62,12 @@ void TextSpeech::draw(const Fps* /*fps*/, RenderSizes rs)
     rect.y = rs.wh - rect.h;
     RenderUtils::drawBorderImage(renderer, rs, bgSurface, bgTexture, rect, borderSize, borderSize);
 
-    int fontSize         = 24;
-    int textBoxHeight    = 2 /* lines */ * 24;
+    int fontSize         = RenderUtils::TextSize;
+    int textBoxHeight    = 2 /* lines */ * RenderUtils::TextSize;
     int dstTextBoxHeight = textBoxHeight * rs.wh / rs.ah;
     int padding          = (height - textBoxHeight) / 2;
-    int dstPadding       = (dstHeight - dstTextBoxHeight) / 2;
+    int dstPaddingX      = (height - textBoxHeight) / 2 * rs.ww / rs.aw;
+    int dstPaddingY      = (dstHeight - dstTextBoxHeight) / 2;
 
     if (currentAnimation < animations.size())
         RenderUtils::drawGreyTextWithIntroWrapped(renderer,
@@ -75,14 +76,20 @@ void TextSpeech::draw(const Fps* /*fps*/, RenderSizes rs)
                                                   {3, 86, 252, 255},
                                                   {79, 199, 255, 255},
                                                   fontSize,
-                                                  rect.x + dstPadding,
-                                                  rect.y + dstPadding * 2 - dstBorderSize * 2,
+                                                  rect.x + dstPaddingX,
+                                                  rect.y + dstPaddingY * 2 - dstBorderSize * 2,
                                                   rs.aw - padding * 2);
 }
 
-bool TextSpeech::isFinished() const
+bool TextSpeech::shouldClose() const
 {
     return currentAnimation >= animations.size();
+}
+
+bool TextSpeech::mayClose() const
+{
+    return currentAnimation == (animations.size() - 1) &&
+           (animations.size() == 0 || !animations[currentAnimation]->isRunning());
 }
 
 void TextSpeech::reset()
