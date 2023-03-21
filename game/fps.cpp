@@ -2,8 +2,7 @@
 
 #include <iostream>
 
-Fps::Fps(SDL_Renderer* renderer)
-    : renderer(renderer)
+Fps::Fps(SDL_Renderer* renderer) : renderer(renderer)
 {
     previous = SDL_GetTicks();
     next     = SDL_GetTicks() + TickDelay;
@@ -34,8 +33,6 @@ void Fps::draw(RenderSizes rs)
 
     previous = SDL_GetTicks();
 
-    auto      fpsStr  = "FPS: " + std::to_string(value);
-    SDL_Color color   = {255, 255, 255};
-    SDL_Color bgColor = {127, 127, 127};
-    RenderUtils::drawText(renderer, rs, fpsStr, color, bgColor, 0, 0);
+    auto fpsStr = "FPS: " + std::to_string(value);
+    RenderUtils::drawWhiteText(renderer, rs, fpsStr, 24, 0, 0);
 }

@@ -6,15 +6,15 @@
 #include "settings.h"
 #include "utils.h"
 
-TitleMenu::TitleMenu(SDL_Renderer* renderer)
-    : Scene(renderer)
+TitleMenu::TitleMenu(SDL_Renderer* renderer) : Scene(renderer)
 {
     bgSurface    = IMG_Load("resources/Graphics/Pictures/loadbg.png");
     bgTexture    = SDL_CreateTextureFromSurface(renderer, bgSurface);
     panelSurface = IMG_Load("resources/Graphics/Pictures/loadPanels.png");
     panelTexture = SDL_CreateTextureFromSurface(renderer, panelSurface);
 
-    currentIndex = static_cast<Index>(!Settings::instance()->savedGame() ? static_cast<char>(NewGame) : static_cast<char>(Continue));
+    currentIndex = static_cast<Index>(!Settings::instance()->savedGame() ? static_cast<char>(NewGame)
+                                                                         : static_cast<char>(Continue));
 }
 
 TitleMenu::~TitleMenu()
@@ -72,18 +72,16 @@ void TitleMenu::draw(const Fps* /*fps*/, RenderSizes rs)
     // Background
     SDL_RenderCopy(renderer, bgTexture, NULL, NULL);
 
-    SDL_Color color   = {255, 255, 255, 255};
-    SDL_Color bgColor = {127, 127, 127, 255};
-
     SDL_Rect srcRect;
     SDL_Rect dstRect;
     dstRect.y = 0;
     dstRect.h = 0;
 
-    int spacing = 16 * rs.wh / rs.ah;
-    int padding = ((rs.aw - panelSurface->w) / 2) * rs.ww / rs.aw;
-    int offset  = 0;
-    int y       = spacing;
+    int spacing  = 16 * rs.wh / rs.ah;
+    int padding  = ((rs.aw - panelSurface->w) / 2) * rs.ww / rs.aw;
+    int offset   = 0;
+    int y        = spacing;
+    int fontSize = 24;
 
     if (Settings::instance()->savedGame())
     {
@@ -100,7 +98,12 @@ void TitleMenu::draw(const Fps* /*fps*/, RenderSizes rs)
         dstRect.w = srcRect.w * rs.ww / rs.aw;
         dstRect.h = srcRect.h * rs.wh / rs.ah;
         SDL_RenderCopy(renderer, panelTexture, &srcRect, &dstRect);
-        RenderUtils::drawText(renderer, rs, lc::translate("Continue"), color, bgColor, dstRect.x + 40 * rs.ww / rs.aw, dstRect.y + (12 * rs.wh / rs.ah));
+        RenderUtils::drawWhiteText(renderer,
+                                   rs,
+                                   lc::translate("Continue"),
+                                   fontSize,
+                                   dstRect.x + 40 * rs.ww / rs.aw,
+                                   dstRect.y + (12 * rs.wh / rs.ah));
     }
 
     y = y + dstRect.h + spacing;
@@ -114,7 +117,12 @@ void TitleMenu::draw(const Fps* /*fps*/, RenderSizes rs)
     dstRect.w = srcRect.w * rs.ww / rs.aw;
     dstRect.h = srcRect.h * rs.wh / rs.ah;
     SDL_RenderCopy(renderer, panelTexture, &srcRect, &dstRect);
-    RenderUtils::drawText(renderer, rs, lc::translate("New Game"), color, bgColor, dstRect.x + 40 * rs.ww / rs.aw, dstRect.y + (dstRect.h - RenderUtils::FontSize * rs.wh / rs.ah) / 2);
+    RenderUtils::drawWhiteText(renderer,
+                               rs,
+                               lc::translate("New Game"),
+                               fontSize,
+                               dstRect.x + 40 * rs.ww / rs.aw,
+                               dstRect.y + (dstRect.h - fontSize * rs.wh / rs.ah) / 2);
 
     y = y + dstRect.h + spacing;
     // Options
@@ -127,7 +135,12 @@ void TitleMenu::draw(const Fps* /*fps*/, RenderSizes rs)
     dstRect.w = srcRect.w * rs.ww / rs.aw;
     dstRect.h = srcRect.h * rs.wh / rs.ah;
     SDL_RenderCopy(renderer, panelTexture, &srcRect, &dstRect);
-    RenderUtils::drawText(renderer, rs, lc::translate("Options"), color, bgColor, dstRect.x + 40 * rs.ww / rs.aw, dstRect.y + (dstRect.h - RenderUtils::FontSize * rs.wh / rs.ah) / 2);
+    RenderUtils::drawWhiteText(renderer,
+                               rs,
+                               lc::translate("Options"),
+                               fontSize,
+                               dstRect.x + 40 * rs.ww / rs.aw,
+                               dstRect.y + (dstRect.h - fontSize * rs.wh / rs.ah) / 2);
 
     y = y + dstRect.h + spacing;
     // Quit
@@ -140,7 +153,12 @@ void TitleMenu::draw(const Fps* /*fps*/, RenderSizes rs)
     dstRect.w = srcRect.w * rs.ww / rs.aw;
     dstRect.h = srcRect.h * rs.wh / rs.ah;
     SDL_RenderCopy(renderer, panelTexture, &srcRect, &dstRect);
-    RenderUtils::drawText(renderer, rs, lc::translate("Quit"), color, bgColor, dstRect.x + 40 * rs.ww / rs.aw, dstRect.y + (dstRect.h - RenderUtils::FontSize * rs.wh / rs.ah) / 2);
+    RenderUtils::drawWhiteText(renderer,
+                               rs,
+                               lc::translate("Quit"),
+                               fontSize,
+                               dstRect.x + 40 * rs.ww / rs.aw,
+                               dstRect.y + (dstRect.h - fontSize * rs.wh / rs.ah) / 2);
 }
 
 std::unique_ptr<Scene> TitleMenu::nextScene()

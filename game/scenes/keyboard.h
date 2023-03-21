@@ -3,6 +3,7 @@
 
 #include "scene.h"
 #include <string>
+#include <SDL_image.h>
 
 class Keyboard : public Scene
 {
@@ -21,6 +22,11 @@ public:
     virtual std::string name() override;
 
 private:
+    SDL_Surface* bgSurface;
+    SDL_Texture* bgTexture;
+    SDL_Surface* keyboardBgSurface;
+    SDL_Texture* keyboardBgTexture;
+
     bool leave = false;
 
     std::string& playerName;

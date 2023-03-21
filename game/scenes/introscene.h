@@ -31,6 +31,7 @@ private:
         GenderSpeech,
         Leave
     };
+
     SDL_Surface* bgSurface;
     SDL_Texture* bgTexture;
 

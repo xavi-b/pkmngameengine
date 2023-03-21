@@ -69,6 +69,8 @@ void IntroScene::update(const Inputs* inputs)
 
 void IntroScene::draw(const Fps* fps, RenderSizes rs)
 {
+    SDL_RenderCopy(renderer, bgTexture, NULL, NULL);
+
     switch (state)
     {
     case IntroSpeech:

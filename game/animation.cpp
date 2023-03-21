@@ -50,3 +50,11 @@ bool Animation::isRunning() const
 void Animation::draw(const Fps* /*fps*/, RenderSizes /*rs*/)
 {
 }
+
+void Animation::forceEnd()
+{
+    currentFrame = frames.size() - 1;
+    if (currentFrame < 0)
+        currentFrame = 0;
+    running = false;
+}

@@ -35,6 +35,10 @@ void TextSpeech::update(const Inputs* inputs)
                     animations[currentAnimation]->start();
             }
         }
+        else if (inputs->start)
+        {
+            animations[currentAnimation]->forceEnd();
+        }
         else
         {
             animations[currentAnimation]->incrementTicks();
@@ -57,22 +61,22 @@ void TextSpeech::draw(const Fps* fps, RenderSizes rs)
     rect.y = rs.wh - rect.h;
     RenderUtils::drawBorderImage(renderer, rs, bgSurface, bgTexture, rect, borderSize, borderSize);
 
-    int textBoxHeight    = 2 /* lines */ * RenderUtils::FontSize;
+    int fontSize         = 24;
+    int textBoxHeight    = 2 /* lines */ * 24;
     int dstTextBoxHeight = textBoxHeight * rs.wh / rs.ah;
     int padding          = (height - textBoxHeight) / 2;
     int dstPadding       = (dstHeight - dstTextBoxHeight) / 2;
 
     if (currentAnimation < animations.size())
-        RenderUtils::drawTextWithIntroWrapped(renderer,
-                                              rs,
-                                              animations[currentAnimation]->currentText(),
-                                              {80, 80, 80, 255},
-                                              {180, 180, 180, 255},
-                                              {3, 86, 252, 255},
-                                              {79, 199, 255, 255},
-                                              rect.x + dstPadding,
-                                              rect.y + dstPadding * 2 - dstBorderSize * 2,
-                                              rs.aw - padding * 2);
+        RenderUtils::drawGreyTextWithIntroWrapped(renderer,
+                                                  rs,
+                                                  animations[currentAnimation]->currentText(),
+                                                  {3, 86, 252, 255},
+                                                  {79, 199, 255, 255},
+                                                  fontSize,
+                                                  rect.x + dstPadding,
+                                                  rect.y + dstPadding * 2 - dstBorderSize * 2,
+                                                  rs.aw - padding * 2);
 }
 
 bool TextSpeech::isFinished() const

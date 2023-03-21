@@ -8,40 +8,71 @@ RenderUtils* RenderUtils::instance()
     return &i;
 }
 
-void RenderUtils::drawText(
-    SDL_Renderer* renderer, RenderSizes rs, const std::string& text, SDL_Color color, SDL_Color bgColor, int x, int y)
+void RenderUtils::drawText(SDL_Renderer*      renderer,
+                           RenderSizes        rs,
+                           const std::string& text,
+                           SDL_Color          color,
+                           SDL_Color          bgColor,
+                           int                fontSize,
+                           int                x,
+                           int                y,
+                           int                w)
 {
+    TTF_SetFontSize(RenderUtils::instance()->font, fontSize);
+
+    int offsetX = 0;
+
     SDL_Rect rect;
 
     SDL_Surface* bgSurface1 = TTF_RenderText_Solid(RenderUtils::instance()->font, text.c_str(), bgColor);
     SDL_Texture* bgTexture1 = SDL_CreateTextureFromSurface(renderer, bgSurface1);
-    rect.x                  = x + 2 * rs.ww / rs.aw;
-    rect.y                  = y;
-    rect.w                  = bgSurface1->w * rs.ww / rs.aw;
-    rect.h                  = bgSurface1->h * rs.wh / rs.ah;
+    if (w != 0)
+        offsetX = (w - bgSurface1->w * rs.ww / rs.aw) / 2;
+    rect.x = x + 2 * rs.ww / rs.aw + offsetX;
+    rect.y = y;
+    rect.w = bgSurface1->w * rs.ww / rs.aw;
+    rect.h = bgSurface1->h * rs.wh / rs.ah;
     SDL_RenderCopy(renderer, bgTexture1, NULL, &rect);
     SDL_DestroyTexture(bgTexture1);
     SDL_FreeSurface(bgSurface1);
 
     SDL_Surface* bgSurface2 = TTF_RenderText_Solid(RenderUtils::instance()->font, text.c_str(), bgColor);
     SDL_Texture* bgTexture2 = SDL_CreateTextureFromSurface(renderer, bgSurface2);
-    rect.x                  = x;
-    rect.y                  = y + 2 * rs.wh / rs.ah;
-    rect.w                  = bgSurface2->w * rs.ww / rs.aw;
-    rect.h                  = bgSurface2->h * rs.wh / rs.ah;
+    if (w != 0)
+        offsetX = (w - bgSurface2->w * rs.ww / rs.aw) / 2;
+    rect.x = x + offsetX;
+    rect.y = y + 2 * rs.wh / rs.ah;
+    rect.w = bgSurface2->w * rs.ww / rs.aw;
+    rect.h = bgSurface2->h * rs.wh / rs.ah;
     SDL_RenderCopy(renderer, bgTexture2, NULL, &rect);
     SDL_DestroyTexture(bgTexture2);
     SDL_FreeSurface(bgSurface2);
 
     SDL_Surface* surface = TTF_RenderText_Solid(RenderUtils::instance()->font, text.c_str(), color);
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-    rect.x               = x;
-    rect.y               = y;
-    rect.w               = surface->w * rs.ww / rs.aw;
-    rect.h               = surface->h * rs.wh / rs.ah;
+    if (w != 0)
+        offsetX = (w - surface->w * rs.ww / rs.aw) / 2;
+    rect.x = x + offsetX;
+    rect.y = y;
+    rect.w = surface->w * rs.ww / rs.aw;
+    rect.h = surface->h * rs.wh / rs.ah;
     SDL_RenderCopy(renderer, texture, NULL, &rect);
     SDL_DestroyTexture(texture);
     SDL_FreeSurface(surface);
+}
+
+void RenderUtils::drawWhiteText(
+    SDL_Renderer* renderer, RenderSizes rs, const std::string& text, int fontSize, int x, int y, int w)
+{
+    SDL_Color color   = {255, 255, 255, 255};
+    SDL_Color bgColor = {127, 127, 127, 255};
+    drawText(renderer, rs, text, color, bgColor, fontSize, x, y, w);
+}
+
+void RenderUtils::drawWhiteTextCentered(
+    SDL_Renderer* renderer, RenderSizes rs, const std::string& text, int fontSize, SDL_Rect textRect)
+{
+    drawWhiteText(renderer, rs, text, fontSize, textRect.x, textRect.y, textRect.w);
 }
 
 void RenderUtils::drawTextWrapped(SDL_Renderer*      renderer,
@@ -49,12 +80,15 @@ void RenderUtils::drawTextWrapped(SDL_Renderer*      renderer,
                                   const std::string& text,
                                   SDL_Color          color,
                                   SDL_Color          bgColor,
+                                  int                fontSize,
                                   int                x,
                                   int                y,
                                   int                width)
 {
     if (text.empty())
         return;
+
+    TTF_SetFontSize(RenderUtils::instance()->font, fontSize);
 
     SDL_Rect rect;
 
@@ -96,11 +130,12 @@ void RenderUtils::drawTextWithIntroWrapped(SDL_Renderer*      renderer,
                                            SDL_Color          bgColor,
                                            SDL_Color          introColor,
                                            SDL_Color          introBgColor,
+                                           int                fontSize,
                                            int                x,
                                            int                y,
                                            int                width)
 {
-    drawTextWrapped(renderer, rs, text, color, bgColor, x, y, width);
+    drawTextWrapped(renderer, rs, text, color, bgColor, fontSize, x, y, width);
 
     auto pos = text.find_first_of(':');
 
@@ -108,7 +143,22 @@ void RenderUtils::drawTextWithIntroWrapped(SDL_Renderer*      renderer,
         return;
 
     std::string introText = text.substr(0, pos + 1);
-    drawTextWrapped(renderer, rs, introText, introColor, introBgColor, x, y, width);
+    drawTextWrapped(renderer, rs, introText, introColor, introBgColor, fontSize, x, y, width);
+}
+
+void RenderUtils::drawGreyTextWithIntroWrapped(SDL_Renderer*      renderer,
+                                               RenderSizes        rs,
+                                               const std::string& text,
+                                               SDL_Color          introColor,
+                                               SDL_Color          introBgColor,
+                                               int                fontSize,
+                                               int                x,
+                                               int                y,
+                                               int                width)
+{
+    SDL_Color color   = {80, 80, 80, 255};
+    SDL_Color bgColor = {180, 180, 180, 255};
+    drawTextWithIntroWrapped(renderer, rs, text, color, bgColor, introColor, introBgColor, fontSize, x, y, width);
 }
 
 void RenderUtils::drawBorderImage(
@@ -224,7 +274,7 @@ void RenderUtils::drawBorderImage(
 
 RenderUtils::RenderUtils()
 {
-    font = TTF_OpenFont("resources/Fonts/power green.ttf", FontSize);
+    font = TTF_OpenFont("resources/Fonts/power green.ttf", 24);
     if (font == NULL)
         std::cerr << TTF_GetError() << std::endl;
 }

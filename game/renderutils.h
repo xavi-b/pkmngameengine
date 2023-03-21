@@ -16,7 +16,7 @@ struct RenderSizes
 class RenderUtils
 {
 public:
-    constexpr static int FontSize = 24;
+    constexpr static int FontSize = 20;
 
     static RenderUtils* instance();
 
@@ -25,13 +25,20 @@ public:
                          const std::string& text,
                          SDL_Color          color,
                          SDL_Color          bgColor,
+                         int                fontSize,
                          int                x,
-                         int                y);
+                         int                y,
+                         int                w = 0);
+    static void drawWhiteText(
+        SDL_Renderer* renderer, RenderSizes rs, const std::string& text, int fontSize, int x, int y, int w = 0);
+    static void drawWhiteTextCentered(
+        SDL_Renderer* renderer, RenderSizes rs, const std::string& text, int fontSize, SDL_Rect textRect);
     static void drawTextWrapped(SDL_Renderer*      renderer,
                                 RenderSizes        rs,
                                 const std::string& text,
                                 SDL_Color          color,
                                 SDL_Color          bgColor,
+                                int                fontSize,
                                 int                x,
                                 int                y,
                                 int                width);
@@ -42,9 +49,19 @@ public:
                                          SDL_Color          bgColor,
                                          SDL_Color          introColor,
                                          SDL_Color          introBgColor,
+                                         int                fontSize,
                                          int                x,
                                          int                y,
                                          int                width);
+    static void drawGreyTextWithIntroWrapped(SDL_Renderer*      renderer,
+                                             RenderSizes        rs,
+                                             const std::string& text,
+                                             SDL_Color          introColor,
+                                             SDL_Color          introBgColor,
+                                             int                fontSize,
+                                             int                x,
+                                             int                y,
+                                             int                width);
     static void drawBorderImage(SDL_Renderer* renderer,
                                 RenderSizes   rs,
                                 SDL_Surface*  surface,

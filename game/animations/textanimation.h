@@ -10,6 +10,7 @@ public:
 
     virtual void incrementTicks() override;
     std::string  currentText() const;
+    virtual void forceEnd() override;
 
 private:
     static constexpr int NbCharPerTick = 4;
