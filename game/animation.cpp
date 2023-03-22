@@ -1,6 +1,6 @@
 #include "animation.h"
 
-Animation::Animation()
+Animation::Animation(SDL_Renderer* renderer) : renderer(renderer)
 {
 }
 
@@ -16,7 +16,7 @@ void Animation::stop()
 
 void Animation::reset()
 {
-    currentFrame = 0;
+    ticks = 0;
 }
 
 void Animation::restart()
@@ -27,19 +27,7 @@ void Animation::restart()
 
 void Animation::incrementTicks()
 {
-    if (currentFrame < frames.size())
-    {
-        frames[currentFrame]->ticks++;
-        if (frames[currentFrame]->duration >= 0 && frames[currentFrame]->ticks >= frames[currentFrame]->duration)
-        {
-            frames[currentFrame]->ticks = 0;
-            currentFrame++;
-            if (currentFrame >= frames.size())
-            {
-                stop();
-            }
-        }
-    }
+    ticks++;
 }
 
 bool Animation::isRunning() const
@@ -47,14 +35,8 @@ bool Animation::isRunning() const
     return running;
 }
 
-void Animation::draw(const Fps* /*fps*/, RenderSizes /*rs*/)
-{
-}
-
 void Animation::forceEnd()
 {
-    currentFrame = frames.size() - 1;
-    if (currentFrame < 0)
-        currentFrame = 0;
+    ticks   = 0;
     running = false;
 }

@@ -17,22 +17,22 @@ struct AnimationFrame
 class Animation
 {
 public:
-    Animation();
+    Animation(SDL_Renderer* renderer);
 
-    void         start();
-    void         stop();
-    void         reset();
+    virtual void start();
+    virtual void stop();
+    virtual void reset();
     void         restart();
     virtual void incrementTicks();
     bool         isRunning() const;
-    void         draw(const Fps* fps, RenderSizes rs);
+    virtual void draw(const Fps* fps, RenderSizes rs) = 0;
     virtual void forceEnd();
 
 protected:
-    bool         running      = false;
-    unsigned int currentFrame = 0;
+    SDL_Renderer* renderer;
 
-    std::vector<std::unique_ptr<AnimationFrame>> frames;
+    bool         running = false;
+    unsigned int ticks   = 0;
 };
 
 #endif // ANIMATION_H

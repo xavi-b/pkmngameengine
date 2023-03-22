@@ -69,15 +69,23 @@ void IntroScene::update(const Inputs* inputs)
             genderSpeech->update(inputs);
         }
         break;
-    case GenderQuestion:
+    case GenderQuestion: {
         genderQuestion->update(inputs);
+        int gender = genderQuestion->selectedIndex();
         if (genderQuestion->isFinished())
         {
-            Game::instance()->data.player.gender = genderQuestion->selectedIndex();
+            Game::instance()->data.player.gender = gender;
+            std::vector<std::string> texts;
+            texts.push_back(
+                lc::translate("Prof: So you are a ").str() +
+                (Game::instance()->data.player.gender == 0 ? lc::translate("boy") : lc::translate("girl")).str() + ".");
+            outroSpeech->setTexts(texts);
             outroSpeech->init();
+            outroSpeech->update(inputs);
             state = OutroSpeech;
         }
         break;
+    }
     case OutroSpeech:
         outroSpeech->update(inputs);
         if (outroSpeech->shouldClose())

@@ -1,25 +1,27 @@
 #include "textanimation.h"
 
-#include <climits>
-
-TextAnimation::TextAnimation(SDL_Renderer* renderer, const std::string& text) : renderer(renderer), text(text)
+TextAnimation::TextAnimation(SDL_Renderer* renderer, const std::string& text) : Animation(renderer), text(text)
 {
 }
 
 void TextAnimation::incrementTicks()
 {
-    currentFrame++;
-    if (currentFrame * NbCharPerTick > text.size())
+    ticks++;
+    if (ticks * NbCharPerTick > text.size())
         stop();
 }
 
-std::string TextAnimation::currentText() const
+void TextAnimation::draw(const Fps* /*fps*/, RenderSizes /*rs*/)
 {
-    return text.substr(0, currentFrame * NbCharPerTick);
 }
 
 void TextAnimation::forceEnd()
 {
-    currentFrame = text.size() / NbCharPerTick + 1;
-    running      = false;
+    ticks   = text.size() / NbCharPerTick + 1;
+    running = false;
+}
+
+std::string TextAnimation::currentText() const
+{
+    return text.substr(0, ticks * NbCharPerTick);
 }
