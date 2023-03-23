@@ -13,22 +13,22 @@ SpriteAnimation::~SpriteAnimation()
     SDL_FreeSurface(surface);
 }
 
-void SpriteAnimation::draw(const Fps* /*fps*/, RenderSizes /*rs*/)
+void SpriteAnimation::draw(const Fps* /*fps*/, RenderSizes rs)
 {
-    float pos = 1.0 * ticks / duration;
-
-    /*
     SDL_Rect dstRect;
-    dstRect.x = startRect.x + (endRect.x - startRect.x) * pos;
-    dstRect.y = startRect.y + (endRect.y - startRect.y) * pos;
-    dstRect.w = startRect.w + (endRect.w - startRect.w) * pos;
-    dstRect.h = startRect.h + (endRect.h - startRect.h) * pos;
-    SDL_RenderCopy(renderer, texture, NULL, &dstRect);
-    */
 
-    // TODO
-    // SDL_SetTextureColorMod
-    // Effects
+    int dstWidth  = surface->w * rs.ww / rs.aw;
+    int dstHeight = surface->h * rs.wh / rs.ah;
+
+    dstRect.x = 0;
+    dstRect.y = 0;
+    dstRect.w = dstWidth;
+    dstRect.h = dstHeight;
+
+    for (auto& e : effects)
+        e->apply(ticks, duration, dstRect);
+
+    SDL_RenderCopy(renderer, texture, NULL, &dstRect);
 }
 
 void SpriteAnimation::reset()
@@ -46,7 +46,7 @@ bool SpriteAnimation::isFinished() const
     return duration >= 0 && ticks >= duration;
 }
 
-void SpriteAnimation::setEffects(std::vector<std::unique_ptr<Effect>>&& effects)
+void SpriteAnimation::addEffect(std::unique_ptr<Effect>&& effect)
 {
-    this->effects = std::move(effects);
+    this->effects.emplace_back(std::move(effect));
 }

@@ -44,7 +44,7 @@ void SequentialAnimation::forceEnd()
     running = false;
 }
 
-void SequentialAnimation::setAnimations(std::vector<std::unique_ptr<Animation>>&& animations)
+void SequentialAnimation::addAnimation(std::unique_ptr<Animation>&& animation)
 {
-    this->animations = std::move(animations);
+    this->animations.emplace_back(std::move(animation));
 }

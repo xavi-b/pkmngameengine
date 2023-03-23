@@ -3,40 +3,55 @@
 
 #include <vector>
 #include <memory>
-#include "animation.h"
-#include "renderutils.h"
+#include <SDL.h>
 #include <SDL_image.h>
 
 class Effect
 {
 public:
-    Effect(SDL_Renderer* renderer, SDL_Texture* texture);
+    Effect(SDL_Renderer* renderer, SDL_Texture* texture, SDL_Surface* surface);
 
-    virtual void apply(int tick, int duration) = 0;
+    virtual void apply(int ticks, int duration, SDL_Rect& dstRect) = 0;
 
 protected:
     SDL_Renderer* renderer;
     SDL_Texture*  texture;
+    SDL_Surface*  surface;
 };
 
-class RectEffect : public Effect
+class MoveEffect : public Effect
 {
 public:
-    RectEffect(SDL_Renderer* renderer, SDL_Texture* texture, SDL_Rect startRect, SDL_Rect endRect);
+    MoveEffect(
+        SDL_Renderer* renderer, SDL_Texture* texture, SDL_Surface* surface, SDL_Point startRect, SDL_Point endRect);
 
-    virtual void apply(int tick, int duration) override;
+    virtual void apply(int ticks, int duration, SDL_Rect& dstRect) override;
 
 protected:
-    SDL_Rect startRect;
-    SDL_Rect endRect;
+    SDL_Point startRect;
+    SDL_Point endRect;
+};
+
+class SizeEffect : public Effect
+{
+public:
+    SizeEffect(
+        SDL_Renderer* renderer, SDL_Texture* texture, SDL_Surface* surface, SDL_Point startRect, SDL_Point endRect);
+
+    virtual void apply(int ticks, int duration, SDL_Rect& dstRect) override;
+
+protected:
+    SDL_Point startRect;
+    SDL_Point endRect;
 };
 
 class ColorEffect : public Effect
 {
 public:
-    ColorEffect(SDL_Renderer* renderer, SDL_Texture* texture, SDL_Color startColor, SDL_Color endColor);
+    ColorEffect(
+        SDL_Renderer* renderer, SDL_Texture* texture, SDL_Surface* surface, SDL_Color startColor, SDL_Color endColor);
 
-    virtual void apply(int tick, int duration) override;
+    virtual void apply(int ticks, int duration, SDL_Rect& dstRect) override;
 
 protected:
     SDL_Color startColor;

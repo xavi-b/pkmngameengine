@@ -15,7 +15,7 @@ public:
     virtual void draw(const Fps* fps, RenderSizes rs) override;
     virtual void forceEnd() override;
 
-    void setAnimations(std::vector<std::unique_ptr<Animation>>&& animations);
+    void addAnimation(std::unique_ptr<Animation>&& animation);
 
 protected:
     std::vector<std::unique_ptr<Animation>> animations;

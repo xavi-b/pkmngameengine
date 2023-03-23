@@ -19,7 +19,7 @@ public:
     virtual void incrementTicks() override;
     virtual bool isFinished() const override;
 
-    void setEffects(std::vector<std::unique_ptr<Effect>>&& effects);
+    void addEffect(std::unique_ptr<Effect>&& effect);
 
 private:
     SDL_Renderer* renderer;
