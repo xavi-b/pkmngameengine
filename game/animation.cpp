@@ -30,9 +30,9 @@ void Animation::incrementTicks()
     ticks++;
 }
 
-bool Animation::isRunning() const
+bool Animation::isFinished() const
 {
-    return running;
+    return !running;
 }
 
 void Animation::forceEnd()

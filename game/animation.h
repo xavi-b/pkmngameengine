@@ -24,7 +24,7 @@ public:
     virtual void reset();
     void         restart();
     virtual void incrementTicks();
-    bool         isRunning() const;
+    virtual bool isFinished() const;
     virtual void draw(const Fps* fps, RenderSizes rs) = 0;
     virtual void forceEnd();
 

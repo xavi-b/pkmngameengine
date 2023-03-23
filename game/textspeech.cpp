@@ -29,7 +29,7 @@ void TextSpeech::update(const Inputs* inputs)
     {
         if (inputs->A || inputs->B)
         {
-            if (!animations[currentAnimation]->isRunning())
+            if (animations[currentAnimation]->isFinished())
             {
                 currentAnimation++;
                 if (currentAnimation < animations.size())
@@ -89,7 +89,7 @@ bool TextSpeech::shouldClose() const
 bool TextSpeech::mayClose() const
 {
     return currentAnimation == (animations.size() - 1) &&
-           (animations.size() == 0 || !animations[currentAnimation]->isRunning());
+           (animations.size() == 0 || animations[currentAnimation]->isFinished());
 }
 
 void TextSpeech::reset()

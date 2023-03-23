@@ -20,6 +20,8 @@ IntroScene::IntroScene(SDL_Renderer* renderer) : Scene(renderer)
     genderQuestion->setTexts({lc::translate("Boy"), lc::translate("Girl")});
     outroSpeech = std::make_unique<TextSpeech>(renderer);
     outroSpeech->setTexts({lc::translate("Welcome then !")});
+
+    introAnimation = std::make_unique<IntroAnimation>(renderer);
 }
 
 IntroScene::~IntroScene()
@@ -35,6 +37,8 @@ void IntroScene::init()
 
 void IntroScene::update(const Inputs* inputs)
 {
+    introAnimation->incrementTicks();
+
     switch (state)
     {
     case IntroSpeech:
@@ -102,6 +106,8 @@ void IntroScene::update(const Inputs* inputs)
 void IntroScene::draw(const Fps* fps, RenderSizes rs)
 {
     SDL_RenderCopy(renderer, bgTexture, NULL, NULL);
+
+    introAnimation->draw(fps, rs);
 
     switch (state)
     {

@@ -1,78 +1,52 @@
 #include "spriteanimation.h"
 
-SpriteFrame::SpriteFrame(SDL_Renderer* renderer, const std::string& spritePath, SDL_Rect dstRect, int duration)
-    : renderer(renderer), dstRect(dstRect), duration(duration)
+SpriteAnimation::SpriteAnimation(SDL_Renderer* renderer, const std::string& spritePath, int duration)
+    : Animation(renderer), duration(duration)
 {
     surface = IMG_Load(spritePath.c_str());
     texture = SDL_CreateTextureFromSurface(renderer, surface);
 }
 
-SpriteFrame::~SpriteFrame()
+SpriteAnimation::~SpriteAnimation()
 {
     SDL_DestroyTexture(texture);
     SDL_FreeSurface(surface);
 }
 
-void SpriteFrame::draw(const Fps* /*fps*/, RenderSizes /*rs*/)
+void SpriteAnimation::draw(const Fps* /*fps*/, RenderSizes /*rs*/)
 {
+    float pos = 1.0 * ticks / duration;
+
+    /*
+    SDL_Rect dstRect;
+    dstRect.x = startRect.x + (endRect.x - startRect.x) * pos;
+    dstRect.y = startRect.y + (endRect.y - startRect.y) * pos;
+    dstRect.w = startRect.w + (endRect.w - startRect.w) * pos;
+    dstRect.h = startRect.h + (endRect.h - startRect.h) * pos;
     SDL_RenderCopy(renderer, texture, NULL, &dstRect);
-}
+    */
 
-void SpriteFrame::reset()
-{
-    ticks = 0;
-}
-
-void SpriteFrame::incrementTicks()
-{
-    ticks++;
-}
-
-bool SpriteFrame::isFinished() const
-{
-    return duration >= 0 && ticks >= duration;
-}
-
-SpriteAnimation::SpriteAnimation(SDL_Renderer* renderer) : Animation(renderer)
-{
+    // TODO
+    // SDL_SetTextureColorMod
+    // Effects
 }
 
 void SpriteAnimation::reset()
 {
-    currentFrame = 0;
-    if (currentFrame < frames.size())
-        frames[currentFrame]->reset();
-    Animation::reset();
+    ticks = 0;
 }
 
 void SpriteAnimation::incrementTicks()
 {
-    if (currentFrame < frames.size())
-    {
-        frames[currentFrame]->incrementTicks();
-        if (frames[currentFrame]->isFinished())
-        {
-            // frames[currentFrame]->reset();
-            currentFrame++;
-            if (currentFrame >= frames.size())
-            {
-                stop();
-            }
-        }
-    }
+    ticks++;
 }
 
-void SpriteAnimation::draw(const Fps* fps, RenderSizes rs)
+bool SpriteAnimation::isFinished() const
 {
-    if (currentFrame < frames.size())
-        frames[currentFrame]->draw(fps, rs);
+    return duration >= 0 && ticks >= duration;
 }
 
-void SpriteAnimation::forceEnd()
+void SpriteAnimation::setEffects(std::vector<std::unique_ptr<Effect>>&& effects)
 {
-    if (frames.size() > 0)
-        currentFrame = frames.size() - 1;
-    else
-        currentFrame = 0;
-    running = false;
+    this->effects = std::move(effects);
 }

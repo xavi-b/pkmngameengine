@@ -5,18 +5,21 @@
 #include <memory>
 #include "animation.h"
 #include "renderutils.h"
+#include "effect.h"
 #include <SDL_image.h>
 
-class SpriteFrame
+class SpriteAnimation : public Animation
 {
 public:
-    SpriteFrame(SDL_Renderer* renderer, const std::string& spritePath, SDL_Rect dstRect, int duration);
-    ~SpriteFrame();
+    SpriteAnimation(SDL_Renderer* renderer, const std::string& spritePath, int duration);
+    ~SpriteAnimation();
 
-    void draw(const Fps* fps, RenderSizes rs);
-    void reset();
-    void incrementTicks();
-    bool isFinished() const;
+    virtual void draw(const Fps* fps, RenderSizes rs) override;
+    virtual void reset() override;
+    virtual void incrementTicks() override;
+    virtual bool isFinished() const override;
+
+    void setEffects(std::vector<std::unique_ptr<Effect>>&& effects);
 
 private:
     SDL_Renderer* renderer;
@@ -24,26 +27,10 @@ private:
     SDL_Surface* surface;
     SDL_Texture* texture;
 
-    int ticks = 0;
+    int ticks    = 0;
+    int duration = -1;
 
-    SDL_Rect dstRect;
-    int      duration = -1;
-};
-
-class SpriteAnimation : public Animation
-{
-public:
-    SpriteAnimation(SDL_Renderer* renderer);
-
-    virtual void reset() override;
-    virtual void incrementTicks() override;
-    virtual void draw(const Fps* fps, RenderSizes rs) override;
-    virtual void forceEnd() override;
-
-protected:
-    unsigned int currentFrame = 0;
-
-    std::vector<std::unique_ptr<SpriteFrame>> frames;
+    std::vector<std::unique_ptr<Effect>> effects;
 };
 
 #endif // SPRITEANIMATION_H

@@ -4,6 +4,7 @@
 #include "scene.h"
 #include "textspeech.h"
 #include "textquestion.h"
+#include "animations/introanimation.h"
 #include <SDL_image.h>
 
 class IntroScene : public Scene
@@ -44,6 +45,8 @@ private:
     std::unique_ptr<TextSpeech>   genderSpeech;
     std::unique_ptr<TextQuestion> genderQuestion;
     std::unique_ptr<TextSpeech>   outroSpeech;
+
+    std::unique_ptr<IntroAnimation> introAnimation;
 };
 
 #endif // INTROSCENE_H

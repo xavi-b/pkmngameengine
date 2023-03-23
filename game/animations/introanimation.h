@@ -1,9 +1,9 @@
 #ifndef INTROANIMATION_H
 #define INTROANIMATION_H
 
-#include "spriteanimation.h"
+#include "sequentialanimation.h"
 
-class IntroAnimation : public SpriteAnimation
+class IntroAnimation : public SequentialAnimation
 {
 public:
     IntroAnimation(SDL_Renderer* renderer);
