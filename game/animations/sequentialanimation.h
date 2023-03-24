@@ -10,6 +10,8 @@ class SequentialAnimation : public Animation
 public:
     SequentialAnimation(SDL_Renderer* renderer);
 
+    virtual void start() override;
+    virtual void stop() override;
     virtual void reset() override;
     virtual void incrementTicks() override;
     virtual void draw(const Fps* fps, RenderSizes rs) override;

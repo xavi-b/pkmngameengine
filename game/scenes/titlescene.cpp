@@ -4,8 +4,7 @@
 #include "settings.h"
 #include "game.h"
 
-TitleScene::TitleScene(SDL_Renderer* renderer)
-    : Scene(renderer)
+TitleScene::TitleScene(SDL_Renderer* renderer) : Scene(renderer)
 {
     music        = Mix_LoadMUS("resources/Audio/BGM/Title.ogg");
     bgSurface    = IMG_Load("resources/Graphics/Titles/title.png");
@@ -40,7 +39,8 @@ void TitleScene::update(const Inputs* inputs)
 void TitleScene::draw(const Fps* fps, RenderSizes rs)
 {
     SDL_RenderCopy(renderer, bgTexture, NULL, NULL);
-    constexpr int ticksDuration = 4;
+
+    static constexpr int ticksDuration = 4;
     if (fps->tick)
         ticks = (ticks + 1) % (ticksDuration * 2);
     if (ticks < ticksDuration)

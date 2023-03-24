@@ -1,22 +1,25 @@
 #include "animation.h"
 
+#include <iostream>
+
 Animation::Animation(SDL_Renderer* renderer) : renderer(renderer)
 {
 }
 
 void Animation::start()
 {
-    running = true;
+    started = true;
 }
 
 void Animation::stop()
 {
-    running = false;
+    started  = false;
+    finished = true;
 }
 
 void Animation::reset()
 {
-    ticks = 0;
+    ticksPercentage = 0;
 }
 
 void Animation::restart()
@@ -27,16 +30,21 @@ void Animation::restart()
 
 void Animation::incrementTicks()
 {
-    ticks++;
+    if (started && !finished)
+        ticksPercentage++;
+}
+
+bool Animation::isStarted() const
+{
+    return started;
 }
 
 bool Animation::isFinished() const
 {
-    return !running;
+    return finished;
 }
 
 void Animation::forceEnd()
 {
-    ticks   = 0;
-    running = false;
+    finished = true;
 }

@@ -22,6 +22,8 @@ struct Fps
 
     void draw(RenderSizes rs);
 
+    float tickPercentage() const;
+
 private:
     SDL_Renderer* renderer;
 };

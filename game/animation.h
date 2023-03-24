@@ -24,6 +24,7 @@ public:
     virtual void reset();
     void         restart();
     virtual void incrementTicks();
+    virtual bool isStarted() const;
     virtual bool isFinished() const;
     virtual void draw(const Fps* fps, RenderSizes rs) = 0;
     virtual void forceEnd();
@@ -31,8 +32,9 @@ public:
 protected:
     SDL_Renderer* renderer;
 
-    bool         running = false;
-    unsigned int ticks   = 0;
+    bool  started         = false;
+    bool  finished        = false;
+    float ticksPercentage = 0;
 };
 
 #endif // ANIMATION_H

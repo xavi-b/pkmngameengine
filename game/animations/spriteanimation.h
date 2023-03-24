@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <memory>
+#include <functional>
 #include "animation.h"
 #include "renderutils.h"
 #include "effect.h"
@@ -11,24 +12,26 @@
 class SpriteAnimation : public Animation
 {
 public:
+    using RectLambda = std::function<SDL_Rect(SDL_Surface*, RenderSizes)>;
+
     SpriteAnimation(SDL_Renderer* renderer, const std::string& spritePath, int duration);
     ~SpriteAnimation();
 
-    virtual void draw(const Fps* fps, RenderSizes rs) override;
-    virtual void reset() override;
+    virtual void start() override;
+    virtual void stop() override;
     virtual void incrementTicks() override;
-    virtual bool isFinished() const override;
+    virtual void draw(const Fps* fps, RenderSizes rs) override;
 
+    void setRect(const RectLambda& rectLambda);
     void addEffect(std::unique_ptr<Effect>&& effect);
-
-private:
-    SDL_Renderer* renderer;
 
     SDL_Surface* surface;
     SDL_Texture* texture;
 
-    int ticks    = 0;
+private:
     int duration = -1;
+
+    RectLambda rectLambda;
 
     std::vector<std::unique_ptr<Effect>> effects;
 };

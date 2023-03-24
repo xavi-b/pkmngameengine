@@ -1,7 +1,23 @@
 #include "sequentialanimation.h"
 
+#include <iostream>
+
 SequentialAnimation::SequentialAnimation(SDL_Renderer* renderer) : Animation(renderer)
 {
+}
+
+void SequentialAnimation::start()
+{
+    if (currentIndex < animations.size())
+        animations[currentIndex]->start();
+    Animation::start();
+}
+
+void SequentialAnimation::stop()
+{
+    if (currentIndex < animations.size())
+        animations[currentIndex]->stop();
+    Animation::stop();
 }
 
 void SequentialAnimation::reset()
@@ -14,16 +30,23 @@ void SequentialAnimation::reset()
 
 void SequentialAnimation::incrementTicks()
 {
+    if (!isStarted() || isFinished())
+        return;
+
     if (currentIndex < animations.size())
     {
         animations[currentIndex]->incrementTicks();
         if (animations[currentIndex]->isFinished())
         {
-            // frames[currentFrame]->reset();
-            currentIndex++;
-            if (currentIndex >= animations.size())
+            // frames[currentIndex]->reset();
+            if (currentIndex + 1 >= animations.size())
             {
-                stop();
+                forceEnd();
+            }
+            else
+            {
+                currentIndex++;
+                animations[currentIndex]->start();
             }
         }
     }
@@ -37,11 +60,7 @@ void SequentialAnimation::draw(const Fps* fps, RenderSizes rs)
 
 void SequentialAnimation::forceEnd()
 {
-    if (animations.size() > 0)
-        currentIndex = animations.size() - 1;
-    else
-        currentIndex = 0;
-    running = false;
+    Animation::forceEnd();
 }
 
 void SequentialAnimation::addAnimation(std::unique_ptr<Animation>&& animation)

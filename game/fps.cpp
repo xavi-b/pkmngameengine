@@ -36,3 +36,8 @@ void Fps::draw(RenderSizes rs)
     auto fpsStr = "FPS: " + std::to_string(value);
     RenderUtils::drawWhiteText(renderer, rs, fpsStr, 24, 0, 0);
 }
+
+float Fps::tickPercentage() const
+{
+    return 1.0 * (next - previous) / TickDelay;
+}

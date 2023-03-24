@@ -42,6 +42,8 @@ void IntroScene::update(const Inputs* inputs)
     switch (state)
     {
     case IntroSpeech:
+        if (!introAnimation->isStarted())
+            introAnimation->start();
         introSpeech->update(inputs);
         if (introSpeech->shouldClose())
         {
