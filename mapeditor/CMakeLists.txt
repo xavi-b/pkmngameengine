@@ -17,6 +17,10 @@ set(PROJECT_SOURCES
         main.cpp
         mainwindow.cpp
         mainwindow.h
+        imageviewer.cpp
+        imageviewer.h
+        imagewidget.cpp
+        imagewidget.h
 )
 
 qt_add_executable(${MODULE_NAME}
