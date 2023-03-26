@@ -14,15 +14,19 @@ public:
     ImageViewer(QWidget* parent = nullptr);
 
     void setImage(const QImage& image);
-    void scaleImage(double factor);
+    void scaleContent(double factor);
     void adjustScrollBar(QScrollBar* scrollBar, double factor);
 
 protected:
     virtual void wheelEvent(QWheelEvent* event) override;
+    virtual void mousePressEvent(QMouseEvent* event) override;
+    virtual void mouseMoveEvent(QMouseEvent* event) override;
+    virtual void mouseReleaseEvent(QMouseEvent* event) override;
 
 private:
     ImageWidget* imageWidget;
     float        scaleFactor = 1.0;
+    QPoint       dragOrigin;
 };
 
 #endif // IMAGEVIEWER_H

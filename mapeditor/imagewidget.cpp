@@ -23,68 +23,69 @@ void ImageWidget::mousePressEvent(QMouseEvent* event)
 {
     if (event->buttons() & Qt::LeftButton)
     {
-        pressed           = true;
         float scaleFactor = 1.0 * width() / pixmap(Qt::ReturnByValue).width();
+        float selSize     = selectionSize * scaleFactor;
+        int   col         = int(event->pos().x() * scaleFactor) / scaleFactor / selSize;
+        int   row         = int(event->pos().y() * scaleFactor) / scaleFactor / selSize;
+        pressPoint        = {col, row};
+        releasePoint      = {0, 0};
+        QSize size        = {1 + releasePoint.x() - pressPoint.x(), 1 + releasePoint.y() - pressPoint.y()};
 
-        int selSize  = selectionSize * scaleFactor;
-        int col      = event->pos().x() / selSize * selSize;
-        int row      = event->pos().y() / selSize * selSize;
-        pressPoint   = {col, row};
-        releasePoint = {0, 0};
-
-        rubberBand->setGeometry(QRect(pressPoint, QSize(selSize, selSize)));
+        rubberBand->setGeometry(QRect(pressPoint * selSize, size * selSize));
         event->accept();
     }
     else
     {
-        pressed = false;
+        event->ignore();
     }
 }
 
 void ImageWidget::mouseMoveEvent(QMouseEvent* event)
 {
-    if (pressed)
+    if (event->buttons() & Qt::LeftButton)
     {
         float scaleFactor = 1.0 * width() / pixmap(Qt::ReturnByValue).width();
-        int   selSize     = selectionSize * scaleFactor;
+        float selSize     = selectionSize * scaleFactor;
+        int   col         = int(event->pos().x() * scaleFactor) / scaleFactor / selSize;
+        int   row         = int(event->pos().y() * scaleFactor) / scaleFactor / selSize;
+        releasePoint      = {col, row};
+        QSize size        = {1 + releasePoint.x() - pressPoint.x(), 1 + releasePoint.y() - pressPoint.y()};
 
-        int    col    = (event->pos().x() / selSize + 1) * selSize;
-        int    row    = (event->pos().y() / selSize + 1) * selSize;
-        QPoint origin = {col, row};
-
-        rubberBand->setGeometry(QRect(pressPoint, origin));
+        rubberBand->setGeometry(QRect(pressPoint * selSize, size * selSize));
         event->accept();
+    }
+    else
+    {
+        event->ignore();
     }
 }
 
 void ImageWidget::mouseReleaseEvent(QMouseEvent* event)
 {
-    if (pressed)
+    if (event->buttons() & Qt::LeftButton)
     {
-        pressed = false;
-
         float scaleFactor = 1.0 * width() / pixmap(Qt::ReturnByValue).width();
-        int   selSize     = selectionSize * scaleFactor;
+        float selSize     = selectionSize * scaleFactor;
+        int   col         = int(event->pos().x() * scaleFactor) / scaleFactor / selSize;
+        int   row         = int(event->pos().y() * scaleFactor) / scaleFactor / selSize;
+        releasePoint      = {col, row};
+        QSize size        = {1 + releasePoint.x() - pressPoint.x(), 1 + releasePoint.y() - pressPoint.y()};
 
-        int col      = (event->pos().x() / selSize + 1) * selSize;
-        int row      = (event->pos().y() / selSize + 1) * selSize;
-        releasePoint = {col, row};
-
-        rubberBand->setGeometry(QRect(pressPoint, releasePoint));
+        rubberBand->setGeometry(QRect(pressPoint * selSize, size * selSize));
         event->accept();
+    }
+    else
+    {
+        event->ignore();
     }
 }
 
 void ImageWidget::resizeEvent(QResizeEvent* event)
 {
-    float scaleFactor     = 1.0 * width() / pixmap(Qt::ReturnByValue).width();
-    float scaleDifference = 1.0 * event->size().width() / event->oldSize().width();
+    float scaleFactor = 1.0 * width() / pixmap(Qt::ReturnByValue).width();
+    float selSize     = selectionSize * scaleFactor;
+    QSize size        = {1 + releasePoint.x() - pressPoint.x(), 1 + releasePoint.y() - pressPoint.y()};
 
-    int selSize = selectionSize * scaleFactor;
-    pressPoint.setX(pressPoint.x() * scaleDifference / selSize * selSize);
-    pressPoint.setY(pressPoint.y() * scaleDifference / selSize * selSize);
-    releasePoint.setX(releasePoint.x() * scaleDifference / selSize * selSize);
-    releasePoint.setY(releasePoint.y() * scaleDifference / selSize * selSize);
-
-    rubberBand->setGeometry(QRect(pressPoint, releasePoint));
+    rubberBand->setGeometry(QRect(pressPoint * selSize, size * selSize));
+    event->accept();
 }

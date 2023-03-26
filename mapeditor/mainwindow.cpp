@@ -5,6 +5,7 @@
 #include <QHBoxLayout>
 #include <QScrollArea>
 #include "imageviewer.h"
+#include "mapperviewer.h"
 
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
 {
@@ -27,7 +28,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
     ImageViewer* imageArea = new ImageViewer;
     l->addWidget(imageArea);
 
-    QScrollArea* mapArea = new QScrollArea;
+    MapperViewer* mapArea = new MapperViewer;
     l->addWidget(mapArea, 1);
 
     w->setLayout(l);

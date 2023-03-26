@@ -15,7 +15,7 @@ void ImageViewer::setImage(const QImage& image)
     scaleFactor = 1.0;
 }
 
-void ImageViewer::scaleImage(double factor)
+void ImageViewer::scaleContent(double factor)
 {
     scaleFactor *= factor;
     imageWidget->resize(scaleFactor * imageWidget->pixmap(Qt::ReturnByValue).size());
@@ -36,14 +36,14 @@ void ImageViewer::wheelEvent(QWheelEvent* event)
         if (event->pixelDelta().y() > 0)
         {
             if (scaleFactor < 3.0)
-                scaleImage(1.25);
+                scaleContent(1.25);
             event->accept();
             return;
         }
         else if (event->pixelDelta().y() < 0)
         {
             if (scaleFactor > 0.333)
-                scaleImage(0.8);
+                scaleContent(0.8);
             event->accept();
             return;
         }
@@ -55,4 +55,40 @@ void ImageViewer::wheelEvent(QWheelEvent* event)
         return;
     }
     QScrollArea::wheelEvent(event);
+}
+
+void ImageViewer::mousePressEvent(QMouseEvent* event)
+{
+    if (event->buttons() & Qt::MiddleButton)
+    {
+        dragOrigin = event->pos();
+        setCursor(Qt::ClosedHandCursor);
+        event->accept();
+    }
+    else
+    {
+        event->ignore();
+    }
+}
+
+void ImageViewer::mouseMoveEvent(QMouseEvent* event)
+{
+    if (event->buttons() & Qt::MiddleButton)
+    {
+        horizontalScrollBar()->setValue(horizontalScrollBar()->value() - (event->pos().x() - dragOrigin.x()));
+        verticalScrollBar()->setValue(verticalScrollBar()->value() - (event->pos().y() - dragOrigin.y()));
+        dragOrigin = event->pos();
+        event->accept();
+    }
+    else
+    {
+        event->ignore();
+    }
+}
+
+void ImageViewer::mouseReleaseEvent(QMouseEvent* event)
+{
+    dragOrigin = event->pos();
+    setCursor(Qt::ArrowCursor);
+    event->accept();
 }

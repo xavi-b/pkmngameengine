@@ -15,12 +15,11 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
 set(PROJECT_SOURCES
         main.cpp
-        mainwindow.cpp
-        mainwindow.h
-        imageviewer.cpp
-        imageviewer.h
-        imagewidget.cpp
-        imagewidget.h
+        mainwindow.h mainwindow.cpp
+        imageviewer.h imageviewer.cpp
+        imagewidget.h imagewidget.cpp
+        mapperviewer.h mapperviewer.cpp
+        mapperwidget.h mapperwidget.cpp
 )
 
 qt_add_executable(${MODULE_NAME}
