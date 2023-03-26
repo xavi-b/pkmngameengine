@@ -7,6 +7,8 @@
 #include "imageviewer.h"
 #include "mapperviewer.h"
 
+#include <iostream>
+
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
 {
     setWindowTitle("Map Editor");
@@ -43,7 +45,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
     });
 
     connect(mapArea, &MapperViewer::entered, this, [=]() {
-        mapArea->contentWidget()->setPixmap(imageArea->currentSelectionPixmap());
+        mapArea->contentWidget()->setPixmap(imageArea->contentWidget()->currentSelectionPixmap());
     });
 }
 

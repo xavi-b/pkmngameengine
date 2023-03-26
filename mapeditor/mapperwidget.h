@@ -28,8 +28,12 @@ private:
     QSize gridSize      = {32, 12};
     int   tilePixelSize = 32;
 
-    QRubberBand* rubberBand;
-    QPixmap      pixmap;
+    QPixmap pixmap;
+    QPoint  origin;
+
+    // Layers
+    // Tiles
+    // Events
 };
 
 #endif // MAPPERWIDGET_H
