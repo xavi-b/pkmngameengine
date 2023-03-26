@@ -12,6 +12,7 @@ class MapperWidget : public QWidget
 public:
     MapperWidget(QWidget* parent = nullptr);
 
+    void          setPixmap(const QPixmap& pixmap);
     virtual QSize sizeHint() const override;
     QSize         tileSizeInPixels() const;
 
@@ -28,6 +29,7 @@ private:
     int   tilePixelSize = 32;
 
     QRubberBand* rubberBand;
+    QPixmap      pixmap;
 };
 
 #endif // MAPPERWIDGET_H

@@ -10,6 +10,11 @@ MapperWidget::MapperWidget(QWidget* parent) : QWidget(parent)
     rubberBand->show();
 }
 
+void MapperWidget::setPixmap(const QPixmap& pixmap)
+{
+    this->pixmap = pixmap;
+}
+
 QSize MapperWidget::sizeHint() const
 {
     float scaleFactor = 1.0 * width() / tileSizeInPixels().width();

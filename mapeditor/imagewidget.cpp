@@ -11,7 +11,7 @@ ImageWidget::ImageWidget(QWidget* parent) : QLabel(parent)
     rubberBand->show();
 }
 
-QPixmap ImageWidget::currentSelectionImage() const
+QPixmap ImageWidget::currentSelectionPixmap() const
 {
     float scaleFactor = 1.0 * width() / pixmap(Qt::ReturnByValue).width();
     QRect selection   = rubberBand->geometry();

@@ -38,8 +38,12 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
         QFileInfo info = model->fileInfo(index);
         if (info.suffix().compare("png", Qt::CaseInsensitive) == 0)
         {
-            imageArea->setImage(QImage(info.filePath()));
+            imageArea->setPixmap(QPixmap(info.filePath()));
         }
+    });
+
+    connect(mapArea, &MapperViewer::entered, this, [=]() {
+        mapArea->contentWidget()->setPixmap(imageArea->currentSelectionPixmap());
     });
 }
 

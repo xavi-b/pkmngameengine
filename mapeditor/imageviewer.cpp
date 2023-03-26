@@ -7,9 +7,9 @@ ImageViewer::ImageViewer(QWidget* parent) : QScrollArea(parent)
     setWidget(imageWidget);
 }
 
-void ImageViewer::setImage(const QImage& image)
+void ImageViewer::setPixmap(const QPixmap& pixmap)
 {
-    imageWidget->setPixmap(QPixmap::fromImage(image));
+    imageWidget->setPixmap(pixmap);
     imageWidget->adjustSize();
 
     scaleFactor = 1.0;
@@ -27,6 +27,11 @@ void ImageViewer::scaleContent(double factor)
 void ImageViewer::adjustScrollBar(QScrollBar* scrollBar, double factor)
 {
     scrollBar->setValue(int(factor * scrollBar->value() + ((factor - 1) * scrollBar->pageStep() / 2)));
+}
+
+ImageWidget* ImageViewer::contentWidget() const
+{
+    return imageWidget;
 }
 
 void ImageViewer::wheelEvent(QWheelEvent* event)

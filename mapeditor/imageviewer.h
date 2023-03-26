@@ -13,9 +13,11 @@ class ImageViewer : public QScrollArea
 public:
     ImageViewer(QWidget* parent = nullptr);
 
-    void setImage(const QImage& image);
+    void setPixmap(const QPixmap& pixmap);
     void scaleContent(double factor);
     void adjustScrollBar(QScrollBar* scrollBar, double factor);
+
+    ImageWidget* contentWidget() const;
 
 protected:
     virtual void wheelEvent(QWheelEvent* event) override;

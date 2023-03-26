@@ -11,7 +11,7 @@ class ImageWidget : public QLabel
 public:
     ImageWidget(QWidget* parent = nullptr);
 
-    QPixmap currentSelectionImage() const;
+    QPixmap currentSelectionPixmap() const;
 
 protected:
     virtual void mousePressEvent(QMouseEvent* event) override;
