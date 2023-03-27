@@ -4,6 +4,13 @@ MapperWidget::MapperWidget(QWidget* parent) : QWidget(parent)
 {
     setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
     setMouseTracking(true);
+
+    map = std::make_unique<Map>();
+    map->addTileLayer(TileLayer::Type::GROUND);
+    map->addTileLayer(TileLayer::Type::SOLID);
+    map->addTileLayer(TileLayer::Type::OVERLAY);
+
+    visibleLayers.resize(map->getTileLayers().size(), true);
 }
 
 void MapperWidget::setPixmap(const QPixmap& pixmap)
@@ -22,8 +29,48 @@ QSize MapperWidget::tileSizeInPixels() const
     return {gridSize.width() * tilePixelSize, gridSize.height() * tilePixelSize};
 }
 
+Map* MapperWidget::getMap() const
+{
+    return map.get();
+}
+
+int MapperWidget::getWorkingLayerIndex() const
+{
+    return workingLayerIndex;
+}
+
+void MapperWidget::setWorkingLayerIndex(int index)
+{
+    if (workingLayerIndex == index)
+        return;
+
+    workingLayerIndex = index;
+    emit workingLayerIndexChanged(index);
+}
+
+bool MapperWidget::isLayerVisible(int index) const
+{
+    if (index >= visibleLayers.size())
+        return false;
+
+    return visibleLayers[index];
+}
+
+void MapperWidget::setLayerVisible(int index, bool visible)
+{
+    if (index >= visibleLayers.size())
+        return;
+
+    if (visibleLayers[index] == visible)
+        return;
+
+    visibleLayers[index] = visible;
+    emit layerVisibleChanged(index, visible);
+}
+
 void MapperWidget::mousePressEvent(QMouseEvent* event)
 {
+    // TODO put in layer
 }
 
 void MapperWidget::mouseMoveEvent(QMouseEvent* event)

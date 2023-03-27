@@ -21,7 +21,10 @@ else()
     message("RELEASE")
 endif()
 
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/maplibrary)
+
 # subdirectories
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/maplibrary)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/game)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/mapeditor)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/pkmneditor)

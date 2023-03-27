@@ -3,15 +3,17 @@
 
 #include <vector>
 #include <memory>
-#include "tile.h"
 
+template <class T>
 class Layer
 {
 public:
-    Layer();
+    Layer()
+    {
+    }
 
-private:
-    std::vector<std::unique_ptr<Tile>> tiles;
+protected:
+    std::vector<std::unique_ptr<T>> elements;
 };
 
 #endif // LAYER_H

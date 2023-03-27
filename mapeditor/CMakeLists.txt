@@ -20,6 +20,7 @@ set(PROJECT_SOURCES
         imagewidget.h imagewidget.cpp
         mapperviewer.h mapperviewer.cpp
         mapperwidget.h mapperwidget.cpp
+        mappereditor.h mappereditor.cpp
 )
 
 qt_add_executable(${MODULE_NAME}
@@ -27,7 +28,11 @@ qt_add_executable(${MODULE_NAME}
     ${PROJECT_SOURCES}
 )
 
+# Qt
 target_link_libraries(${MODULE_NAME} PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+
+# maplibrary
+target_link_libraries(${MODULE_NAME} PRIVATE maplibrary)
 
 set_target_properties(${MODULE_NAME} PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER ${MODULE_NAME}.${DOMAIN}

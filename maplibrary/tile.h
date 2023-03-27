@@ -4,7 +4,6 @@
 #include <vector>
 #include <memory>
 #include "event.h"
-#include "sprite.h"
 
 class Tile
 {
@@ -15,11 +14,11 @@ public:
     virtual void callInterractionEvent(int param);
 
 private:
+    // TODO std::shared_ptr<Sprite> sprite;
+
+    // TODO move events out
     std::unique_ptr<Event> enterEvent;
     std::unique_ptr<Event> interractionEvent;
-    std::shared_ptr<Sprite> sprite;
-
-    bool solid = false;
 };
 
 #endif // TILE_H

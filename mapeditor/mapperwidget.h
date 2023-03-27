@@ -6,15 +6,30 @@
 #include <QResizeEvent>
 #include <QRubberBand>
 #include <QPainter>
+#include "map.h"
 
 class MapperWidget : public QWidget
 {
+    Q_OBJECT
+
 public:
     MapperWidget(QWidget* parent = nullptr);
 
     void          setPixmap(const QPixmap& pixmap);
     virtual QSize sizeHint() const override;
     QSize         tileSizeInPixels() const;
+
+    Map* getMap() const;
+    int  getWorkingLayerIndex() const;
+    void setWorkingLayerIndex(int index);
+
+    bool isLayerVisible(int index) const;
+    void setLayerVisible(int index, bool visible);
+
+signals:
+    void workingLayerIndexChanged(int index);
+
+    void layerVisibleChanged(int index, bool visible);
 
 protected:
     virtual void mousePressEvent(QMouseEvent* event) override;
@@ -31,9 +46,9 @@ private:
     QPixmap pixmap;
     QPoint  origin;
 
-    // Layers
-    // Tiles
-    // Events
+    std::unique_ptr<Map> map;
+    std::vector<bool>    visibleLayers;
+    int                  workingLayerIndex = 0;
 };
 
 #endif // MAPPERWIDGET_H

@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include "mappereditor.h"
 
 class MainWindow : public QMainWindow
 {
@@ -11,6 +12,10 @@ public:
     MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
 
+protected:
+    virtual void keyReleaseEvent(QKeyEvent* event) override;
+
 private:
+    MapperEditor* mapArea;
 };
 #endif // MAINWINDOW_H

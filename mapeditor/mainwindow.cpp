@@ -5,7 +5,6 @@
 #include <QHBoxLayout>
 #include <QScrollArea>
 #include "imageviewer.h"
-#include "mapperviewer.h"
 
 #include <iostream>
 
@@ -30,7 +29,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
     ImageViewer* imageArea = new ImageViewer;
     l->addWidget(imageArea);
 
-    MapperViewer* mapArea = new MapperViewer;
+    mapArea = new MapperEditor;
     l->addWidget(mapArea, 1);
 
     w->setLayout(l);
@@ -44,11 +43,27 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
         }
     });
 
-    connect(mapArea, &MapperViewer::entered, this, [=]() {
-        mapArea->contentWidget()->setPixmap(imageArea->contentWidget()->currentSelectionPixmap());
+    connect(mapArea->viewer(), &MapperViewer::entered, this, [=]() {
+        mapArea->viewer()->contentWidget()->setPixmap(imageArea->contentWidget()->currentSelectionPixmap());
     });
 }
 
 MainWindow::~MainWindow()
 {
+}
+
+void MainWindow::keyReleaseEvent(QKeyEvent* event)
+{
+    int index = event->key() - Qt::Key_0;
+    if (index >= 0 && index < int(mapArea->viewer()->contentWidget()->getMap()->getTileLayers().size()))
+    {
+        if (event->modifiers() & Qt::ControlModifier)
+            mapArea->viewer()->contentWidget()->setLayerVisible(
+                index, !mapArea->viewer()->contentWidget()->isLayerVisible(index));
+        else
+            mapArea->viewer()->contentWidget()->setWorkingLayerIndex(index);
+        event->accept();
+        return;
+    }
+    event->ignore();
 }
