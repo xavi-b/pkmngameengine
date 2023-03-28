@@ -13,7 +13,7 @@ class ImageViewer : public QScrollArea
 public:
     ImageViewer(QWidget* parent = nullptr);
 
-    void setPixmap(const QPixmap& pixmap);
+    void setPixmap(const QString& pixmap);
     void scaleContent(double factor);
     void adjustScrollBar(QScrollBar* scrollBar, double factor);
 

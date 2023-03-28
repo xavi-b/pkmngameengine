@@ -17,7 +17,7 @@ public:
         OVERLAY
     };
 
-    TileLayer(Type type);
+    TileLayer(Type type, int nCol, int nRow);
 
     Type        getType() const;
     std::string getTypeName() const;

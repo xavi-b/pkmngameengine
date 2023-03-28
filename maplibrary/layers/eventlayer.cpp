@@ -1,5 +1,5 @@
 #include "eventlayer.h"
 
-EventLayer::EventLayer() : Layer<Event>()
+EventLayer::EventLayer(int nCol, int nRow) : Layer<Event>(nCol, nRow)
 {
 }

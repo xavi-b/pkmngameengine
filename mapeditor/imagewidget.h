@@ -11,7 +11,9 @@ class ImageWidget : public QLabel
 public:
     ImageWidget(QWidget* parent = nullptr);
 
-    QPixmap currentSelectionPixmap() const;
+    void setPixmap(const QString& pixmapPath);
+
+    QPair<QString, QRect> currentSelectionPixmap() const;
 
 protected:
     virtual void mousePressEvent(QMouseEvent* event) override;
@@ -25,6 +27,7 @@ private:
     QRubberBand* rubberBand;
     QPoint       pressPoint;
     QPoint       releasePoint;
+    QString      pixmapPath;
 };
 
 #endif // IMAGEWIDGET_H

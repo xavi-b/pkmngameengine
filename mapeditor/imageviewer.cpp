@@ -7,7 +7,7 @@ ImageViewer::ImageViewer(QWidget* parent) : QScrollArea(parent)
     setWidget(imageWidget);
 }
 
-void ImageViewer::setPixmap(const QPixmap& pixmap)
+void ImageViewer::setPixmap(const QString& pixmap)
 {
     imageWidget->setPixmap(pixmap);
     imageWidget->adjustSize();

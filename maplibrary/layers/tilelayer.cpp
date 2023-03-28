@@ -1,6 +1,6 @@
 #include "tilelayer.h"
 
-TileLayer::TileLayer(Type type) : Layer(), type(type)
+TileLayer::TileLayer(Type type, int nCol, int nRow) : Layer(nCol, nRow), type(type)
 {
 }
 

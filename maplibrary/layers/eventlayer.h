@@ -9,7 +9,7 @@
 class EventLayer : public Layer<Event>
 {
 public:
-    EventLayer();
+    EventLayer(int nCol, int nRow);
 };
 
 #endif // LAYER_H

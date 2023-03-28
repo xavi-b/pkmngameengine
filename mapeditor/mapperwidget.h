@@ -15,7 +15,7 @@ class MapperWidget : public QWidget
 public:
     MapperWidget(QWidget* parent = nullptr);
 
-    void          setPixmap(const QPixmap& pixmap);
+    void          setSelectionPixmap(const QPair<QString, QRect>& data);
     virtual QSize sizeHint() const override;
     QSize         tileSizeInPixels() const;
 
@@ -40,11 +40,12 @@ protected:
     virtual void paintEvent(QPaintEvent* event) override;
 
 private:
-    QSize gridSize      = {32, 12};
+    QSize gridSize      = {5, 5};
     int   tilePixelSize = 32;
 
-    QPixmap pixmap;
-    QPoint  origin;
+    QPair<QString, QRect> data;
+    QPixmap               overlayPixmap;
+    QPoint                origin;
 
     std::unique_ptr<Map> map;
     std::vector<bool>    visibleLayers;

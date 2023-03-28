@@ -11,12 +11,16 @@ ImageWidget::ImageWidget(QWidget* parent) : QLabel(parent)
     rubberBand->show();
 }
 
-QPixmap ImageWidget::currentSelectionPixmap() const
+void ImageWidget::setPixmap(const QString& pixmapPath)
 {
-    float scaleFactor = 1.0 * width() / pixmap(Qt::ReturnByValue).width();
-    QRect selection   = rubberBand->geometry();
-    QRect rect        = QRect(selection.topLeft() * scaleFactor, selection.size() * scaleFactor);
-    return pixmap().copy(rect);
+    QLabel::setPixmap(pixmapPath);
+    this->pixmapPath = pixmapPath;
+}
+
+QPair<QString, QRect> ImageWidget::currentSelectionPixmap() const
+{
+    QSize size = {1 + releasePoint.x() - pressPoint.x(), 1 + releasePoint.y() - pressPoint.y()};
+    return {pixmapPath, QRect(pressPoint, size)};
 }
 
 void ImageWidget::mousePressEvent(QMouseEvent* event)
@@ -28,7 +32,7 @@ void ImageWidget::mousePressEvent(QMouseEvent* event)
         int   col         = int(event->pos().x() * scaleFactor) / scaleFactor / selSize;
         int   row         = int(event->pos().y() * scaleFactor) / scaleFactor / selSize;
         pressPoint        = {col, row};
-        releasePoint      = {0, 0};
+        releasePoint      = {col, row};
         QSize size        = {1 + releasePoint.x() - pressPoint.x(), 1 + releasePoint.y() - pressPoint.y()};
 
         rubberBand->setGeometry(QRect(pressPoint * selSize, size * selSize));

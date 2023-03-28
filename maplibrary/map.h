@@ -9,13 +9,15 @@
 class Map
 {
 public:
-    Map();
+    Map(int nCol, int nRow);
 
     void addTileLayer(TileLayer::Type type);
 
     std::vector<std::unique_ptr<TileLayer>>& getTileLayers();
 
 private:
+    int nCol, nRow;
+
     std::vector<std::unique_ptr<TileLayer>> tileLayers;
     std::unique_ptr<EventLayer>             eventLayer;
 
