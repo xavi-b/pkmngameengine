@@ -2,14 +2,16 @@
 
 Map::Map(int nCol, int nRow) : nCol(nCol), nRow(nRow)
 {
+    levels.emplace_back(std::make_unique<Level>(nCol, nRow));
 }
 
-void Map::addTileLayer(TileLayer::Type type)
+std::unique_ptr<Level>& Map::addLevel()
 {
-    tileLayers.emplace_back(std::make_unique<TileLayer>(type, nCol, nRow));
+    levels.emplace_back(std::make_unique<Level>(nCol, nRow));
+    return levels.back();
 }
 
-std::vector<std::unique_ptr<TileLayer>>& Map::getTileLayers()
+std::vector<std::unique_ptr<Level>>& Map::getLevels()
 {
-    return tileLayers;
+    return levels;
 }

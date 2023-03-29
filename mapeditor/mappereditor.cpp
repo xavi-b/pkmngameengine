@@ -3,59 +3,65 @@
 #include <QVBoxLayout>
 #include <QCheckBox>
 #include <QComboBox>
+#include <QPushButton>
+#include "checkablecombobox.h"
+#include "levelsmodel.h"
+#include "layersmodel.h"
 
 MapperEditor::MapperEditor(QWidget* parent) : QWidget(parent)
 {
     QVBoxLayout* l = new QVBoxLayout;
     l->setContentsMargins(0, 0, 0, 0);
 
-    QHBoxLayout* hLayout = new QHBoxLayout;
-    hLayout->setContentsMargins(0, 0, 0, 0);
-    l->addLayout(hLayout);
+    QHBoxLayout* levelLayout = new QHBoxLayout;
+    levelLayout->setContentsMargins(0, 0, 0, 0);
+
+    QHBoxLayout* layerLayout = new QHBoxLayout;
+    layerLayout->setContentsMargins(0, 0, 0, 0);
 
     mapperViewer = new MapperViewer;
+
+    QPushButton*       addButton      = new QPushButton(tr("Add"));
+    CheckableComboBox* levelSelection = new CheckableComboBox;
+    LevelsModel*       levelsModel    = new LevelsModel(this);
+    levelsModel->setLevelsReference(mapperViewer->contentWidget());
+    levelSelection->setModel(levelsModel);
+    QCheckBox*         belowLevelsCheckBox = new QCheckBox(tr("Below level opacity"));
+    QPushButton*       removeButton        = new QPushButton(tr("Remove"));
+    CheckableComboBox* layerSelection      = new CheckableComboBox;
+    LayersModel*       layersModel         = new LayersModel(this);
+    layersModel->setLayersReference(mapperViewer->contentWidget());
+    layerSelection->setModel(layersModel);
+
+    levelLayout->addWidget(addButton);
+    levelLayout->addWidget(levelSelection);
+    levelLayout->addWidget(removeButton);
+    levelLayout->addWidget(belowLevelsCheckBox);
+    levelLayout->addStretch(1);
+    l->addLayout(levelLayout);
+    layerLayout->addWidget(layerSelection);
+    layerLayout->addStretch(1);
+    l->addLayout(layerLayout);
     l->addWidget(mapperViewer, 1);
-
-    QComboBox* layerSelection = new QComboBox;
-
-    int i = 0;
-    for (auto& layer : mapperViewer->contentWidget()->getMap()->getTileLayers())
-    {
-        QString layerName = layer->getTypeName().c_str();
-
-        layerSelection->addItem(layerName);
-
-        QCheckBox* checkBox = new QCheckBox(layerName);
-        checkBox->setChecked(true);
-        hLayout->addWidget(checkBox);
-
-        connect(mapperViewer->contentWidget(),
-                &MapperWidget::layerVisibleChanged,
-                this,
-                [checkBox, i](int index, bool visible) {
-                    if (i == index)
-                        checkBox->setChecked(visible);
-                });
-        connect(checkBox, &QCheckBox::clicked, this, [this, i](bool checked) {
-            mapperViewer->contentWidget()->setLayerVisible(i, checked);
-        });
-
-        ++i;
-    }
-    hLayout->addWidget(layerSelection);
-    layerSelection->setCurrentIndex(mapperViewer->contentWidget()->getWorkingLayerIndex());
-    hLayout->addStretch(1);
 
     setLayout(l);
 
-    connect(mapperViewer->contentWidget(),
-            &MapperWidget::workingLayerIndexChanged,
-            layerSelection,
-            &QComboBox::setCurrentIndex);
+    connect(addButton, &QPushButton::clicked, this, [=]() {
+        mapperViewer->contentWidget()->addLevel();
+    });
+    connect(removeButton, &QPushButton::clicked, this, [=]() {
+        mapperViewer->contentWidget()->removeLevel(levelSelection->currentIndex());
+    });
+    connect(levelSelection,
+            &QComboBox::currentIndexChanged,
+            mapperViewer->contentWidget(),
+            &MapperWidget::setWorkingLevelIndex);
     connect(layerSelection,
             &QComboBox::currentIndexChanged,
             mapperViewer->contentWidget(),
             &MapperWidget::setWorkingLayerIndex);
+    connect(
+        belowLevelsCheckBox, &QCheckBox::clicked, mapperViewer->contentWidget(), &MapperWidget::setBelowLevelsOpacity);
 }
 
 MapperViewer* MapperEditor::viewer() const

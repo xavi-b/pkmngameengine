@@ -21,9 +21,13 @@ public:
 
     Type        getType() const;
     std::string getTypeName() const;
+    bool        isVisible() const;
+    void        setVisible(bool value);
 
 protected:
     Type type;
+
+    bool visible = true;
 };
 
 #endif // LAYER_H

@@ -43,7 +43,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
         }
     });
 
-    connect(mapArea->viewer(), &MapperViewer::entered, this, [=]() {
+    connect(mapArea->viewer()->contentWidget(), &MapperWidget::entered, this, [=]() {
         mapArea->viewer()->contentWidget()->setSelectionPixmap(imageArea->contentWidget()->currentSelectionPixmap());
     });
 }
@@ -55,7 +55,7 @@ MainWindow::~MainWindow()
 void MainWindow::keyReleaseEvent(QKeyEvent* event)
 {
     int index = event->key() - Qt::Key_0;
-    if (index >= 0 && index < int(mapArea->viewer()->contentWidget()->getMap()->getTileLayers().size()))
+    if (index >= 0 && index < int(mapArea->viewer()->contentWidget()->getWorkingLevel()->getTileLayers().size()))
     {
         if (event->modifiers() & Qt::ControlModifier)
             mapArea->viewer()->contentWidget()->setLayerVisible(

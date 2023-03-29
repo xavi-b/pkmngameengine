@@ -3,23 +3,21 @@
 
 #include <vector>
 #include <memory>
-#include "layers/eventlayer.h"
-#include "layers/tilelayer.h"
+#include "level.h"
 
 class Map
 {
 public:
     Map(int nCol, int nRow);
 
-    void addTileLayer(TileLayer::Type type);
+    std::unique_ptr<Level>& addLevel();
 
-    std::vector<std::unique_ptr<TileLayer>>& getTileLayers();
+    std::vector<std::unique_ptr<Level>>& getLevels();
 
 private:
     int nCol, nRow;
 
-    std::vector<std::unique_ptr<TileLayer>> tileLayers;
-    std::unique_ptr<EventLayer>             eventLayer;
+    std::vector<std::unique_ptr<Level>> levels;
 
     // TODO encounters
 };

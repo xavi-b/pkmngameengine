@@ -19,17 +19,36 @@ public:
     virtual QSize sizeHint() const override;
     QSize         tileSizeInPixels() const;
 
-    Map* getMap() const;
-    int  getWorkingLayerIndex() const;
-    void setWorkingLayerIndex(int index);
+    std::unique_ptr<TileLayer>&              getWorkingLayer();
+    std::unique_ptr<Level>&                  getWorkingLevel();
+    int                                      getWorkingLayerIndex() const;
+    void                                     setWorkingLayerIndex(int index);
+    int                                      getWorkingLevelIndex() const;
+    void                                     setWorkingLevelIndex(int index);
+    std::vector<std::unique_ptr<Level>>&     getLevels();
+    std::vector<std::unique_ptr<TileLayer>>& getWorkingLevelLayers();
 
     bool isLayerVisible(int index) const;
     void setLayerVisible(int index, bool visible);
+    bool isLevelVisible(int index) const;
+    void setLevelVisible(int index, bool visible);
+
+    void addLevel();
+    void removeLevel(int index);
+
+    void setBelowLevelsOpacity(bool opacity);
 
 signals:
     void workingLayerIndexChanged(int index);
+    void workingLevelIndexChanged(int index);
 
     void layerVisibleChanged(int index, bool visible);
+    void levelVisibleChanged(int index, bool visible);
+
+    void levelAdded();
+    void levelRemoved(int index);
+
+    void entered();
 
 protected:
     virtual void mousePressEvent(QMouseEvent* event) override;
@@ -38,6 +57,9 @@ protected:
     virtual void resizeEvent(QResizeEvent* event) override;
 
     virtual void paintEvent(QPaintEvent* event) override;
+
+    virtual void enterEvent(QEnterEvent* event) override;
+    virtual void leaveEvent(QEvent* event) override;
 
 private:
     QSize gridSize      = {5, 5};
@@ -48,8 +70,9 @@ private:
     QPoint                origin;
 
     std::unique_ptr<Map> map;
-    std::vector<bool>    visibleLayers;
-    int                  workingLayerIndex = 0;
+    int                  workingLayerIndex  = 0;
+    int                  workingLevelIndex  = 0;
+    bool                 belowLevelsOpacity = false;
 };
 
 #endif // MAPPERWIDGET_H

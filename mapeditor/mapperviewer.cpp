@@ -89,8 +89,3 @@ void MapperViewer::mouseReleaseEvent(QMouseEvent* event)
     setCursor(Qt::ArrowCursor);
     event->accept();
 }
-
-void MapperViewer::enterEvent(QEnterEvent* event)
-{
-    emit entered();
-}

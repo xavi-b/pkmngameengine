@@ -23,3 +23,13 @@ std::string TileLayer::getTypeName() const
         return "Unknown";
     }
 }
+
+bool TileLayer::isVisible() const
+{
+    return visible;
+}
+
+void TileLayer::setVisible(bool value)
+{
+    visible = value;
+}

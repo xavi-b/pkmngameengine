@@ -21,6 +21,9 @@ set(PROJECT_SOURCES
         mapperviewer.h mapperviewer.cpp
         mapperwidget.h mapperwidget.cpp
         mappereditor.h mappereditor.cpp
+        checkablecombobox.h checkablecombobox.cpp
+        levelsmodel.h levelsmodel.cpp
+        layersmodel.h layersmodel.cpp
 )
 
 qt_add_executable(${MODULE_NAME}
