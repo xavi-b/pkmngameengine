@@ -4,15 +4,17 @@ LayersModel::LayersModel(QObject* parent) : QAbstractListModel{parent}
 {
 }
 
-int LayersModel::rowCount(const QModelIndex& parent) const
+int LayersModel::rowCount(QModelIndex const& parent) const
 {
+    Q_UNUSED(parent)
+
     if (!map)
         return 0;
 
     return map->getWorkingLevelLayers().size();
 }
 
-QVariant LayersModel::data(const QModelIndex& index, int role) const
+QVariant LayersModel::data(QModelIndex const& index, int role) const
 {
     if (!index.isValid())
         return {};
@@ -25,7 +27,7 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
     return {};
 }
 
-bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int role)
+bool LayersModel::setData(QModelIndex const& index, QVariant const& value, int role)
 {
     if (!index.isValid())
         return false;
@@ -39,7 +41,7 @@ bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int r
     return false;
 }
 
-Qt::ItemFlags LayersModel::flags(const QModelIndex& index) const
+Qt::ItemFlags LayersModel::flags(QModelIndex const& index) const
 {
     Qt::ItemFlags flags = QAbstractListModel::flags(index);
     flags               = flags & ~Qt::ItemIsSelectable;
@@ -51,6 +53,7 @@ void LayersModel::setLayersReference(MapperWidget* map)
     this->map = map;
 
     connect(map, &MapperWidget::layerVisibleChanged, this, [=](int index, bool visible) {
+        Q_UNUSED(visible)
         auto i = this->index(index);
         dataChanged(i, i);
     });

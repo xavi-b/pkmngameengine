@@ -11,3 +11,4 @@ SortIncludes: false
 AllowShortLambdasOnASingleLine: None
 AlwaysBreakTemplateDeclarations: Yes
 ColumnLimit: 120
+QualifierAlignment: Right

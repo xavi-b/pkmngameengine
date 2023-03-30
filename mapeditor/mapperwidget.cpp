@@ -8,7 +8,7 @@ MapperWidget::MapperWidget(QWidget* parent) : QWidget(parent)
     map = std::make_unique<Map>(gridSize.width(), gridSize.height());
 }
 
-void MapperWidget::setSelectionPixmap(const QPair<QString, QRect>& data)
+void MapperWidget::setSelectionPixmap(QPair<QString, QRect> const& data)
 {
     this->data    = data;
     QRect rect    = {data.second.topLeft() * tilePixelSize, data.second.size() * tilePixelSize};
@@ -140,6 +140,7 @@ void MapperWidget::setBelowLevelsOpacity(bool opacity)
 
 void MapperWidget::mousePressEvent(QMouseEvent* event)
 {
+    Q_UNUSED(event)
 }
 
 void MapperWidget::mouseMoveEvent(QMouseEvent* event)
@@ -195,10 +196,13 @@ void MapperWidget::mouseReleaseEvent(QMouseEvent* event)
 
 void MapperWidget::resizeEvent(QResizeEvent* event)
 {
+    Q_UNUSED(event)
 }
 
 void MapperWidget::paintEvent(QPaintEvent* event)
 {
+    Q_UNUSED(event)
+
     float scaleFactor = 1.0 * width() / tileSizeInPixels().width();
 
     QPainter painter(this);
@@ -215,7 +219,7 @@ void MapperWidget::paintEvent(QPaintEvent* event)
             continue;
 
         float opacity = 1.0;
-        if (belowLevelsOpacity && l < workingLevelIndex)
+        if (belowLevelsOpacity && int(l) < workingLevelIndex)
             opacity = 0.5;
 
         for (size_t h = 0; h < level->getTileLayers().size(); ++h)
@@ -251,11 +255,15 @@ void MapperWidget::paintEvent(QPaintEvent* event)
 
 void MapperWidget::enterEvent(QEnterEvent* event)
 {
+    Q_UNUSED(event)
+
     emit entered();
 }
 
 void MapperWidget::leaveEvent(QEvent* event)
 {
+    Q_UNUSED(event)
+
     setSelectionPixmap({});
     update();
 }

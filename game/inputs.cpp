@@ -9,7 +9,6 @@ void Inputs::update(SDL_Event event)
         std::cout << "SDL_KEYDOWN" << std::endl;
         switch (event.key.keysym.sym)
         {
-            std::cout << event.key.keysym.sym << " pressed" << std::endl;
         case SDLK_LEFT:
         case SDLK_a:
             left |= true;

@@ -4,28 +4,26 @@
 #include <vector>
 #include <memory>
 #include <string>
-#include "event.h"
+
+#include <boost/json.hpp>
+namespace js = boost::json;
 
 class Tile
 {
 public:
-    Tile(const std::string& spritePath, int row, int col);
+    Tile(std::string const& spritePath, int row, int col);
 
-    const std::string& getSpritePath() const;
+    std::string const& getSpritePath() const;
     int                getRow() const;
     int                getCol() const;
 
-    virtual void callEnterEvent(int param);
-    virtual void callInterractionEvent(int param);
+    friend void                  tag_invoke(js::value_from_tag, js::value& jv, std::unique_ptr<Tile> const& o);
+    friend std::unique_ptr<Tile> tag_invoke(js::value_to_tag<std::unique_ptr<Tile>>, js::value const& jv);
 
 private:
     std::string spritePath;
     int         row = 0;
     int         col = 0;
-
-    // TODO move events out
-    std::unique_ptr<Event> enterEvent;
-    std::unique_ptr<Event> interractionEvent;
 };
 
 #endif // TILE_H

@@ -4,15 +4,17 @@ LevelsModel::LevelsModel(QObject* parent) : QAbstractListModel{parent}
 {
 }
 
-int LevelsModel::rowCount(const QModelIndex& parent) const
+int LevelsModel::rowCount(QModelIndex const& parent) const
 {
+    Q_UNUSED(parent)
+
     if (!map)
         return 0;
 
     return map->getLevels().size();
 }
 
-QVariant LevelsModel::data(const QModelIndex& index, int role) const
+QVariant LevelsModel::data(QModelIndex const& index, int role) const
 {
     if (!index.isValid())
         return {};
@@ -25,7 +27,7 @@ QVariant LevelsModel::data(const QModelIndex& index, int role) const
     return {};
 }
 
-bool LevelsModel::setData(const QModelIndex& index, const QVariant& value, int role)
+bool LevelsModel::setData(QModelIndex const& index, QVariant const& value, int role)
 {
     if (!index.isValid())
         return false;
@@ -39,7 +41,7 @@ bool LevelsModel::setData(const QModelIndex& index, const QVariant& value, int r
     return false;
 }
 
-Qt::ItemFlags LevelsModel::flags(const QModelIndex& index) const
+Qt::ItemFlags LevelsModel::flags(QModelIndex const& index) const
 {
     Qt::ItemFlags flags = QAbstractListModel::flags(index);
     flags               = flags & ~Qt::ItemIsSelectable;
@@ -59,6 +61,7 @@ void LevelsModel::setLevelsReference(MapperWidget* map)
         endRemoveRows();
     });
     connect(map, &MapperWidget::levelVisibleChanged, this, [=](int index, bool visible) {
+        Q_UNUSED(visible)
         auto i = this->index(index);
         dataChanged(i, i);
     });

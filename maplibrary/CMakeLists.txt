@@ -5,6 +5,11 @@ message("Compiling \"${MODULE_NAME}\"")
 
 add_library(${MODULE_NAME} "")
 
+# boost
+find_package(Boost COMPONENTS json REQUIRED)
+include_directories(${Boost_INCLUDE_DIR})
+target_link_libraries(${MODULE_NAME} ${Boost_LIBRARIES})
+
 # VARS
 #get_cmake_property(_variableNames VARIABLES)
 #list (SORT _variableNames)
