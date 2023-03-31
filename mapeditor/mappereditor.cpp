@@ -70,11 +70,11 @@ MapperEditor::MapperEditor(QWidget* parent) : QWidget(parent)
         mapWidthSpinBox->setValue(int(mapperViewer->contentWidget()->getMap()->getNCol()));
         mapHeightSpinBox->setValue(int(mapperViewer->contentWidget()->getMap()->getNRow()));
     });
-    connect(mapWidthSpinBox, &QSpinBox::valueChanged, this, [=](size_t v) {
-        mapperViewer->contentWidget()->setMapWidth(v);
+    connect(mapWidthSpinBox, &QSpinBox::editingFinished, this, [=]() {
+        mapperViewer->contentWidget()->setMapWidth(size_t(mapWidthSpinBox->value()));
     });
-    connect(mapHeightSpinBox, &QSpinBox::valueChanged, this, [=](size_t v) {
-        mapperViewer->contentWidget()->setMapHeight(v);
+    connect(mapHeightSpinBox, &QSpinBox::editingFinished, this, [=]() {
+        mapperViewer->contentWidget()->setMapHeight(size_t(mapHeightSpinBox->value()));
     });
     connect(addButton, &QPushButton::clicked, this, [=]() {
         mapperViewer->contentWidget()->addLevel();

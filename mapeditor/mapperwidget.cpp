@@ -153,12 +153,14 @@ void MapperWidget::swapMap(std::unique_ptr<Map>&& newMap)
 void MapperWidget::setMapWidth(size_t v)
 {
     map->setNCol(v);
+    resize(size());
     update();
 }
 
 void MapperWidget::setMapHeight(size_t v)
 {
     map->setNRow(v);
+    resize(size());
     update();
 }
 

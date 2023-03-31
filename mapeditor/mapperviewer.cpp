@@ -5,6 +5,7 @@ MapperViewer::MapperViewer(QWidget* parent) : QScrollArea(parent)
     setMinimumSize(400, 400);
     mapperWidget = new MapperWidget;
     setWidget(mapperWidget);
+    mapperWidget->resize(scaleFactor * mapperWidget->tileSizeInPixels());
 }
 
 void MapperViewer::scaleContent(double factor)
