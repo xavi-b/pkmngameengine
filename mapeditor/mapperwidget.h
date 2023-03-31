@@ -72,9 +72,11 @@ protected:
 private:
     int tilePixelSize = 32;
 
-    QPair<QString, QRect> data;
-    QPixmap               overlayPixmap;
-    QPoint                origin;
+    QPair<QString, QRect>  data;
+    QPixmap                overlayPixmap;
+    QMap<QString, QPixmap> pixmaps;
+    QPoint                 origin;
+    bool                   pressed = false;
 
     std::unique_ptr<Map> map;
     int                  workingLayerIndex  = 0;

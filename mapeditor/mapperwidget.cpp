@@ -167,6 +167,7 @@ void MapperWidget::setMapHeight(size_t v)
 void MapperWidget::mousePressEvent(QMouseEvent* event)
 {
     Q_UNUSED(event)
+    pressed = true;
 }
 
 void MapperWidget::mouseMoveEvent(QMouseEvent* event)
@@ -179,13 +180,24 @@ void MapperWidget::mouseMoveEvent(QMouseEvent* event)
         int col = event->pos().x() / selSize * selSize;
         int row = event->pos().y() / selSize * selSize;
         origin  = {col, row};
-        event->accept();
-        update();
+
+        if (pressed)
+        {
+            mouseReleaseEvent(event);
+            pressed = true;
+        }
+        else
+        {
+            event->accept();
+            update();
+        }
     }
 }
 
 void MapperWidget::mouseReleaseEvent(QMouseEvent* event)
 {
+    pressed = false;
+
     float scaleFactor = 1.0 * width() / tileSizeInPixels().width();
     int   selSize     = tilePixelSize * scaleFactor;
 
@@ -263,11 +275,13 @@ void MapperWidget::paintEvent(QPaintEvent* event)
                     auto&  tile   = (*layer.get())(i, j);
                     if (tile)
                     {
-                        QRect   rect   = {QPoint(tile->getRow() * tilePixelSize, tile->getCol() * tilePixelSize),
-                                          QSize(tilePixelSize, tilePixelSize)};
-                        QPixmap pixmap = QPixmap(tile->getSpritePath().c_str()).copy(rect);
+                        QRect   rect = {QPoint(tile->getRow() * tilePixelSize, tile->getCol() * tilePixelSize),
+                                        QSize(tilePixelSize, tilePixelSize)};
+                        QString path = tile->getSpritePath().c_str();
+                        if (!pixmaps.contains(path))
+                            pixmaps[path] = QPixmap(path);
                         painter.setOpacity(opacity);
-                        painter.drawPixmap(QRect(origin, pixmap.size() * scaleFactor), pixmap);
+                        painter.drawPixmap(QRect(origin, rect.size() * scaleFactor), pixmaps[path], rect);
                     }
                     painter.setOpacity(1.0);
                     painter.drawRect(QRect(origin, QSize(selSize - 1, selSize - 1)));
