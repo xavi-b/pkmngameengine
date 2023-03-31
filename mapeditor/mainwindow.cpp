@@ -99,10 +99,8 @@ void MainWindow::createMenus()
                 return;
             }
 
-            openedFileName = fileName;
-            QDataStream in(&file);
-            QByteArray  data;
-            in >> data;
+            openedFileName  = fileName;
+            QByteArray data = file.readAll();
             mapArea->viewer()->contentWidget()->swapMap(js::value_to<std::unique_ptr<Map>>(js::parse(data.data())));
         }
     });
@@ -137,8 +135,7 @@ QString MainWindow::saveFile(bool saveAs)
             return {};
         }
 
-        QDataStream out(&file);
-        out << QByteArray(serialize(js::value_from(mapArea->viewer()->contentWidget()->getMap())).c_str());
+        file.write(serialize(js::value_from(mapArea->viewer()->contentWidget()->getMap())).c_str());
     }
 
     return fileName;

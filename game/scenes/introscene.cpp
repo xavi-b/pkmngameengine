@@ -3,6 +3,7 @@
 #include "keyboardscene.h"
 #include "game.h"
 #include "utils.h"
+#include "scenes/town1scene.h"
 
 #include <iostream>
 
@@ -35,7 +36,7 @@ void IntroScene::init()
     introSpeech->init();
 }
 
-void IntroScene::update(const Inputs* inputs)
+void IntroScene::update(Inputs const* inputs)
 {
     introAnimation->incrementTicks();
 
@@ -105,7 +106,7 @@ void IntroScene::update(const Inputs* inputs)
     }
 }
 
-void IntroScene::draw(const Fps* fps, RenderSizes rs)
+void IntroScene::draw(Fps const* fps, RenderSizes rs)
 {
     SDL_RenderCopy(renderer, bgTexture, NULL, NULL);
 
@@ -144,6 +145,10 @@ std::unique_ptr<Scene> IntroScene::nextScene()
     {
         introSpeech->reset();
         return std::make_unique<KeyboardScene>(renderer, Game::instance()->data.player.name);
+    }
+    else if (state == Leave)
+    {
+        return std::make_unique<Town1Scene>(renderer);
     }
     return nullptr;
 }

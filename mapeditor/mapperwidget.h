@@ -70,7 +70,7 @@ protected:
     virtual void leaveEvent(QEvent* event) override;
 
 private:
-    int tilePixelSize = 32;
+    static constexpr int TilePixelSize = 32;
 
     QPair<QString, QRect>  data;
     QPixmap                overlayPixmap;

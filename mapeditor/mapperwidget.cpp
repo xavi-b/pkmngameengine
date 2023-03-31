@@ -11,7 +11,7 @@ MapperWidget::MapperWidget(QWidget* parent) : QWidget(parent)
 void MapperWidget::setSelectionPixmap(QPair<QString, QRect> const& data)
 {
     this->data    = data;
-    QRect rect    = {data.second.topLeft() * tilePixelSize, data.second.size() * tilePixelSize};
+    QRect rect    = {data.second.topLeft() * TilePixelSize, data.second.size() * TilePixelSize};
     overlayPixmap = QPixmap(data.first).copy(rect);
 }
 
@@ -23,7 +23,7 @@ QSize MapperWidget::sizeHint() const
 
 QSize MapperWidget::tileSizeInPixels() const
 {
-    return {int(map->getNCol() * tilePixelSize), int(map->getNRow() * tilePixelSize)};
+    return {int(map->getNCol() * TilePixelSize), int(map->getNRow() * TilePixelSize)};
 }
 
 std::unique_ptr<TileLayer>& MapperWidget::getWorkingLayer()
@@ -173,7 +173,7 @@ void MapperWidget::mousePressEvent(QMouseEvent* event)
 void MapperWidget::mouseMoveEvent(QMouseEvent* event)
 {
     float scaleFactor = 1.0 * width() / tileSizeInPixels().width();
-    int   selSize     = tilePixelSize * scaleFactor;
+    int   selSize     = TilePixelSize * scaleFactor;
 
     if (event->pos().x() < selSize * int(map->getNCol()) && event->pos().y() < selSize * int(map->getNRow()))
     {
@@ -199,7 +199,7 @@ void MapperWidget::mouseReleaseEvent(QMouseEvent* event)
     pressed = false;
 
     float scaleFactor = 1.0 * width() / tileSizeInPixels().width();
-    int   selSize     = tilePixelSize * scaleFactor;
+    int   selSize     = TilePixelSize * scaleFactor;
 
     if (event->pos().x() < selSize * int(map->getNCol()) && event->pos().y() < selSize * int(map->getNRow()))
     {
@@ -247,7 +247,7 @@ void MapperWidget::paintEvent(QPaintEvent* event)
 
     painter.setPen(Qt::black);
 
-    int selSize = tilePixelSize * scaleFactor;
+    int selSize = TilePixelSize * scaleFactor;
 
     for (size_t l = 0; l < map->getLevels().size(); ++l)
     {
@@ -275,8 +275,8 @@ void MapperWidget::paintEvent(QPaintEvent* event)
                     auto&  tile   = (*layer.get())(i, j);
                     if (tile)
                     {
-                        QRect   rect = {QPoint(tile->getRow() * tilePixelSize, tile->getCol() * tilePixelSize),
-                                        QSize(tilePixelSize, tilePixelSize)};
+                        QRect   rect = {QPoint(tile->getRow() * TilePixelSize, tile->getCol() * TilePixelSize),
+                                        QSize(TilePixelSize, TilePixelSize)};
                         QString path = tile->getSpritePath().c_str();
                         if (!pixmaps.contains(path))
                             pixmaps[path] = QPixmap(path);
