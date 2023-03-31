@@ -4,6 +4,9 @@
 #include <vector>
 #include <memory>
 
+#include <boost/json.hpp>
+namespace js = boost::json;
+
 template <class T>
 class Layer
 {
@@ -15,13 +18,13 @@ public:
             elements[i].resize(nRow);
     }
 
-    std::unique_ptr<T>& operator()(int i, int j)
+    T& operator()(int i, int j)
     {
         return elements[i][j];
     }
 
 protected:
-    std::vector<std::vector<std::unique_ptr<T>>> elements;
+    std::vector<std::vector<T>> elements;
 
     int nCol, nRow;
 };

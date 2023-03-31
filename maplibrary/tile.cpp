@@ -19,16 +19,26 @@ int Tile::getCol() const
     return col;
 }
 
-void tag_invoke(js::value_from_tag, js::value& jv, std::unique_ptr<Tile> const& o)
+void tag_invoke(js::value_from_tag, js::value& jv, Tile::TilePtr const& o)
 {
-    jv = {{"spritePath", o->spritePath}, {"col", o->col}, {"row", o->row}};
+    if (o)
+    {
+        jv = {{"spritePath", o->spritePath}, {"col", o->col}, {"row", o->row}};
+    }
+    else
+    {
+        jv = {};
+    }
 }
 
-std::unique_ptr<Tile> tag_invoke(js::value_to_tag<std::unique_ptr<Tile>>, js::value const& jv)
+Tile::TilePtr tag_invoke(js::value_to_tag<Tile::TilePtr>, js::value const& jv)
 {
-    std::unique_ptr<Tile> o;
-    js::object const&     obj = jv.as_object();
-    return std::make_unique<Tile>(js::value_to<std::string>(obj.at("spritePath")),
-                                  js::value_to<int>(obj.at("row")),
-                                  js::value_to<int>(obj.at("col")));
+    Tile::TilePtr     o;
+    js::object const& obj = jv.as_object();
+    if (obj.empty())
+        return nullptr;
+    else
+        return std::make_unique<Tile>(js::value_to<std::string>(obj.at("spritePath")),
+                                      js::value_to<int>(obj.at("row")),
+                                      js::value_to<int>(obj.at("col")));
 }

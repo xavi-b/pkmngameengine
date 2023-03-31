@@ -11,14 +11,16 @@ namespace js = boost::json;
 class Tile
 {
 public:
+    using TilePtr = std::unique_ptr<Tile>;
+
     Tile(std::string const& spritePath, int row, int col);
 
     std::string const& getSpritePath() const;
     int                getRow() const;
     int                getCol() const;
 
-    friend void                  tag_invoke(js::value_from_tag, js::value& jv, std::unique_ptr<Tile> const& o);
-    friend std::unique_ptr<Tile> tag_invoke(js::value_to_tag<std::unique_ptr<Tile>>, js::value const& jv);
+    friend void    tag_invoke(js::value_from_tag, js::value& jv, TilePtr const& o);
+    friend TilePtr tag_invoke(js::value_to_tag<TilePtr>, js::value const& jv);
 
 private:
     std::string spritePath;

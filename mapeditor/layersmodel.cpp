@@ -55,6 +55,10 @@ void LayersModel::setLayersReference(MapperWidget* map)
     connect(map, &MapperWidget::layerVisibleChanged, this, [=](int index, bool visible) {
         Q_UNUSED(visible)
         auto i = this->index(index);
-        dataChanged(i, i);
+        emit dataChanged(i, i);
+    });
+    connect(map, &MapperWidget::reset, this, [=]() {
+        beginResetModel();
+        endResetModel();
     });
 }

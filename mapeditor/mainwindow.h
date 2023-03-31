@@ -16,6 +16,10 @@ protected:
     virtual void keyReleaseEvent(QKeyEvent* event) override;
 
 private:
+    void    createMenus();
+    QString saveFile(bool saveAs = false);
+
     MapperEditor* mapArea;
+    QString       openedFileName;
 };
 #endif // MAINWINDOW_H

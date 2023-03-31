@@ -5,7 +5,7 @@ MapperWidget::MapperWidget(QWidget* parent) : QWidget(parent)
     setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
     setMouseTracking(true);
 
-    map = std::make_unique<Map>(gridSize.width(), gridSize.height());
+    map = std::make_unique<Map>(5, 5);
 }
 
 void MapperWidget::setSelectionPixmap(QPair<QString, QRect> const& data)
@@ -23,7 +23,7 @@ QSize MapperWidget::sizeHint() const
 
 QSize MapperWidget::tileSizeInPixels() const
 {
-    return {gridSize.width() * tilePixelSize, gridSize.height() * tilePixelSize};
+    return {map->getNCol() * tilePixelSize, map->getNRow() * tilePixelSize};
 }
 
 std::unique_ptr<TileLayer>& MapperWidget::getWorkingLayer()
@@ -138,6 +138,18 @@ void MapperWidget::setBelowLevelsOpacity(bool opacity)
     update();
 }
 
+std::unique_ptr<Map> const& MapperWidget::getMap() const
+{
+    return map;
+}
+
+void MapperWidget::swapMap(std::unique_ptr<Map>&& newMap)
+{
+    map.swap(newMap);
+    update();
+    emit reset();
+}
+
 void MapperWidget::mousePressEvent(QMouseEvent* event)
 {
     Q_UNUSED(event)
@@ -148,7 +160,7 @@ void MapperWidget::mouseMoveEvent(QMouseEvent* event)
     float scaleFactor = 1.0 * width() / tileSizeInPixels().width();
     int   selSize     = tilePixelSize * scaleFactor;
 
-    if (event->pos().x() < selSize * gridSize.width() && event->pos().y() < selSize * gridSize.height())
+    if (event->pos().x() < selSize * map->getNCol() && event->pos().y() < selSize * map->getNRow())
     {
         int col = event->pos().x() / selSize * selSize;
         int row = event->pos().y() / selSize * selSize;
@@ -163,7 +175,7 @@ void MapperWidget::mouseReleaseEvent(QMouseEvent* event)
     float scaleFactor = 1.0 * width() / tileSizeInPixels().width();
     int   selSize     = tilePixelSize * scaleFactor;
 
-    if (event->pos().x() < selSize * gridSize.width() && event->pos().y() < selSize * gridSize.height())
+    if (event->pos().x() < selSize * map->getNCol() && event->pos().y() < selSize * map->getNRow())
     {
         int posX = event->pos().x();
         int posY = event->pos().y();
@@ -174,12 +186,12 @@ void MapperWidget::mouseReleaseEvent(QMouseEvent* event)
 
         for (int i = 0; i < rect.width(); ++i)
         {
-            if (col + i >= gridSize.width())
+            if (col + i >= map->getNCol())
                 continue;
 
             for (int j = 0; j < rect.height(); ++j)
             {
-                if (row + j >= gridSize.height())
+                if (row + j >= map->getNRow())
                     continue;
 
                 auto  tile  = std::make_unique<Tile>(data.first.toStdString(), rect.x() + i, rect.y() + j);
@@ -229,9 +241,9 @@ void MapperWidget::paintEvent(QPaintEvent* event)
             if (!layer->isVisible())
                 continue;
 
-            for (int i = 0; i < gridSize.width(); ++i)
+            for (int i = 0; i < map->getNCol(); ++i)
             {
-                for (int j = 0; j < gridSize.height(); ++j)
+                for (int j = 0; j < map->getNRow(); ++j)
                 {
                     QPoint origin = {i * selSize, j * selSize};
                     auto&  tile   = (*layer.get())(i, j);

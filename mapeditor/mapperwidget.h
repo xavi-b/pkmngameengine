@@ -15,7 +15,7 @@ class MapperWidget : public QWidget
 public:
     MapperWidget(QWidget* parent = nullptr);
 
-    void          setSelectionPixmap(const QPair<QString, QRect>& data);
+    void          setSelectionPixmap(QPair<QString, QRect> const& data);
     virtual QSize sizeHint() const override;
     QSize         tileSizeInPixels() const;
 
@@ -38,6 +38,9 @@ public:
 
     void setBelowLevelsOpacity(bool opacity);
 
+    std::unique_ptr<Map> const& getMap() const;
+    void                        swapMap(std::unique_ptr<Map>&& newMap);
+
 signals:
     void workingLayerIndexChanged(int index);
     void workingLevelIndexChanged(int index);
@@ -47,6 +50,8 @@ signals:
 
     void levelAdded();
     void levelRemoved(int index);
+
+    void reset();
 
     void entered();
 
@@ -62,8 +67,7 @@ protected:
     virtual void leaveEvent(QEvent* event) override;
 
 private:
-    QSize gridSize      = {5, 5};
-    int   tilePixelSize = 32;
+    int tilePixelSize = 32;
 
     QPair<QString, QRect> data;
     QPixmap               overlayPixmap;

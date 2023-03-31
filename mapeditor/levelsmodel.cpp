@@ -63,6 +63,10 @@ void LevelsModel::setLevelsReference(MapperWidget* map)
     connect(map, &MapperWidget::levelVisibleChanged, this, [=](int index, bool visible) {
         Q_UNUSED(visible)
         auto i = this->index(index);
-        dataChanged(i, i);
+        emit dataChanged(i, i);
+    });
+    connect(map, &MapperWidget::reset, this, [=]() {
+        beginResetModel();
+        endResetModel();
     });
 }
