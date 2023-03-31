@@ -8,20 +8,23 @@
 class Map
 {
 public:
-    Map(int nCol, int nRow);
+    Map(size_t nCol, size_t nRow);
 
     std::unique_ptr<Level>& addLevel();
 
     std::vector<std::unique_ptr<Level>>& getLevels();
 
-    int getNCol() const;
-    int getNRow() const;
+    size_t getNCol() const;
+    size_t getNRow() const;
+
+    void setNCol(size_t v);
+    void setNRow(size_t v);
 
     friend void                 tag_invoke(js::value_from_tag, js::value& jv, std::unique_ptr<Map> const& o);
     friend std::unique_ptr<Map> tag_invoke(js::value_to_tag<std::unique_ptr<Map>>, js::value const& jv);
 
 private:
-    int nCol, nRow;
+    size_t nCol, nRow;
 
     std::vector<std::unique_ptr<Level>> levels;
 };

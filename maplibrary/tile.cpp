@@ -39,6 +39,6 @@ Tile::TilePtr tag_invoke(js::value_to_tag<Tile::TilePtr>, js::value const& jv)
         return nullptr;
     else
         return std::make_unique<Tile>(js::value_to<std::string>(obj.at("spritePath")),
-                                      js::value_to<int>(obj.at("row")),
-                                      js::value_to<int>(obj.at("col")));
+                                      js::value_to<size_t>(obj.at("row")),
+                                      js::value_to<size_t>(obj.at("col")));
 }

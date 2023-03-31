@@ -23,7 +23,7 @@ QSize MapperWidget::sizeHint() const
 
 QSize MapperWidget::tileSizeInPixels() const
 {
-    return {map->getNCol() * tilePixelSize, map->getNRow() * tilePixelSize};
+    return {int(map->getNCol() * tilePixelSize), int(map->getNRow() * tilePixelSize)};
 }
 
 std::unique_ptr<TileLayer>& MapperWidget::getWorkingLayer()
@@ -150,6 +150,18 @@ void MapperWidget::swapMap(std::unique_ptr<Map>&& newMap)
     emit reset();
 }
 
+void MapperWidget::setMapWidth(size_t v)
+{
+    map->setNCol(v);
+    update();
+}
+
+void MapperWidget::setMapHeight(size_t v)
+{
+    map->setNRow(v);
+    update();
+}
+
 void MapperWidget::mousePressEvent(QMouseEvent* event)
 {
     Q_UNUSED(event)
@@ -160,7 +172,7 @@ void MapperWidget::mouseMoveEvent(QMouseEvent* event)
     float scaleFactor = 1.0 * width() / tileSizeInPixels().width();
     int   selSize     = tilePixelSize * scaleFactor;
 
-    if (event->pos().x() < selSize * map->getNCol() && event->pos().y() < selSize * map->getNRow())
+    if (event->pos().x() < selSize * int(map->getNCol()) && event->pos().y() < selSize * int(map->getNRow()))
     {
         int col = event->pos().x() / selSize * selSize;
         int row = event->pos().y() / selSize * selSize;
@@ -175,7 +187,7 @@ void MapperWidget::mouseReleaseEvent(QMouseEvent* event)
     float scaleFactor = 1.0 * width() / tileSizeInPixels().width();
     int   selSize     = tilePixelSize * scaleFactor;
 
-    if (event->pos().x() < selSize * map->getNCol() && event->pos().y() < selSize * map->getNRow())
+    if (event->pos().x() < selSize * int(map->getNCol()) && event->pos().y() < selSize * int(map->getNRow()))
     {
         int posX = event->pos().x();
         int posY = event->pos().y();
@@ -184,12 +196,12 @@ void MapperWidget::mouseReleaseEvent(QMouseEvent* event)
 
         QRect rect = data.second;
 
-        for (int i = 0; i < rect.width(); ++i)
+        for (size_t i = 0; i < size_t(rect.width()); ++i)
         {
             if (col + i >= map->getNCol())
                 continue;
 
-            for (int j = 0; j < rect.height(); ++j)
+            for (size_t j = 0; j < size_t(rect.height()); ++j)
             {
                 if (row + j >= map->getNRow())
                     continue;
@@ -241,11 +253,11 @@ void MapperWidget::paintEvent(QPaintEvent* event)
             if (!layer->isVisible())
                 continue;
 
-            for (int i = 0; i < map->getNCol(); ++i)
+            for (size_t i = 0; i < map->getNCol(); ++i)
             {
-                for (int j = 0; j < map->getNRow(); ++j)
+                for (size_t j = 0; j < map->getNRow(); ++j)
                 {
-                    QPoint origin = {i * selSize, j * selSize};
+                    QPoint origin = {int(i * selSize), int(j * selSize)};
                     auto&  tile   = (*layer.get())(i, j);
                     if (tile)
                     {

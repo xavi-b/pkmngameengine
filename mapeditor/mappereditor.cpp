@@ -4,6 +4,7 @@
 #include <QCheckBox>
 #include <QComboBox>
 #include <QPushButton>
+#include <QSpinBox>
 #include "checkablecombobox.h"
 #include "levelsmodel.h"
 #include "layersmodel.h"
@@ -13,6 +14,9 @@ MapperEditor::MapperEditor(QWidget* parent) : QWidget(parent)
     QVBoxLayout* l = new QVBoxLayout;
     l->setContentsMargins(0, 0, 0, 0);
 
+    QHBoxLayout* mapLayout = new QHBoxLayout;
+    mapLayout->setContentsMargins(0, 0, 0, 0);
+
     QHBoxLayout* levelLayout = new QHBoxLayout;
     levelLayout->setContentsMargins(0, 0, 0, 0);
 
@@ -21,11 +25,21 @@ MapperEditor::MapperEditor(QWidget* parent) : QWidget(parent)
 
     mapperViewer = new MapperViewer;
 
+    QSpinBox* mapWidthSpinBox = new QSpinBox;
+    mapWidthSpinBox->setMinimum(0);
+    mapWidthSpinBox->setMaximum(300);
+    mapWidthSpinBox->setValue(int(mapperViewer->contentWidget()->getMap()->getNCol()));
+    QSpinBox* mapHeightSpinBox = new QSpinBox;
+    mapHeightSpinBox->setMinimum(0);
+    mapHeightSpinBox->setMaximum(300);
+    mapHeightSpinBox->setValue(int(mapperViewer->contentWidget()->getMap()->getNRow()));
+
     QPushButton*       addButton      = new QPushButton(tr("Add"));
     CheckableComboBox* levelSelection = new CheckableComboBox;
     LevelsModel*       levelsModel    = new LevelsModel(this);
     levelsModel->setLevelsReference(mapperViewer->contentWidget());
     levelSelection->setModel(levelsModel);
+
     QCheckBox*         belowLevelsCheckBox = new QCheckBox(tr("Below level opacity"));
     QPushButton*       removeButton        = new QPushButton(tr("Remove"));
     CheckableComboBox* layerSelection      = new CheckableComboBox;
@@ -33,6 +47,12 @@ MapperEditor::MapperEditor(QWidget* parent) : QWidget(parent)
     layersModel->setLayersReference(mapperViewer->contentWidget());
     layerSelection->setModel(layersModel);
 
+    mapLayout->addWidget(new QLabel(tr("Width:")));
+    mapLayout->addWidget(mapWidthSpinBox);
+    mapLayout->addWidget(new QLabel(tr("Height:")));
+    mapLayout->addWidget(mapHeightSpinBox);
+    mapLayout->addStretch(1);
+    l->addLayout(mapLayout);
     levelLayout->addWidget(addButton);
     levelLayout->addWidget(levelSelection);
     levelLayout->addWidget(removeButton);
@@ -46,6 +66,16 @@ MapperEditor::MapperEditor(QWidget* parent) : QWidget(parent)
 
     setLayout(l);
 
+    connect(mapperViewer->contentWidget(), &MapperWidget::reset, this, [=]() {
+        mapWidthSpinBox->setValue(int(mapperViewer->contentWidget()->getMap()->getNCol()));
+        mapHeightSpinBox->setValue(int(mapperViewer->contentWidget()->getMap()->getNRow()));
+    });
+    connect(mapWidthSpinBox, &QSpinBox::valueChanged, this, [=](size_t v) {
+        mapperViewer->contentWidget()->setMapWidth(v);
+    });
+    connect(mapHeightSpinBox, &QSpinBox::valueChanged, this, [=](size_t v) {
+        mapperViewer->contentWidget()->setMapHeight(v);
+    });
     connect(addButton, &QPushButton::clicked, this, [=]() {
         mapperViewer->contentWidget()->addLevel();
     });

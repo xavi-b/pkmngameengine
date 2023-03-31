@@ -41,6 +41,9 @@ public:
     std::unique_ptr<Map> const& getMap() const;
     void                        swapMap(std::unique_ptr<Map>&& newMap);
 
+    void setMapWidth(size_t v);
+    void setMapHeight(size_t v);
+
 signals:
     void workingLayerIndexChanged(int index);
     void workingLevelIndexChanged(int index);

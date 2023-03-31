@@ -1,6 +1,6 @@
 #include "tilelayer.h"
 
-TileLayer::TileLayer(Type type, int nCol, int nRow) : Layer(nCol, nRow), type(type)
+TileLayer::TileLayer(Type type, size_t nCol, size_t nRow) : Layer(nCol, nRow), type(type)
 {
 }
 
@@ -47,8 +47,8 @@ std::unique_ptr<TileLayer> tag_invoke(js::value_to_tag<std::unique_ptr<TileLayer
     js::object const&          obj = jv.as_object();
     std::unique_ptr<TileLayer> o =
         std::make_unique<TileLayer>(static_cast<TileLayer::Type>(js::value_to<int>(obj.at("type"))),
-                                    js::value_to<int>(obj.at("nCol")),
-                                    js::value_to<int>(obj.at("nRow")));
+                                    js::value_to<size_t>(obj.at("nCol")),
+                                    js::value_to<size_t>(obj.at("nRow")));
     o->elements = js::value_to<std::vector<std::vector<Tile::TilePtr>>>(obj.at("elements"));
     return o;
 }

@@ -1,6 +1,6 @@
 #include "level.h"
 
-Level::Level(int nCol, int nRow) : nCol(nCol), nRow(nRow)
+Level::Level(size_t nCol, size_t nRow) : nCol(nCol), nRow(nRow)
 {
     addTileLayer(TileLayer::Type::GROUND);
     addTileLayer(TileLayer::Type::SOLID);
@@ -29,6 +29,25 @@ void Level::setVisible(bool value)
     visible = value;
 }
 
+void Level::setNCol(size_t v)
+{
+    nCol = v;
+    for (size_t i = 0; i < tileLayers.size(); ++i)
+        tileLayers[i]->setNCol(v);
+    eventLayer->setNCol(v);
+    encountersLayer->setNCol(v);
+}
+
+void Level::setNRow(size_t v)
+{
+
+    nRow = v;
+    for (size_t i = 0; i < tileLayers.size(); ++i)
+        tileLayers[i]->setNRow(v);
+    eventLayer->setNRow(v);
+    encountersLayer->setNRow(v);
+}
+
 void tag_invoke(js::value_from_tag, js::value& jv, std::unique_ptr<Level> const& o)
 {
     jv = {{"nCol", o->nCol},
@@ -43,7 +62,7 @@ std::unique_ptr<Level> tag_invoke(js::value_to_tag<std::unique_ptr<Level>>, js::
 {
     js::object const&      obj = jv.as_object();
     std::unique_ptr<Level> o =
-        std::make_unique<Level>(js::value_to<int>(obj.at("nCol")), js::value_to<int>(obj.at("nRow")));
+        std::make_unique<Level>(js::value_to<size_t>(obj.at("nCol")), js::value_to<size_t>(obj.at("nRow")));
 
     o->tileLayers      = js::value_to<std::vector<std::unique_ptr<TileLayer>>>(obj.at("tileLayers"));
     o->eventLayer      = js::value_to<std::unique_ptr<EventLayer>>(obj.at("eventLayer"));

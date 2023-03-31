@@ -10,7 +10,7 @@ EncounterType tag_invoke(js::value_to_tag<EncounterType>, boost::json::value con
     return static_cast<EncounterType>(js::value_to<int>(jv));
 }
 
-EncountersLayer::EncountersLayer(int nCol, int nRow) : Layer<EncounterType>(nCol, nRow)
+EncountersLayer::EncountersLayer(size_t nCol, size_t nRow) : Layer<EncounterType>(nCol, nRow)
 {
 }
 
@@ -25,7 +25,7 @@ std::unique_ptr<EncountersLayer> tag_invoke(js::value_to_tag<std::unique_ptr<Enc
 {
     js::object const&                obj = jv.as_object();
     std::unique_ptr<EncountersLayer> o =
-        std::make_unique<EncountersLayer>(js::value_to<int>(obj.at("nCol")), js::value_to<int>(obj.at("nRow")));
+        std::make_unique<EncountersLayer>(js::value_to<size_t>(obj.at("nCol")), js::value_to<size_t>(obj.at("nRow")));
 
     o->elements = js::value_to<std::vector<std::vector<EncounterType>>>(obj.at("elements"));
 
