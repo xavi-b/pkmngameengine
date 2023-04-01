@@ -2,6 +2,9 @@
 
 #include <fstream>
 #include <sstream>
+#include <iostream>
+
+#include "game.h"
 
 MapScene::MapScene(SDL_Renderer* renderer, std::string const& mapPath) : Scene(renderer)
 {
@@ -10,6 +13,13 @@ MapScene::MapScene(SDL_Renderer* renderer, std::string const& mapPath) : Scene(r
     buffer << t.rdbuf();
     auto mapPtr = js::value_to<std::unique_ptr<Map>>(js::parse(buffer.str()));
     map.swap(mapPtr);
+
+    if (Game::instance()->data.player.gender == 0)
+        playerSurface = IMG_Load("resources/Graphics/Characters/boy_run.png");
+    else
+        playerSurface = IMG_Load("resources/Graphics/Characters/girl_run.png");
+
+    playerTexture = SDL_CreateTextureFromSurface(renderer, playerSurface);
 }
 
 MapScene::~MapScene()
@@ -21,9 +31,56 @@ MapScene::~MapScene()
         SDL_DestroyTexture(texture);
         SDL_FreeSurface(surface);
     }
+
+    SDL_DestroyTexture(playerTexture);
+    SDL_FreeSurface(playerSurface);
 }
 
-void MapScene::draw(Fps const* /*fps*/, RenderSizes rs)
+void MapScene::update(Inputs const* inputs)
+{
+    // TODO
+    // 4 walk
+    // 2 run
+    // 1 bike
+    //    accumulatedTicks = (accumulatedTicks + 1) % 4;
+    //    if (accumulatedTicks != 0)
+    //        return;
+    // TODO block solid
+    direction       = NONE;
+    playerPreviousY = playerY;
+    playerPreviousX = playerX;
+
+    if (inputs->up)
+    {
+        direction = UP;
+
+        if (playerY > 0)
+            playerY--;
+    }
+    else if (inputs->down)
+    {
+        direction = DOWN;
+
+        if (playerY < int(map->getNRow() - 1))
+            playerY++;
+    }
+    else if (inputs->left)
+    {
+        direction = LEFT;
+
+        if (playerX > 0)
+            playerX--;
+    }
+    else if (inputs->right)
+    {
+        direction = RIGHT;
+
+        if (playerX < int(map->getNCol() - 1))
+            playerX++;
+    }
+}
+
+void MapScene::draw(Fps const* fps, RenderSizes rs)
 {
     for (size_t l = 0; l < map->getLevels().size(); ++l)
     {
@@ -48,8 +105,8 @@ void MapScene::draw(Fps const* /*fps*/, RenderSizes rs)
                         }
 
                         SDL_Rect srcRect;
-                        srcRect.x = tile->getRow() * TilePixelSize;
-                        srcRect.y = tile->getCol() * TilePixelSize;
+                        srcRect.x = tile->getCol() * TilePixelSize;
+                        srcRect.y = tile->getRow() * TilePixelSize;
                         srcRect.w = TilePixelSize;
                         srcRect.h = TilePixelSize;
 
@@ -62,6 +119,57 @@ void MapScene::draw(Fps const* /*fps*/, RenderSizes rs)
                         SDL_RenderCopy(renderer, sprites[path].second, &srcRect, &dstRect);
                     }
                 }
+            }
+
+            if (playerLevel == l && layer->getType() == TileLayer::SOLID)
+            {
+                // TODO draw player
+                // animation = 4 frames
+                // resources/Graphics/Characters/girl_run.png
+                switch (direction)
+                {
+                case UP:
+                    playerSpriteRow = 3;
+                    break;
+                case DOWN:
+                    playerSpriteRow = 0;
+                    break;
+                case LEFT:
+                    playerSpriteRow = 1;
+                    break;
+                case RIGHT:
+                    playerSpriteRow = 2;
+                    break;
+                default:
+                    break;
+                }
+
+                int imageCol = 0;
+                if (direction != NONE)
+                {
+                    // TODO
+                    // 4 walk
+                    // 2 run
+                    // 1 bike
+                    imageCol = std::floor(fps->tickPercentage() * 4);
+                }
+
+                SDL_Rect srcRect;
+                srcRect.x = imageCol * TilePixelSize;
+                srcRect.y = playerSpriteRow * PlayerPixelHeight;
+                srcRect.w = TilePixelSize;
+                srcRect.h = PlayerPixelHeight;
+
+                SDL_Rect dstRect;
+                dstRect.x = (playerPreviousX + (playerX - playerPreviousX) * fps->tickPercentage()) * TilePixelSize *
+                            rs.ww / rs.aw;
+                dstRect.y = ((playerPreviousY + (playerY - playerPreviousY) * fps->tickPercentage()) * TilePixelSize -
+                             (PlayerPixelHeight - TilePixelSize)) *
+                            rs.wh / rs.ah;
+                dstRect.w = TilePixelSize * rs.ww / rs.aw + 1;
+                dstRect.h = PlayerPixelHeight * rs.wh / rs.ah + 1;
+
+                SDL_RenderCopy(renderer, playerTexture, &srcRect, &dstRect);
             }
         }
     }

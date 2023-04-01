@@ -39,5 +39,5 @@ void Fps::draw(RenderSizes rs)
 
 float Fps::tickPercentage() const
 {
-    return 1.0 * (next - previous) / TickDelay;
+    return (1.0 - 1.0 * (next - previous) / TickDelay);
 }

@@ -4,8 +4,11 @@ Town1Scene::Town1Scene(SDL_Renderer* renderer) : MapScene(renderer, "resources/m
 {
 }
 
-void Town1Scene::update(Inputs const* /*inputs*/)
+void Town1Scene::init()
 {
+    // TODO
+    playerX = 10;
+    playerY = 10;
 }
 
 void Town1Scene::draw(Fps const* fps, RenderSizes rs)

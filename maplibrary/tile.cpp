@@ -1,6 +1,6 @@
 #include "tile.h"
 
-Tile::Tile(std::string const& spritePath, int row, int col) : spritePath(spritePath), row(row), col(col)
+Tile::Tile(std::string const& spritePath, int col, int row) : spritePath(spritePath), col(col), row(row)
 {
 }
 
@@ -39,6 +39,6 @@ Tile::TilePtr tag_invoke(js::value_to_tag<Tile::TilePtr>, js::value const& jv)
         return nullptr;
     else
         return std::make_unique<Tile>(js::value_to<std::string>(obj.at("spritePath")),
-                                      js::value_to<size_t>(obj.at("row")),
-                                      js::value_to<size_t>(obj.at("col")));
+                                      js::value_to<size_t>(obj.at("col")),
+                                      js::value_to<size_t>(obj.at("row")));
 }

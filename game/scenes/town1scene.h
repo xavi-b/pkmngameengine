@@ -11,7 +11,7 @@ class Town1Scene : public MapScene
 public:
     Town1Scene(SDL_Renderer* renderer);
 
-    virtual void update(Inputs const* inputs) override;
+    virtual void init() override;
     virtual void draw(Fps const* fps, RenderSizes rs) override;
 
     virtual std::string name() override;

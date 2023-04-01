@@ -13,9 +13,9 @@ MoveEffect::MoveEffect(
 {
 }
 
-void MoveEffect::apply(float ticksPercentage, int duration, RenderSizes rs, SDL_Rect& dstRect)
+void MoveEffect::apply(int accumulatedTicks, int duration, RenderSizes rs, SDL_Rect& dstRect)
 {
-    float pos = ticksPercentage / duration;
+    float pos = 1.0 * accumulatedTicks / duration;
     dstRect.x = dstRect.x + (startOffset.x + (endOffset.x - startOffset.x) * pos) * rs.ww / rs.aw;
     dstRect.y = dstRect.y + (startOffset.y + (endOffset.y - startOffset.y) * pos) * rs.wh / rs.ah;
 }
@@ -26,9 +26,9 @@ SizeEffect::SizeEffect(
 {
 }
 
-void SizeEffect::apply(float ticksPercentage, int duration, RenderSizes rs, SDL_Rect& dstRect)
+void SizeEffect::apply(int accumulatedTicks, int duration, RenderSizes rs, SDL_Rect& dstRect)
 {
-    float pos = ticksPercentage / duration;
+    float pos = 1.0 * accumulatedTicks / duration;
     dstRect.w = (startRect.x + (endRect.x - startRect.x) * pos) * rs.ww / rs.aw;
     dstRect.h = (startRect.y + (endRect.x - startRect.y) * pos) * rs.wh / rs.ah;
 }
@@ -39,9 +39,9 @@ ColorEffect::ColorEffect(
 {
 }
 
-void ColorEffect::apply(float ticksPercentage, int duration, RenderSizes /*rs*/, SDL_Rect& /*dstRect*/)
+void ColorEffect::apply(int accumulatedTicks, int duration, RenderSizes /*rs*/, SDL_Rect& /*dstRect*/)
 {
-    float pos = ticksPercentage / duration;
+    float pos = 1.0 * accumulatedTicks / duration;
 
     SDL_Color c;
     c.r = startColor.r + (endColor.r - startColor.r) * pos;

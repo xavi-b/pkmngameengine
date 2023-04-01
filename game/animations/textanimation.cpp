@@ -21,8 +21,8 @@ void TextAnimation::incrementTicks()
     if (!isStarted() || isFinished())
         return;
 
-    ticksPercentage++;
-    if (ticksPercentage * NbCharPerTick > text.size())
+    accumulatedTicks++;
+    if (accumulatedTicks * NbCharPerTick > text.size())
         forceEnd();
 }
 
@@ -32,11 +32,11 @@ void TextAnimation::draw(const Fps* /*fps*/, RenderSizes /*rs*/)
 
 void TextAnimation::forceEnd()
 {
-    ticksPercentage = text.size() / NbCharPerTick + 1;
+    accumulatedTicks = text.size() / NbCharPerTick + 1;
     Animation::forceEnd();
 }
 
 std::string TextAnimation::currentText() const
 {
-    return text.substr(0, ticksPercentage * NbCharPerTick);
+    return text.substr(0, accumulatedTicks * NbCharPerTick);
 }

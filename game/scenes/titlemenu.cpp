@@ -1,6 +1,7 @@
 #include "titlemenu.h"
 
 #include "introscene.h"
+#include "scenes/town1scene.h"
 #include "titlescene.h"
 #include "game.h"
 #include "settings.h"
@@ -25,7 +26,7 @@ TitleMenu::~TitleMenu()
     SDL_FreeSurface(panelSurface);
 }
 
-void TitleMenu::update(const Inputs* inputs)
+void TitleMenu::update(Inputs const* inputs)
 {
     if (inputs->down)
     {
@@ -52,6 +53,8 @@ void TitleMenu::update(const Inputs* inputs)
         switch (currentIndex)
         {
         case Continue:
+            // TODO
+            goToGame = true;
             return;
         case NewGame:
             goToIntroScene = true;
@@ -67,7 +70,7 @@ void TitleMenu::update(const Inputs* inputs)
     }
 }
 
-void TitleMenu::draw(const Fps* /*fps*/, RenderSizes rs)
+void TitleMenu::draw(Fps const* /*fps*/, RenderSizes rs)
 {
     // Background
     SDL_RenderCopy(renderer, bgTexture, NULL, NULL);
@@ -170,6 +173,9 @@ std::unique_ptr<Scene> TitleMenu::nextScene()
     }
     if (goToTitleScene)
         return std::make_unique<TitleScene>(renderer);
+    // TODO
+    if (goToGame)
+        return std::make_unique<Town1Scene>(renderer);
     return nullptr;
 }
 

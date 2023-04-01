@@ -13,6 +13,10 @@ public:
 
     friend void tag_invoke(js::value_from_tag, js::value& jv, std::unique_ptr<EventLayer> const& o);
     friend std::unique_ptr<EventLayer> tag_invoke(js::value_to_tag<std::unique_ptr<EventLayer>>, js::value const& jv);
+
+    // interraction
+    // before_enter (surf, bosse, cascade, escalade)
+    // enter
 };
 
 #endif // LAYER_H

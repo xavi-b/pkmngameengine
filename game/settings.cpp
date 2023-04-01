@@ -20,7 +20,8 @@ bool Settings::musicOn()
 
 bool Settings::savedGame()
 {
-    return pt.get<bool>("General.savedGame", false);
+    // TODO
+    return pt.get<bool>("General.savedGame", true);
 }
 
 bool Settings::autoText()

@@ -12,7 +12,7 @@ class Effect
 public:
     Effect(SDL_Renderer* renderer, SDL_Texture* texture, SDL_Surface* surface);
 
-    virtual void apply(float ticksPercentage, int duration, RenderSizes rs, SDL_Rect& dstRect) = 0;
+    virtual void apply(int accumulatedTicks, int duration, RenderSizes rs, SDL_Rect& dstRect) = 0;
 
 protected:
     SDL_Renderer* renderer;
@@ -26,7 +26,7 @@ public:
     MoveEffect(
         SDL_Renderer* renderer, SDL_Texture* texture, SDL_Surface* surface, SDL_Point startOffset, SDL_Point endOffset);
 
-    virtual void apply(float ticksPercentage, int duration, RenderSizes rs, SDL_Rect& dstRect) override;
+    virtual void apply(int accumulatedTicks, int duration, RenderSizes rs, SDL_Rect& dstRect) override;
 
 protected:
     SDL_Point startOffset;
@@ -39,7 +39,7 @@ public:
     SizeEffect(
         SDL_Renderer* renderer, SDL_Texture* texture, SDL_Surface* surface, SDL_Point startRect, SDL_Point endRect);
 
-    virtual void apply(float ticksPercentage, int duration, RenderSizes rs, SDL_Rect& dstRect) override;
+    virtual void apply(int accumulatedTicks, int duration, RenderSizes rs, SDL_Rect& dstRect) override;
 
 protected:
     SDL_Point startRect;
@@ -52,7 +52,7 @@ public:
     ColorEffect(
         SDL_Renderer* renderer, SDL_Texture* texture, SDL_Surface* surface, SDL_Color startColor, SDL_Color endColor);
 
-    virtual void apply(float ticksPercentage, int duration, RenderSizes rs, SDL_Rect& dstRect) override;
+    virtual void apply(int accumulatedTicks, int duration, RenderSizes rs, SDL_Rect& dstRect) override;
 
 protected:
     SDL_Color startColor;

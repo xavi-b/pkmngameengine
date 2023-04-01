@@ -19,7 +19,7 @@ void Animation::stop()
 
 void Animation::reset()
 {
-    ticksPercentage = 0;
+    accumulatedTicks = 0;
 }
 
 void Animation::restart()
@@ -31,7 +31,7 @@ void Animation::restart()
 void Animation::incrementTicks()
 {
     if (started && !finished)
-        ticksPercentage++;
+        accumulatedTicks++;
 }
 
 bool Animation::isStarted() const

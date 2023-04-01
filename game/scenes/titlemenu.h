@@ -10,8 +10,8 @@ public:
     TitleMenu(SDL_Renderer* renderer);
     virtual ~TitleMenu();
 
-    virtual void update(const Inputs* inputs) override;
-    virtual void draw(const Fps* fps, RenderSizes rs) override;
+    virtual void update(Inputs const* inputs) override;
+    virtual void draw(Fps const* fps, RenderSizes rs) override;
 
     virtual std::unique_ptr<Scene> nextScene() override;
 
@@ -31,7 +31,8 @@ private:
     SDL_Surface* panelSurface;
     SDL_Texture* panelTexture;
 
-    bool  goToIntroScene      = false;
+    bool  goToGame       = false;
+    bool  goToIntroScene = false;
     bool  goToTitleScene = false;
     Index currentIndex   = Continue;
 };

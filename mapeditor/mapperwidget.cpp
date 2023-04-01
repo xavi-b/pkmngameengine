@@ -275,7 +275,7 @@ void MapperWidget::paintEvent(QPaintEvent* event)
                     auto&  tile   = (*layer.get())(i, j);
                     if (tile)
                     {
-                        QRect   rect = {QPoint(tile->getRow() * TilePixelSize, tile->getCol() * TilePixelSize),
+                        QRect   rect = {QPoint(tile->getCol() * TilePixelSize, tile->getRow() * TilePixelSize),
                                         QSize(TilePixelSize, TilePixelSize)};
                         QString path = tile->getSpritePath().c_str();
                         if (!pixmaps.contains(path))

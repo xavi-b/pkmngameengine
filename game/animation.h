@@ -34,7 +34,7 @@ protected:
 
     bool  started         = false;
     bool  finished        = false;
-    float ticksPercentage = 0;
+    float accumulatedTicks = 0;
 };
 
 #endif // ANIMATION_H

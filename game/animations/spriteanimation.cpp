@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-SpriteAnimation::SpriteAnimation(SDL_Renderer* renderer, const std::string& spritePath, int duration)
+SpriteAnimation::SpriteAnimation(SDL_Renderer* renderer, std::string const& spritePath, int duration)
     : Animation(renderer), duration(duration)
 {
     surface = IMG_Load(spritePath.c_str());
@@ -44,18 +44,18 @@ void SpriteAnimation::incrementTicks()
     if (!isStarted() || isFinished())
         return;
 
-    ticksPercentage++;
-    if (ticksPercentage >= duration)
+    accumulatedTicks++;
+    if (accumulatedTicks >= duration)
         forceEnd();
 }
 
-void SpriteAnimation::draw(const Fps* fps, RenderSizes rs)
+void SpriteAnimation::draw(Fps const* fps, RenderSizes rs)
 {
     SDL_Rect dstRect = rectLambda(surface, rs);
 
     float t = 0;
     if (isStarted())
-        t = (isFinished() ? duration : (ticksPercentage + (1.0 - fps->tickPercentage())));
+        t = (isFinished() ? duration : (accumulatedTicks + fps->tickPercentage()));
 
     for (auto& e : effects)
         e->apply(t, duration, rs, dstRect);
@@ -63,7 +63,7 @@ void SpriteAnimation::draw(const Fps* fps, RenderSizes rs)
     SDL_RenderCopy(renderer, texture, NULL, &dstRect);
 }
 
-void SpriteAnimation::setRect(const RectLambda& rectLambda)
+void SpriteAnimation::setRect(RectLambda const& rectLambda)
 {
     this->rectLambda = rectLambda;
 }

@@ -40,13 +40,16 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
     w->setLayout(l);
     setCentralWidget(w);
 
-    connect(treeView, &QTreeView::clicked, this, [=](QModelIndex const& index) {
-        QFileInfo info = model->fileInfo(index);
-        if (info.suffix().compare("png", Qt::CaseInsensitive) == 0)
-        {
-            imageArea->setPixmap(info.filePath());
-        }
-    });
+    connect(treeView->selectionModel(),
+            &QItemSelectionModel::currentChanged,
+            this,
+            [=](QModelIndex const& current, QModelIndex const& /*previous*/) {
+                QFileInfo info = model->fileInfo(current);
+                if (info.suffix().compare("png", Qt::CaseInsensitive) == 0)
+                {
+                    imageArea->setPixmap(info.filePath());
+                }
+            });
 
     connect(mapArea->viewer()->contentWidget(), &MapperWidget::entered, this, [=]() {
         mapArea->viewer()->contentWidget()->setSelectionPixmap(imageArea->contentWidget()->currentSelectionPixmap());
