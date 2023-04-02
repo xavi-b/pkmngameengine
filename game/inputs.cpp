@@ -66,7 +66,6 @@ void Inputs::update()
         right = false;
         up    = false;
         down  = false;
-        std::cout << "Direction reset" << std::endl;
     }
 }
 

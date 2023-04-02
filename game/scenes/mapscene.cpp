@@ -79,6 +79,13 @@ void MapScene::update(Inputs const* inputs)
 
 void MapScene::draw(Fps const* fps, RenderSizes rs)
 {
+    int playerOffsetX =
+        (playerPreviousX + (playerX - playerPreviousX) * (accumulatedTicks + fps->tickPercentage()) / speed) *
+        TilePixelSize * rs.ww / rs.aw;
+    int playerOffsetY =
+        (playerPreviousY + (playerY - playerPreviousY) * (accumulatedTicks + fps->tickPercentage()) / speed) *
+        TilePixelSize * rs.wh / rs.ah;
+
     for (size_t l = 0; l < map->getLevels().size(); ++l)
     {
         auto& level = map->getLevels()[l];
@@ -109,8 +116,8 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
                         srcRect.h = TilePixelSize;
 
                         SDL_Rect dstRect;
-                        dstRect.x = i * TilePixelSize * rs.ww / rs.aw;
-                        dstRect.y = j * TilePixelSize * rs.wh / rs.ah;
+                        dstRect.x = i * TilePixelSize * rs.ww / rs.aw - playerOffsetX;
+                        dstRect.y = j * TilePixelSize * rs.wh / rs.ah - playerOffsetY;
                         dstRect.w = TilePixelSize * rs.ww / rs.aw + 1;
                         dstRect.h = TilePixelSize * rs.wh / rs.ah + 1;
 
@@ -152,15 +159,12 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
                 srcRect.h = PlayerPixelHeight;
 
                 SDL_Rect dstRect;
-                dstRect.x = (playerPreviousX +
-                             (playerX - playerPreviousX) * (accumulatedTicks + fps->tickPercentage()) / speed) *
-                            TilePixelSize * rs.ww / rs.aw;
-                dstRect.y = ((playerPreviousY +
-                              (playerY - playerPreviousY) * (accumulatedTicks + fps->tickPercentage()) / speed) *
-                                 TilePixelSize -
-                             (PlayerPixelHeight - TilePixelSize)) *
-                            rs.wh / rs.ah;
-                dstRect.w = TilePixelSize * rs.ww / rs.aw + 1;
+                int      dstTilePixelWidth  = TilePixelSize * rs.ww / rs.aw;
+                int      dstTilePixelHeight = TilePixelSize * rs.wh / rs.ah;
+
+                dstRect.x = (rs.ww - dstTilePixelWidth) / 2;
+                dstRect.y = (rs.wh - dstTilePixelHeight) / 2 - (PlayerPixelHeight - TilePixelSize) * rs.wh / rs.ah;
+                dstRect.w = dstTilePixelWidth + 1;
                 dstRect.h = PlayerPixelHeight * rs.wh / rs.ah + 1;
 
                 SDL_RenderCopy(renderer, playerTexture, &srcRect, &dstRect);
