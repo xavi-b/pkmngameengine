@@ -1,6 +1,7 @@
 #include "game.h"
 
 #include "scenes/titlescene.h"
+#include "scenes/leavescene.h"
 #include "renderutils.h"
 
 #include <algorithm>
@@ -79,9 +80,13 @@ int Game::exec()
         {
             while (SDL_PollEvent(&event) == 1)
             {
-                // TODO show confirmation scene
                 if (event.type == SDL_QUIT)
-                    running = false;
+                {
+                    if (dynamic_cast<LeaveScene*>(scenes.back().get()) == nullptr)
+                    {
+                        scenes.emplace_back(std::make_unique<LeaveScene>(renderer));
+                    }
+                }
             }
 
             inputs->update();
