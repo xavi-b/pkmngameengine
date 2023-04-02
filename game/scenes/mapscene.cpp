@@ -42,7 +42,6 @@ void MapScene::update(Inputs const* inputs)
     if (accumulatedTicks != 0)
         return;
 
-    // TODO block solid
     direction       = NONE;
     playerPreviousY = playerY;
     playerPreviousX = playerX;
@@ -51,29 +50,117 @@ void MapScene::update(Inputs const* inputs)
     {
         direction = UP;
 
-        if (playerY > 0)
-            playerY--;
+        for (size_t l = 0; l < map->getLevels().size(); ++l)
+        {
+            auto& level = map->getLevels()[l];
+
+            if (l != playerLevel)
+                continue;
+
+            for (size_t h = 0; h < level->getTileLayers().size(); ++h)
+            {
+                auto& layer = level->getTileLayers()[h];
+
+                if (layer->getType() != TileLayer::SOLID)
+                    continue;
+
+                if (playerY > 0)
+                {
+                    auto& tile = (*layer.get())(playerX, playerY - 1);
+                    if (!tile)
+                    {
+                        playerY--;
+                    }
+                }
+            }
+        }
     }
     else if (inputs->down)
     {
         direction = DOWN;
 
-        if (playerY < int(map->getNRow() - 1))
-            playerY++;
+        for (size_t l = 0; l < map->getLevels().size(); ++l)
+        {
+            auto& level = map->getLevels()[l];
+
+            if (l != playerLevel)
+                continue;
+
+            for (size_t h = 0; h < level->getTileLayers().size(); ++h)
+            {
+                auto& layer = level->getTileLayers()[h];
+
+                if (layer->getType() != TileLayer::SOLID)
+                    continue;
+
+                if (playerY < int(map->getNRow() - 1))
+                {
+                    auto& tile = (*layer.get())(playerX, playerY + 1);
+                    if (!tile)
+                    {
+                        playerY++;
+                    }
+                }
+            }
+        }
     }
     else if (inputs->left)
     {
         direction = LEFT;
 
-        if (playerX > 0)
-            playerX--;
+        for (size_t l = 0; l < map->getLevels().size(); ++l)
+        {
+            auto& level = map->getLevels()[l];
+
+            if (l != playerLevel)
+                continue;
+
+            for (size_t h = 0; h < level->getTileLayers().size(); ++h)
+            {
+                auto& layer = level->getTileLayers()[h];
+
+                if (layer->getType() != TileLayer::SOLID)
+                    continue;
+
+                if (playerX > 0)
+                {
+                    auto& tile = (*layer.get())(playerX - 1, playerY);
+                    if (!tile)
+                    {
+                        playerX--;
+                    }
+                }
+            }
+        }
     }
     else if (inputs->right)
     {
         direction = RIGHT;
 
-        if (playerX < int(map->getNCol() - 1))
-            playerX++;
+        for (size_t l = 0; l < map->getLevels().size(); ++l)
+        {
+            auto& level = map->getLevels()[l];
+
+            if (l != playerLevel)
+                continue;
+
+            for (size_t h = 0; h < level->getTileLayers().size(); ++h)
+            {
+                auto& layer = level->getTileLayers()[h];
+
+                if (layer->getType() != TileLayer::SOLID)
+                    continue;
+
+                if (playerX < int(map->getNCol() - 1))
+                {
+                    auto& tile = (*layer.get())(playerX + 1, playerY);
+                    if (!tile)
+                    {
+                        playerX++;
+                    }
+                }
+            }
+        }
     }
 }
 

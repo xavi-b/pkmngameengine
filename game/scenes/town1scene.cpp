@@ -7,10 +7,10 @@ Town1Scene::Town1Scene(SDL_Renderer* renderer) : MapScene(renderer, "resources/m
 void Town1Scene::init()
 {
     // TODO
-    playerX         = 0;
-    playerY         = 0;
-    playerPreviousX = 0;
-    playerPreviousY = 0;
+    playerX         = 8;
+    playerY         = 12;
+    playerPreviousX = 8;
+    playerPreviousY = 12;
 }
 
 void Town1Scene::draw(Fps const* fps, RenderSizes rs)

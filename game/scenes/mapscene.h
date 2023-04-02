@@ -50,7 +50,7 @@ protected:
     // 4 walk
     // 2 run
     // 1 bike
-    int speed = 1;
+    int speed = 4;
 };
 
 #endif // MAP_H
