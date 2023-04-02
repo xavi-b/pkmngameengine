@@ -75,16 +75,17 @@ int Game::exec()
     SDL_Event event;
     while (running)
     {
-        while (SDL_PollEvent(&event) == 1)
-        {
-            // TODO show confirmation scene
-            if (event.type == SDL_QUIT)
-                running = false;
-            inputs->update(event);
-        }
-
         if (fps->tick)
         {
+            while (SDL_PollEvent(&event) == 1)
+            {
+                // TODO show confirmation scene
+                if (event.type == SDL_QUIT)
+                    running = false;
+            }
+
+            inputs->update();
+
             data.time.incrementTicks();
 
             if (inputs->debug)
@@ -140,9 +141,9 @@ void Game::quit()
 void Game::printDebug()
 {
     std::cout << "SCENES: ";
-    for (const auto& scene : scenes)
+    for (auto const& scene : scenes)
         std::cout << scene->name() << " ";
     std::cout << std::endl;
-    for (const auto& scene : scenes)
+    for (auto const& scene : scenes)
         scene->debug();
 }

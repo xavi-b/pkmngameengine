@@ -124,8 +124,13 @@ void MainWindow::createMenus()
 
 QString MainWindow::saveFile(bool saveAs)
 {
-    QString fileName =
-        QFileDialog::getSaveFileName(this, tr("Save map"), saveAs ? "" : openedFileName, tr("Map (*.pkmap)"));
+    QString fileName = openedFileName;
+
+    if (saveAs || openedFileName.isEmpty())
+    {
+        fileName =
+            QFileDialog::getSaveFileName(this, tr("Save map"), saveAs ? "" : openedFileName, tr("Map (*.pkmap)"));
+    }
 
     if (fileName.isEmpty())
         return {};

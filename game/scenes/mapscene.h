@@ -45,6 +45,12 @@ protected:
     int                  playerPreviousY  = 0;
     size_t               playerLevel      = 0;
     size_t               playerSpriteRow  = 0;
+
+    // TODO
+    // 4 walk
+    // 2 run
+    // 1 bike
+    int speed = 1;
 };
 
 #endif // MAP_H

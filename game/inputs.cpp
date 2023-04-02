@@ -2,57 +2,71 @@
 
 #include <iostream>
 
-void Inputs::update(SDL_Event event)
+void Inputs::update()
 {
-    if (event.type == SDL_KEYDOWN)
+    clear();
+
+    Uint8 const* keyState = SDL_GetKeyboardState(NULL);
+
+    if (!keyState)
     {
-        std::cout << "SDL_KEYDOWN" << std::endl;
-        switch (event.key.keysym.sym)
-        {
-        case SDLK_LEFT:
-        case SDLK_a:
-            left |= true;
-            std::cout << "LEFT pressed" << std::endl;
-            break;
-        case SDLK_RIGHT:
-        case SDLK_d:
-            right |= true;
-            std::cout << "RIGHT pressed" << std::endl;
-            break;
-        case SDLK_UP:
-        case SDLK_w:
-            up |= true;
-            std::cout << "UP pressed" << std::endl;
-            break;
-        case SDLK_DOWN:
-        case SDLK_s:
-            down |= true;
-            std::cout << "DOWN pressed" << std::endl;
-            break;
-        case SDLK_RETURN:
-        case SDLK_RETURN2:
-            A |= true;
-            std::cout << "A pressed" << std::endl;
-            break;
-        case SDLK_ESCAPE:
-            B |= true;
-            std::cout << "B pressed" << std::endl;
-            break;
-        case SDLK_i:
-            start |= true;
-            std::cout << "START pressed" << std::endl;
-            break;
-        case SDLK_k:
-            select |= true;
-            std::cout << "SELECT pressed" << std::endl;
-            break;
-        case SDLK_p:
-            debug |= true;
-            std::cout << "DEBUG pressed" << std::endl;
-            break;
-        default:
-            break;
-        }
+        return;
+    }
+
+    if (keyState[SDL_SCANCODE_LEFT] || keyState[SDL_SCANCODE_A])
+    {
+        left = true;
+        std::cout << "LEFT pressed" << std::endl;
+    }
+    if (keyState[SDL_SCANCODE_RIGHT] || keyState[SDL_SCANCODE_D])
+    {
+        right = true;
+        std::cout << "RIGHT pressed" << std::endl;
+    }
+    if (keyState[SDL_SCANCODE_UP] || keyState[SDL_SCANCODE_W])
+    {
+        up = true;
+        std::cout << "UP pressed" << std::endl;
+    }
+    if (keyState[SDL_SCANCODE_DOWN] || keyState[SDL_SCANCODE_S])
+    {
+        down = true;
+        std::cout << "DOWN pressed" << std::endl;
+    }
+
+    if (keyState[SDL_SCANCODE_RETURN] || keyState[SDL_SCANCODE_RETURN2])
+    {
+        A = true;
+        std::cout << "A pressed" << std::endl;
+    }
+    else if (keyState[SDL_SCANCODE_ESCAPE])
+    {
+        B = true;
+        std::cout << "B pressed" << std::endl;
+    }
+    else if (keyState[SDL_SCANCODE_I])
+    {
+        start = true;
+        std::cout << "START pressed" << std::endl;
+    }
+    else if (keyState[SDL_SCANCODE_K])
+    {
+        select = true;
+        std::cout << "SELECT pressed" << std::endl;
+    }
+    else if (keyState[SDL_SCANCODE_P])
+    {
+        debug = true;
+        std::cout << "DEBUG pressed" << std::endl;
+    }
+
+    if (!((left ^ right) ^ (up ^ down)))
+    {
+        left  = false;
+        right = false;
+        up    = false;
+        down  = false;
+        std::cout << "Direction reset" << std::endl;
     }
 }
 

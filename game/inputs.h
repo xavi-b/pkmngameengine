@@ -2,11 +2,10 @@
 #define INPUTS_H
 
 #include <SDL.h>
-#include "fps.h"
 
 struct Inputs
 {
-    void update(SDL_Event event);
+    void update();
     void clear();
 
     bool A      = false;

@@ -38,13 +38,10 @@ MapScene::~MapScene()
 
 void MapScene::update(Inputs const* inputs)
 {
-    // TODO
-    // 4 walk
-    // 2 run
-    // 1 bike
-    //    accumulatedTicks = (accumulatedTicks + 1) % 4;
-    //    if (accumulatedTicks != 0)
-    //        return;
+    accumulatedTicks = (accumulatedTicks + 1) % speed;
+    if (accumulatedTicks != 0)
+        return;
+
     // TODO block solid
     direction       = NONE;
     playerPreviousY = playerY;
@@ -90,6 +87,7 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
         {
             auto& layer = level->getTileLayers()[h];
 
+            // TODO draw only visible tiles
             for (size_t i = 0; i < map->getNCol(); ++i)
             {
                 for (size_t j = 0; j < map->getNRow(); ++j)
@@ -123,9 +121,6 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
 
             if (playerLevel == l && layer->getType() == TileLayer::SOLID)
             {
-                // TODO draw player
-                // animation = 4 frames
-                // resources/Graphics/Characters/girl_run.png
                 switch (direction)
                 {
                 case UP:
@@ -147,11 +142,7 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
                 int imageCol = 0;
                 if (direction != NONE)
                 {
-                    // TODO
-                    // 4 walk
-                    // 2 run
-                    // 1 bike
-                    imageCol = std::floor(fps->tickPercentage() * 4);
+                    imageCol = std::floor((accumulatedTicks + fps->tickPercentage()) / speed * 4);
                 }
 
                 SDL_Rect srcRect;
@@ -161,9 +152,12 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
                 srcRect.h = PlayerPixelHeight;
 
                 SDL_Rect dstRect;
-                dstRect.x = (playerPreviousX + (playerX - playerPreviousX) * fps->tickPercentage()) * TilePixelSize *
-                            rs.ww / rs.aw;
-                dstRect.y = ((playerPreviousY + (playerY - playerPreviousY) * fps->tickPercentage()) * TilePixelSize -
+                dstRect.x = (playerPreviousX +
+                             (playerX - playerPreviousX) * (accumulatedTicks + fps->tickPercentage()) / speed) *
+                            TilePixelSize * rs.ww / rs.aw;
+                dstRect.y = ((playerPreviousY +
+                              (playerY - playerPreviousY) * (accumulatedTicks + fps->tickPercentage()) / speed) *
+                                 TilePixelSize -
                              (PlayerPixelHeight - TilePixelSize)) *
                             rs.wh / rs.ah;
                 dstRect.w = TilePixelSize * rs.ww / rs.aw + 1;
