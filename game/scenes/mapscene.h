@@ -12,18 +12,6 @@
 class MapScene : public Scene
 {
 public:
-    MapScene(SDL_Renderer* renderer, std::string const& mapPath);
-    ~MapScene();
-
-    virtual void update(Inputs const* inputs) override;
-    virtual void draw(Fps const* fps, RenderSizes rs) override;
-
-    virtual void initPlayerPosition(int x, int y);
-
-protected:
-    static constexpr int TilePixelSize     = 32;
-    static constexpr int PlayerPixelHeight = 48;
-
     enum Direction
     {
         NONE,
@@ -39,6 +27,18 @@ protected:
         RUN  = 2,
         WALK = 3
     };
+
+    MapScene(SDL_Renderer* renderer, std::string const& mapPath);
+    ~MapScene();
+
+    virtual void update(Inputs const* inputs) override;
+    virtual void draw(Fps const* fps, RenderSizes rs) override;
+
+    virtual void initPlayerPosition(int x, int y, Direction direction);
+
+protected:
+    static constexpr int TilePixelSize     = 32;
+    static constexpr int PlayerPixelHeight = 48;
 
     std::map<std::string, std::pair<SDL_Surface*, SDL_Texture*>> sprites;
 

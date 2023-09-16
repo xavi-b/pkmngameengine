@@ -28,7 +28,7 @@ std::unique_ptr<Scene> Road1Scene::nextScene()
         if (direction == LEFT)
         {
             auto town1Scene = std::make_unique<Town1Scene>(renderer);
-            town1Scene->initPlayerPosition(19, 2);
+            town1Scene->initPlayerPosition(19, 2, LEFT);
             return town1Scene;
         }
     }

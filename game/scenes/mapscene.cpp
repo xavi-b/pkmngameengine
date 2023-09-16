@@ -310,10 +310,11 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
     }
 }
 
-void MapScene::initPlayerPosition(int x, int y)
+void MapScene::initPlayerPosition(int x, int y, Direction direction)
 {
     playerX         = x;
     playerY         = y;
     playerPreviousX = x;
     playerPreviousY = y;
+    this->direction = direction;
 }
