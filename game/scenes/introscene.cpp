@@ -3,7 +3,7 @@
 #include "keyboardscene.h"
 #include "game.h"
 #include "utils.h"
-#include "scenes/town1scene.h"
+#include "scenes/story/town1scene.h"
 
 #include <iostream>
 
@@ -84,8 +84,9 @@ void IntroScene::update(Inputs const* inputs)
             Game::instance()->data.player.gender = gender;
             std::vector<std::string> texts;
             texts.push_back(
-                lc::translate("Prof: So you are a ").str() +
-                (Game::instance()->data.player.gender == 0 ? lc::translate("boy") : lc::translate("girl")).str() + ".");
+                lc::translate("Prof: So you are a ").str()
+                + (Game::instance()->data.player.gender == 0 ? lc::translate("boy") : lc::translate("girl")).str()
+                + ".");
             outroSpeech->setTexts(texts);
             outroSpeech->init();
             outroSpeech->update(inputs);
@@ -148,7 +149,9 @@ std::unique_ptr<Scene> IntroScene::nextScene()
     }
     else if (state == Leave)
     {
-        return std::make_unique<Town1Scene>(renderer);
+        auto scene = std::make_unique<Town1Scene>(renderer);
+        scene->initPlayerPosition(8, 12);
+        return scene;
     }
     return nullptr;
 }

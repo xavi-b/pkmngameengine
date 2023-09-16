@@ -275,5 +275,45 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
                 SDL_RenderCopy(renderer, playerTexture, &srcRect, &dstPlayerRect);
             }
         }
+
+        if (Game::instance()->isDebug())
+        {
+            SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+
+            auto& layer = level->getEventLayer();
+
+            for (size_t i = 0; i < map->getNCol(); ++i)
+            {
+                for (size_t j = 0; j < map->getNRow(); ++j)
+                {
+                    auto& tile = (*layer.get())(i, j);
+                    if (tile)
+                    {
+                        SDL_Rect dstRect;
+                        dstRect.x = i * dstTilePixelWidth + playerOffsetX;
+                        dstRect.y = j * dstTilePixelHeight + playerOffsetY;
+                        dstRect.w = dstTilePixelWidth + 1;
+                        dstRect.h = dstTilePixelHeight + 1;
+
+                        // draw only visible tiles
+                        if (dstRect.x >= -dstTilePixelWidth && dstRect.x <= (rs.ww + dstTilePixelWidth)
+                            && dstRect.y >= -dstTilePixelHeight && dstRect.y <= rs.wh + dstTilePixelHeight)
+                        {
+                            SDL_RenderDrawRect(renderer, &dstRect);
+                        }
+                    }
+                }
+            }
+
+            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        }
     }
+}
+
+void MapScene::initPlayerPosition(int x, int y)
+{
+    playerX         = x;
+    playerY         = y;
+    playerPreviousX = x;
+    playerPreviousY = y;
 }

@@ -88,7 +88,8 @@ void MainWindow::createMenus()
     QAction* openAct = new QAction(tr("&Open map"));
     openAct->setShortcuts(QKeySequence::Open);
     connect(openAct, &QAction::triggered, this, [=]() {
-        QString fileName = QFileDialog::getOpenFileName(this, tr("Open map"), "", tr("Map (*.pkmap)"));
+        QString lastDir  = QSettings().value("lastDir").toString();
+        QString fileName = QFileDialog::getOpenFileName(this, tr("Open map"), lastDir, tr("Map (*.pkmap)"));
 
         if (fileName.isEmpty())
             return;
@@ -105,6 +106,9 @@ void MainWindow::createMenus()
             openedFileName  = fileName;
             QByteArray data = file.readAll();
             mapArea->viewer()->contentWidget()->swapMap(js::value_to<std::unique_ptr<Map>>(js::parse(data.data())));
+
+            QSettings().setValue("lastDir", QFileInfo(fileName).dir().path());
+            QSettings().sync();
         }
     });
     QAction* saveAct = new QAction(tr("&Save map"));
@@ -145,6 +149,9 @@ QString MainWindow::saveFile(bool saveAs)
 
         file.write(serialize(js::value_from(mapArea->viewer()->contentWidget()->getMap())).c_str());
     }
+
+    QSettings().setValue("lastDir", QFileInfo(fileName).dir().path());
+    QSettings().sync();
 
     return fileName;
 }

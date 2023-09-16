@@ -40,10 +40,11 @@ MapperEditor::MapperEditor(QWidget* parent) : QWidget(parent)
     levelsModel->setLevelsReference(mapperViewer->contentWidget());
     levelSelection->setModel(levelsModel);
 
-    QCheckBox*         belowLevelsCheckBox = new QCheckBox(tr("Below level opacity"));
-    QPushButton*       removeButton        = new QPushButton(tr("Remove"));
-    CheckableComboBox* layerSelection      = new CheckableComboBox;
-    LayersModel*       layersModel         = new LayersModel(this);
+    QCheckBox*         belowLevelsCheckBox       = new QCheckBox(tr("Below level opacity"));
+    QCheckBox*         eventLayerEditionCheckBox = new QCheckBox(tr("Edit event layer"));
+    QPushButton*       removeButton              = new QPushButton(tr("Remove"));
+    CheckableComboBox* layerSelection            = new CheckableComboBox;
+    LayersModel*       layersModel               = new LayersModel(this);
     layersModel->setLayersReference(mapperViewer->contentWidget());
     layerSelection->setModel(layersModel);
 
@@ -60,6 +61,7 @@ MapperEditor::MapperEditor(QWidget* parent) : QWidget(parent)
     levelLayout->addStretch(1);
     l->addLayout(levelLayout);
     layerLayout->addWidget(layerSelection);
+    layerLayout->addWidget(eventLayerEditionCheckBox);
     layerLayout->addStretch(1);
     l->addLayout(layerLayout);
     l->addWidget(mapperViewer, 1);
@@ -92,6 +94,10 @@ MapperEditor::MapperEditor(QWidget* parent) : QWidget(parent)
             &MapperWidget::setWorkingLayerIndex);
     connect(
         belowLevelsCheckBox, &QCheckBox::clicked, mapperViewer->contentWidget(), &MapperWidget::setBelowLevelsOpacity);
+    connect(eventLayerEditionCheckBox, &QCheckBox::clicked, this, [=](bool edit) {
+        mapperViewer->contentWidget()->setEventLayerEdition(edit);
+        layerSelection->setDisabled(edit);
+    });
 }
 
 MapperViewer* MapperEditor::viewer() const

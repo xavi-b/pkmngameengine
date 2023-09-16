@@ -18,6 +18,8 @@ public:
     virtual void update(Inputs const* inputs) override;
     virtual void draw(Fps const* fps, RenderSizes rs) override;
 
+    virtual void initPlayerPosition(int x, int y);
+
 protected:
     static constexpr int TilePixelSize     = 32;
     static constexpr int PlayerPixelHeight = 48;
@@ -34,7 +36,7 @@ protected:
     enum Speed
     {
         BIKE = 1,
-        RUN = 2,
+        RUN  = 2,
         WALK = 3
     };
 
@@ -53,7 +55,7 @@ protected:
     size_t               playerLevel      = 0;
     size_t               playerSpriteRow  = 0;
 
-    Speed speed = WALK;
+    Speed speed         = WALK;
     Speed previousSpeed = WALK;
 };
 

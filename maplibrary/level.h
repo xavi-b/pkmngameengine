@@ -15,6 +15,7 @@ public:
     void addTileLayer(TileLayer::Type type);
 
     std::vector<std::unique_ptr<TileLayer>>& getTileLayers();
+    std::unique_ptr<EventLayer>&             getEventLayer();
 
     bool isVisible() const;
     void setVisible(bool value);

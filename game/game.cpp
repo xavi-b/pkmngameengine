@@ -152,3 +152,8 @@ void Game::printDebug()
     for (auto const& scene : scenes)
         scene->debug();
 }
+
+bool Game::isDebug()
+{
+    return debug;
+}

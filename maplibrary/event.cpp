@@ -1,14 +1,19 @@
 #include "event.h"
 
-Event::Event()
+Event::Event(std::string const& id) : id(id)
 {
+}
+
+std::string Event::getId() const
+{
+    return id;
 }
 
 void tag_invoke(js::value_from_tag, js::value& jv, Event::EventPtr const& o)
 {
-    if (o)
+    if (o && !o->id.empty())
     {
-        jv = {};
+        jv = {{"id", o->id}};
     }
     else
     {
@@ -20,8 +25,13 @@ Event::EventPtr tag_invoke(js::value_to_tag<Event::EventPtr>, js::value const& j
 {
     Event::EventPtr   o;
     js::object const& obj = jv.as_object();
+
     if (obj.empty())
         return nullptr;
+
+    std::string id = js::value_to<std::string>(obj.at("id"));
+    if (id.empty())
+        return nullptr;
     else
-        return std::make_unique<Event>();
+        return std::make_unique<Event>(id);
 }

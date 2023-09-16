@@ -6,6 +6,7 @@
 #include <QResizeEvent>
 #include <QRubberBand>
 #include <QPainter>
+#include <QInputDialog>
 #include "map.h"
 
 class MapperWidget : public QWidget
@@ -37,6 +38,7 @@ public:
     void removeLevel(int index);
 
     void setBelowLevelsOpacity(bool opacity);
+    void setEventLayerEdition(bool edit);
 
     std::unique_ptr<Map> const& getMap() const;
     void                        swapMap(std::unique_ptr<Map>&& newMap);
@@ -82,6 +84,7 @@ private:
     int                  workingLayerIndex  = 0;
     int                  workingLevelIndex  = 0;
     bool                 belowLevelsOpacity = false;
+    bool                 eventLayerEdition  = false;
 };
 
 #endif // MAPPERWIDGET_H

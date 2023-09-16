@@ -61,8 +61,8 @@ target_sources(${MODULE_NAME}
 )
 
 # scenes
-file(GLOB SRC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/scenes/*.cpp")
-file(GLOB INC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/scenes/*.h")
+file(GLOB_RECURSE SRC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/scenes/*.cpp")
+file(GLOB_RECURSE INC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/scenes/*.h")
 
 target_sources(${MODULE_NAME}
    PRIVATE

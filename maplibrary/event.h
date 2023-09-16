@@ -13,10 +13,15 @@ class Event
 public:
     using EventPtr = std::unique_ptr<Event>;
 
-    Event();
+    Event(std::string const& id);
+
+    std::string getId() const;
 
     friend void     tag_invoke(js::value_from_tag, js::value& jv, EventPtr const& o);
     friend EventPtr tag_invoke(js::value_to_tag<EventPtr>, js::value const& jv);
+
+private:
+    std::string id;
 };
 
 #endif // EVENT_H

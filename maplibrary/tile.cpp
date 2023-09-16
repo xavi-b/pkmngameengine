@@ -21,7 +21,7 @@ int Tile::getCol() const
 
 void tag_invoke(js::value_from_tag, js::value& jv, Tile::TilePtr const& o)
 {
-    if (o)
+    if (o && !o->spritePath.empty())
     {
         jv = {{"spritePath", o->spritePath}, {"col", o->col}, {"row", o->row}};
     }
@@ -37,8 +37,11 @@ Tile::TilePtr tag_invoke(js::value_to_tag<Tile::TilePtr>, js::value const& jv)
     js::object const& obj = jv.as_object();
     if (obj.empty())
         return nullptr;
+
+    std::string spritePath = js::value_to<std::string>(obj.at("spritePath"));
+    if (spritePath.empty())
+        return nullptr;
     else
-        return std::make_unique<Tile>(js::value_to<std::string>(obj.at("spritePath")),
-                                      js::value_to<size_t>(obj.at("col")),
-                                      js::value_to<size_t>(obj.at("row")));
+        return std::make_unique<Tile>(
+            spritePath, js::value_to<size_t>(obj.at("col")), js::value_to<size_t>(obj.at("row")));
 }

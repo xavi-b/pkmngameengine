@@ -1,7 +1,7 @@
 #include "titlemenu.h"
 
 #include "introscene.h"
-#include "scenes/town1scene.h"
+#include "scenes/story/town1scene.h"
 #include "titlescene.h"
 #include "game.h"
 #include "settings.h"
@@ -175,7 +175,11 @@ std::unique_ptr<Scene> TitleMenu::nextScene()
         return std::make_unique<TitleScene>(renderer);
     // TODO
     if (goToGame)
-        return std::make_unique<Town1Scene>(renderer);
+    {
+        auto scene = std::make_unique<Town1Scene>(renderer);
+        scene->initPlayerPosition(8, 12);
+        return scene;
+    }
     return nullptr;
 }
 

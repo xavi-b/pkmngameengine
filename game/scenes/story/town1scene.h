@@ -15,6 +15,8 @@ public:
     virtual void draw(Fps const* fps, RenderSizes rs) override;
 
     virtual std::string name() override;
+
+    virtual std::unique_ptr<Scene> nextScene() override;
 };
 
 #endif // TOWN1SCENE_H

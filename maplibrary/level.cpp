@@ -19,6 +19,11 @@ std::vector<std::unique_ptr<TileLayer>>& Level::getTileLayers()
     return tileLayers;
 }
 
+std::unique_ptr<EventLayer>& Level::getEventLayer()
+{
+    return eventLayer;
+}
+
 bool Level::isVisible() const
 {
     return visible;

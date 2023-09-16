@@ -24,6 +24,7 @@ public:
     int  exec();
     void quit();
     void printDebug();
+    bool isDebug();
 
     GameData data;
 

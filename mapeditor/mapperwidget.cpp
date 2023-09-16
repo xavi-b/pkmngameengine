@@ -138,6 +138,11 @@ void MapperWidget::setBelowLevelsOpacity(bool opacity)
     update();
 }
 
+void MapperWidget::setEventLayerEdition(bool edit)
+{
+    eventLayerEdition = edit;
+}
+
 std::unique_ptr<Map> const& MapperWidget::getMap() const
 {
     return map;
@@ -220,10 +225,45 @@ void MapperWidget::mouseReleaseEvent(QMouseEvent* event)
                 if (row + j >= map->getNRow())
                     continue;
 
-                auto  tile  = std::make_unique<Tile>(data.first.toStdString(), rect.x() + i, rect.y() + j);
                 auto& level = map->getLevels()[workingLevelIndex];
-                auto& layer = level->getTileLayers()[workingLayerIndex];
-                (*layer.get())(col + i, row + j).swap(tile);
+
+                if (eventLayerEdition)
+                {
+                    auto& layer = level->getEventLayer();
+
+                    if (event->button() == Qt::RightButton)
+                    {
+                        (*layer.get())(col + i, row + j).reset(nullptr);
+                    }
+                    else
+                    {
+                        auto& previousEvent = (*layer.get())(col + i, row + j);
+
+                        QString id = QInputDialog::getText(this,
+                                                           "Event ID",
+                                                           QString(),
+                                                           QLineEdit::Normal,
+                                                           previousEvent ? previousEvent->getId().c_str() : QString());
+
+                        auto event = std::make_unique<Event>(id.toStdString());
+                        (*layer.get())(col + i, row + j).swap(event);
+                    }
+                }
+                else
+                {
+                    auto& layer = level->getTileLayers()[workingLayerIndex];
+
+                    if (event->button() == Qt::RightButton)
+                    {
+                        (*layer.get())(col + i, row + j).reset(nullptr);
+                    }
+                    else
+                    {
+                        std::string spritePath = data.first.toStdString();
+                        auto        tile       = std::make_unique<Tile>(spritePath, rect.x() + i, rect.y() + j);
+                        (*layer.get())(col + i, row + j).swap(tile);
+                    }
+                }
             }
         }
 
@@ -285,6 +325,23 @@ void MapperWidget::paintEvent(QPaintEvent* event)
                     }
                     painter.setOpacity(1.0);
                     painter.drawRect(QRect(origin, QSize(selSize - 1, selSize - 1)));
+                }
+            }
+        }
+
+        auto& layer = level->getEventLayer();
+
+        for (size_t i = 0; i < map->getNCol(); ++i)
+        {
+            for (size_t j = 0; j < map->getNRow(); ++j)
+            {
+                QPoint origin = {int(i * selSize), int(j * selSize)};
+                auto&  event  = (*layer.get())(i, j);
+                if (event)
+                {
+                    painter.setPen(Qt::red);
+                    painter.setOpacity(opacity);
+                    painter.drawRect(QRect(QPoint(origin.x() + 1, origin.y() + 1), QSize(selSize - 3, selSize - 3)));
                 }
             }
         }
