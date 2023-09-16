@@ -24,22 +24,35 @@ public:
 
     static void drawText(SDL_Renderer*      renderer,
                          RenderSizes        rs,
-                         const std::string& text,
+                         std::string const& text,
                          SDL_Color          color,
                          SDL_Color          bgColor,
                          int                fontSize,
                          int                x,
                          int                y,
                          int                w = 0);
-    static void drawWhiteText(
-        SDL_Renderer* renderer, RenderSizes rs, const std::string& text, int fontSize, int x, int y, int w = 0);
-    static void drawGreyText(
-        SDL_Renderer* renderer, RenderSizes rs, const std::string& text, int fontSize, int x, int y, int w = 0);
-    static void drawWhiteTextCentered(
-        SDL_Renderer* renderer, RenderSizes rs, const std::string& text, int fontSize, SDL_Rect textRect);
+    static void drawWhiteText(SDL_Renderer*      renderer,
+                              RenderSizes        rs,
+                              std::string const& text,
+                              int                fontSize,
+                              int                x,
+                              int                y,
+                              int                w = 0);
+    static void drawGreyText(SDL_Renderer*      renderer,
+                             RenderSizes        rs,
+                             std::string const& text,
+                             int                fontSize,
+                             int                x,
+                             int                y,
+                             int                w = 0);
+    static void drawWhiteTextCentered(SDL_Renderer*      renderer,
+                                      RenderSizes        rs,
+                                      std::string const& text,
+                                      int                fontSize,
+                                      SDL_Rect           textRect);
     static void drawTextWrapped(SDL_Renderer*      renderer,
                                 RenderSizes        rs,
-                                const std::string& text,
+                                std::string const& text,
                                 SDL_Color          color,
                                 SDL_Color          bgColor,
                                 int                fontSize,
@@ -48,7 +61,7 @@ public:
                                 int                width);
     static void drawTextWithIntroWrapped(SDL_Renderer*      renderer,
                                          RenderSizes        rs,
-                                         const std::string& text,
+                                         std::string const& text,
                                          SDL_Color          color,
                                          SDL_Color          bgColor,
                                          SDL_Color          introColor,
@@ -59,7 +72,7 @@ public:
                                          int                width);
     static void drawGreyTextWithIntroWrapped(SDL_Renderer*      renderer,
                                              RenderSizes        rs,
-                                             const std::string& text,
+                                             std::string const& text,
                                              SDL_Color          introColor,
                                              SDL_Color          introBgColor,
                                              int                fontSize,

@@ -31,6 +31,13 @@ protected:
         DOWN
     };
 
+    enum Speed
+    {
+        BIKE = 1,
+        RUN = 2,
+        WALK = 3
+    };
+
     std::map<std::string, std::pair<SDL_Surface*, SDL_Texture*>> sprites;
 
     SDL_Surface* playerSurface;
@@ -46,11 +53,8 @@ protected:
     size_t               playerLevel      = 0;
     size_t               playerSpriteRow  = 0;
 
-    // TODO
-    // 4 walk
-    // 2 run
-    // 1 bike
-    int speed = 4;
+    Speed speed = WALK;
+    Speed previousSpeed = WALK;
 };
 
 #endif // MAP_H

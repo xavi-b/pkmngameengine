@@ -38,7 +38,17 @@ MapScene::~MapScene()
 
 void MapScene::update(Inputs const* inputs)
 {
+    previousSpeed = speed;
+
+    speed = WALK;
+    if (inputs->B)
+        speed = RUN;
+
     accumulatedTicks = (accumulatedTicks + 1) % speed;
+
+    if (direction == NONE && speed == WALK)
+        accumulatedTicks = 0;
+
     if (accumulatedTicks != 0)
         return;
 
@@ -176,13 +186,15 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
     dstPlayerRect.h = PlayerPixelHeight * rs.wh / rs.ah + 1;
 
     int playerOffsetX =
-        (rs.ww - dstTilePixelWidth) / 2 -
-        (playerPreviousX + (playerX - playerPreviousX) * (accumulatedTicks + fps->tickPercentage()) / speed) *
-            TilePixelSize * rs.ww / rs.aw;
+        (rs.ww - dstTilePixelWidth) / 2
+        - (playerPreviousX
+           + (playerX - playerPreviousX) * (accumulatedTicks + fps->tickPercentage()) / ((speed + previousSpeed) / 2.0))
+              * dstTilePixelWidth;
     int playerOffsetY =
-        (rs.wh - dstTilePixelHeight) / 2 -
-        (playerPreviousY + (playerY - playerPreviousY) * (accumulatedTicks + fps->tickPercentage()) / speed) *
-            TilePixelSize * rs.wh / rs.ah;
+        (rs.wh - dstTilePixelHeight) / 2
+        - (playerPreviousY
+           + (playerY - playerPreviousY) * (accumulatedTicks + fps->tickPercentage()) / ((speed + previousSpeed) / 2.0))
+              * dstTilePixelHeight;
 
     for (size_t l = 0; l < map->getLevels().size(); ++l)
     {
@@ -192,7 +204,6 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
         {
             auto& layer = level->getTileLayers()[h];
 
-            // TODO draw only visible tiles
             for (size_t i = 0; i < map->getNCol(); ++i)
             {
                 for (size_t j = 0; j < map->getNRow(); ++j)
@@ -214,12 +225,17 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
                         srcRect.h = TilePixelSize;
 
                         SDL_Rect dstRect;
-                        dstRect.x = i * TilePixelSize * rs.ww / rs.aw + playerOffsetX;
-                        dstRect.y = j * TilePixelSize * rs.wh / rs.ah + playerOffsetY;
-                        dstRect.w = TilePixelSize * rs.ww / rs.aw + 1;
-                        dstRect.h = TilePixelSize * rs.wh / rs.ah + 1;
+                        dstRect.x = i * dstTilePixelWidth + playerOffsetX;
+                        dstRect.y = j * dstTilePixelHeight + playerOffsetY;
+                        dstRect.w = dstTilePixelWidth + 1;
+                        dstRect.h = dstTilePixelHeight + 1;
 
-                        SDL_RenderCopy(renderer, sprites[path].second, &srcRect, &dstRect);
+                        // draw only visible tiles
+                        if (dstRect.x >= -dstTilePixelWidth && dstRect.x <= (rs.ww + dstTilePixelWidth)
+                            && dstRect.y >= -dstTilePixelHeight && dstRect.y <= rs.wh + dstTilePixelHeight)
+                        {
+                            SDL_RenderCopy(renderer, sprites[path].second, &srcRect, &dstRect);
+                        }
                     }
                 }
             }
