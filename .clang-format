@@ -1,5 +1,6 @@
 AccessModifierOffset: -4
 AlignAfterOpenBracket: Align
+AlignArrayOfStructures: Left
 AlignConsecutiveAssignments: true
 AlignConsecutiveDeclarations: true
 AlignOperands: AlignAfterOperator
@@ -11,8 +12,11 @@ BinPackArguments: false
 BinPackParameters: false
 BreakBeforeBinaryOperators: NonAssignment
 ColumnLimit: 120
+EmptyLineBeforeAccessModifier: Always
+IncludeBlocks: Regroup
 Language: Cpp
 NamespaceIndentation: None
 PointerBindsToType: true
 QualifierAlignment: Right
-SortIncludes: false
+SeparateDefinitionBlocks: Always
+SortIncludes: true

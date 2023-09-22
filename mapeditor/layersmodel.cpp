@@ -1,6 +1,6 @@
 #include "layersmodel.h"
 
-LayersModel::LayersModel(QObject* parent) : QAbstractListModel{parent}
+LayersModel::LayersModel(QObject* parent) : QAbstractListModel(parent)
 {
 }
 

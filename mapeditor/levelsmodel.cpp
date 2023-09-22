@@ -1,6 +1,6 @@
 #include "levelsmodel.h"
 
-LevelsModel::LevelsModel(QObject* parent) : QAbstractListModel{parent}
+LevelsModel::LevelsModel(QObject* parent) : QAbstractListModel(parent)
 {
 }
 

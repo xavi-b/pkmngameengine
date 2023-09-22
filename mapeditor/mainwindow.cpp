@@ -1,14 +1,14 @@
 #include "mainwindow.h"
 
-#include <QTreeView>
-#include <QFileSystemModel>
-#include <QHBoxLayout>
-#include <QScrollArea>
-#include <QMenuBar>
-#include <QFileDialog>
-#include <QMessageBox>
 #include "imageviewer.h"
 
+#include <QFileDialog>
+#include <QFileSystemModel>
+#include <QHBoxLayout>
+#include <QMenuBar>
+#include <QMessageBox>
+#include <QScrollArea>
+#include <QTreeView>
 #include <iostream>
 
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
@@ -147,7 +147,7 @@ QString MainWindow::saveFile(bool saveAs)
             return {};
         }
 
-        file.write(serialize(js::value_from(mapArea->viewer()->contentWidget()->getMap())).c_str());
+        file.write(js::serialize(js::value_from(mapArea->viewer()->contentWidget()->getMap())).c_str());
     }
 
     QSettings().setValue("lastDir", QFileInfo(fileName).dir().path());

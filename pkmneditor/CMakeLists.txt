@@ -13,18 +13,24 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
-set(PROJECT_SOURCES
-        main.cpp
-        mainwindow.cpp
-        mainwindow.h
-)
-
 qt_add_executable(${MODULE_NAME}
     MANUAL_FINALIZATION
-    ${PROJECT_SOURCES}
+    main.cpp
+    mainwindow.h
+    mainwindow.cpp
+    typesview.h
+    typesview.cpp
+    typewidget.h
+    typewidget.cpp
+    objectlistmodel.h
+    objectlistmodel.cpp
 )
 
+# Qt
 target_link_libraries(${MODULE_NAME} PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+
+# pkmnlibrary
+target_link_libraries(${MODULE_NAME} PRIVATE pkmnlibrary)
 
 set_target_properties(${MODULE_NAME} PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER ${MODULE_NAME}.${DOMAIN}

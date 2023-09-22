@@ -6,6 +6,8 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
 
     createMenus();
 
+    typesView = new TypesView;
+
     QWidget*     w          = new QWidget;
     QVBoxLayout* vLayout    = new QVBoxLayout;
     QWidget*     gridWidget = new QWidget;
@@ -13,6 +15,9 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
 
     QPushButton* button1 = new QPushButton(tr("Types"));
     button1->setFixedSize(200, 150);
+    connect(button1, &QPushButton::clicked, this, [=]() {
+        stackedWidget->setCurrentWidget(typesView);
+    });
     gridLayout->addWidget(button1, 0, 0);
     QPushButton* button2 = new QPushButton(tr("Abilities"));
     button2->setFixedSize(200, 150);
@@ -33,6 +38,12 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
 
     stackedWidget = new QStackedWidget;
     stackedWidget->addWidget(w);
+
+    connect(typesView, &TypesView::back, this, [=]() {
+        stackedWidget->setCurrentIndex(0);
+    });
+    stackedWidget->addWidget(typesView);
+
     setCentralWidget(stackedWidget);
 }
 
@@ -62,7 +73,33 @@ void MainWindow::createMenus()
             //            }
 
             openedFileName = "";
-            // TODO
+            if (types)
+                types->clear();
+
+            // Types
+            pt::ptree ptTypes;
+
+            std::ifstream typesFile(QDir(dirName).absoluteFilePath("types.txt").toStdString());
+            if (typesFile.is_open())
+            {
+                std::string       line;
+                std::stringstream stream;
+
+                while (getline(typesFile, line))
+                {
+                    if (line[0] != '#')
+                        stream << line << '\n';
+                }
+                typesFile.close();
+
+                pt::ini_parser::read_ini(stream, ptTypes);
+                types = std::make_shared<std::vector<Type::TypePtr>>(Type::vectorFromPropertyTree(ptTypes));
+                typesView->setTypes(types);
+            }
+            else
+            {
+                QMessageBox::warning(this, "Types file issue", "Unable to open file for reading");
+            }
 
             stackedWidget->setCurrentIndex(0);
             QSettings().setValue("lastDir", dirName);
@@ -89,7 +126,12 @@ void MainWindow::createMenus()
 
             openedFileName  = fileName;
             QByteArray data = file.readAll();
-            // TODO
+            js::value  json = js::parse(data.data());
+
+            // Types
+            types = std::make_shared<std::vector<Type::TypePtr>>(
+                js::value_to<std::vector<Type::TypePtr>>(json.as_object()["types"]));
+            typesView->setTypes(types);
 
             stackedWidget->setCurrentIndex(0);
             QSettings().setValue("lastDir", QFileInfo(fileName).dir().path());
@@ -131,7 +173,12 @@ QString MainWindow::saveFile(bool saveAs)
             return {};
         }
 
-        // TODO file.write
+        js::object json;
+
+        // Types
+        json["types"] = js::value_from(*(types.get()));
+
+        file.write(js::serialize(json).c_str());
     }
 
     QSettings().setValue("lastDir", QFileInfo(fileName).dir().path());
