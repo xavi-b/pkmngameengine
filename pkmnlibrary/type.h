@@ -14,7 +14,7 @@ namespace pt = boost::property_tree;
 class Type
 {
 public:
-    using TypePtr = std::unique_ptr<Type>;
+    using TypePtr = std::shared_ptr<Type>;
 
     Type();
 
@@ -29,6 +29,12 @@ public:
     std::vector<std::string> getWeaknesses() const;
     std::vector<std::string> getResistances() const;
     std::vector<std::string> getImmunities() const;
+
+    void setId(std::string const& newId);
+    void setName(std::string const& newName);
+    void setWeaknesses(std::vector<std::string> const& newWeaknesses);
+    void setResistances(std::vector<std::string> const& newResistances);
+    void setImmunities(std::vector<std::string> const& newImmunities);
 
 private:
     std::string              id;

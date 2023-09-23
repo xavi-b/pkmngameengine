@@ -1,7 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "typesview.h"
+#include "editors/typesview.h"
 
 #include <QFileDialog>
 #include <QGridLayout>
@@ -30,6 +30,6 @@ private:
 
     QString openedFileName;
 
-    std::shared_ptr<std::vector<Type::TypePtr>> types;
+    std::vector<Type::TypePtr> types;
 };
 #endif // MAINWINDOW_H

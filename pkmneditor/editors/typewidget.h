@@ -3,6 +3,8 @@
 
 #include "type.h"
 
+#include <QFormLayout>
+#include <QLineEdit>
 #include <QWidget>
 
 class TypeWidget : public QWidget
@@ -12,7 +14,16 @@ class TypeWidget : public QWidget
 public:
     explicit TypeWidget(QWidget* parent = nullptr);
 
+    void setType(Type::TypePtr const& newType);
+
 signals:
+    void idChanged();
+
+private:
+    Type::TypePtr type;
+
+    QLineEdit* idLineEdit;
+    QLineEdit* nameLineEdit;
 };
 
 #endif // TYPEWIDGET_H

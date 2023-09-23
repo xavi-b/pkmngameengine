@@ -73,8 +73,7 @@ void MainWindow::createMenus()
             //            }
 
             openedFileName = "";
-            if (types)
-                types->clear();
+            types.clear();
 
             // Types
             pt::ptree ptTypes;
@@ -93,7 +92,7 @@ void MainWindow::createMenus()
                 typesFile.close();
 
                 pt::ini_parser::read_ini(stream, ptTypes);
-                types = std::make_shared<std::vector<Type::TypePtr>>(Type::vectorFromPropertyTree(ptTypes));
+                types = Type::vectorFromPropertyTree(ptTypes);
                 typesView->setTypes(types);
             }
             else
@@ -129,8 +128,7 @@ void MainWindow::createMenus()
             js::value  json = js::parse(data.data());
 
             // Types
-            types = std::make_shared<std::vector<Type::TypePtr>>(
-                js::value_to<std::vector<Type::TypePtr>>(json.as_object()["types"]));
+            types = js::value_to<std::vector<Type::TypePtr>>(json.as_object()["types"]);
             typesView->setTypes(types);
 
             stackedWidget->setCurrentIndex(0);
@@ -176,7 +174,7 @@ QString MainWindow::saveFile(bool saveAs)
         js::object json;
 
         // Types
-        json["types"] = js::value_from(*(types.get()));
+        json["types"] = js::value_from(types);
 
         file.write(js::serialize(json).c_str());
     }

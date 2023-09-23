@@ -17,6 +17,13 @@ QVariant ObjectListModel::data(QModelIndex const& index, int role) const
     return getItem(index)->data(role);
 }
 
+void ObjectListModel::removeItem(int row)
+{
+    beginRemoveRows(QModelIndex(), row, row);
+    items.erase(items.cbegin() + row);
+    endRemoveRows();
+}
+
 ObjectListItem* ObjectListModel::getItem(QModelIndex const& index) const
 {
     return items.at(index.row()).get();

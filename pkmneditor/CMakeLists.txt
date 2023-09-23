@@ -15,15 +15,26 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
 qt_add_executable(${MODULE_NAME}
     MANUAL_FINALIZATION
-    main.cpp
-    mainwindow.h
-    mainwindow.cpp
-    typesview.h
-    typesview.cpp
-    typewidget.h
-    typewidget.cpp
-    objectlistmodel.h
-    objectlistmodel.cpp
+)
+
+# global
+file(GLOB SRC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+file(GLOB INC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
+
+target_sources(${MODULE_NAME}
+   PRIVATE
+       ${SRC_FILES}
+       ${INC_FILES}
+)
+
+# editors
+file(GLOB SRC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/editors/*.cpp")
+file(GLOB INC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/editors/*.h")
+
+target_sources(${MODULE_NAME}
+   PRIVATE
+       ${SRC_FILES}
+       ${INC_FILES}
 )
 
 # Qt

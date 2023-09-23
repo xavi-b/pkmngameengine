@@ -13,7 +13,7 @@ template <class T>
 class TemplateListItem : public ObjectListItem
 {
 public:
-    TemplateListItem(std::unique_ptr<T>& ptr) : ptr(ptr)
+    TemplateListItem(std::shared_ptr<T> ptr) : ptr(ptr)
     {
     }
 
@@ -28,8 +28,13 @@ public:
         return QVariant();
     }
 
+    std::shared_ptr<T> getPtr() const
+    {
+        return ptr;
+    }
+
 private:
-    std::unique_ptr<T>& ptr;
+    std::shared_ptr<T> ptr;
 };
 
 class ObjectListModel : public QAbstractListModel
@@ -43,22 +48,53 @@ public:
     virtual QVariant data(QModelIndex const& index, int role) const override;
 
     template <class T>
-    void setObjects(std::shared_ptr<std::vector<std::unique_ptr<T>>>& objects)
+    void setObjects(std::vector<std::shared_ptr<T>> const& objects)
     {
         beginResetModel();
         items.clear();
-        std::vector<std::unique_ptr<T>>& v = *(objects.get());
-        for (auto& i : v)
+        for (auto& i : objects)
         {
-            qDebug() << i->getId().c_str();
-            items.push_back(std::make_unique<TemplateListItem<T>>(i));
+            if (i)
+            {
+                qDebug() << i->getId().c_str();
+                items.push_back(std::make_unique<TemplateListItem<T>>(i));
+            }
         }
         endResetModel();
     }
 
-private:
+    template <class T>
+    std::vector<std::shared_ptr<T>> getObjects() const
+    {
+        std::vector<std::shared_ptr<T>> objects;
+        for (auto& i : items)
+        {
+            auto item = dynamic_cast<TemplateListItem<T>>(i.get());
+            if (item)
+            {
+                objects.push_back(item.getPtr());
+            }
+        }
+        return objects;
+    }
+
+    template <class T>
+    void appendItem(std::shared_ptr<T> object)
+    {
+        beginInsertRows(QModelIndex(), items.size(), items.size());
+        if (object)
+        {
+            qDebug() << object->getId().c_str();
+            items.push_back(std::make_unique<TemplateListItem<T>>(object));
+        }
+        endInsertRows();
+    }
+
+    void removeItem(int row);
+
     ObjectListItem* getItem(QModelIndex const& index) const;
 
+private:
     std::vector<std::unique_ptr<ObjectListItem>> items;
 };
 
