@@ -1,9 +1,11 @@
 #ifndef TYPEWIDGET_H
 #define TYPEWIDGET_H
 
+#include "../idsselector.h"
 #include "type.h"
 
 #include <QFormLayout>
+#include <QLabel>
 #include <QLineEdit>
 #include <QWidget>
 
@@ -14,7 +16,8 @@ class TypeWidget : public QWidget
 public:
     explicit TypeWidget(QWidget* parent = nullptr);
 
-    void setType(Type::TypePtr const& newType);
+    void setAvailableTypes(std::vector<Type::TypePtr> const& types);
+    void setType(Type::TypePtr const& type);
 
 signals:
     void idChanged();
@@ -24,6 +27,10 @@ private:
 
     QLineEdit* idLineEdit;
     QLineEdit* nameLineEdit;
+
+    IdsSelector* weaknessesSelector;
+    IdsSelector* resistancesSelector;
+    IdsSelector* immunitiesSelector;
 };
 
 #endif // TYPEWIDGET_H

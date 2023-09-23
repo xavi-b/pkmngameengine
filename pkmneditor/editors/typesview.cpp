@@ -51,9 +51,12 @@ TypesView::TypesView(QWidget* parent) : QWidget(parent)
 
     QPushButton* removeButton = new QPushButton(tr("Remove"));
     connect(removeButton, &QPushButton::clicked, this, [=]() {
-        QModelIndex const& index         = listView->selectionModel()->currentIndex();
-        QModelIndex const& originalIndex = proxyModel->mapToSource(index);
-        model->removeItem(originalIndex.row());
+        QModelIndex const& index = listView->selectionModel()->currentIndex();
+        if (index.isValid())
+        {
+            QModelIndex const& originalIndex = proxyModel->mapToSource(index);
+            model->removeItem(originalIndex.row());
+        }
     });
     leftLayout->addWidget(removeButton);
 
@@ -76,19 +79,26 @@ TypesView::TypesView(QWidget* parent) : QWidget(parent)
     listView->setModel(proxyModel);
 
     connect(listView->selectionModel(), &QItemSelectionModel::currentRowChanged, this, [=](QModelIndex const& index) {
-        QModelIndex const&      originalIndex = proxyModel->mapToSource(index);
-        TemplateListItem<Type>* item          = dynamic_cast<TemplateListItem<Type>*>(model->getItem(originalIndex));
-        if (item)
+        if (index.isValid())
         {
-            auto type = item->getPtr();
-            typeWidget->setType(type);
+            QModelIndex const&      originalIndex = proxyModel->mapToSource(index);
+            TemplateListItem<Type>* item = dynamic_cast<TemplateListItem<Type>*>(model->getItem(originalIndex));
+            if (item)
+            {
+                auto type = item->getPtr();
+                typeWidget->setAvailableTypes(model->getObjects<Type>());
+                typeWidget->setType(type);
+            }
         }
     });
 
     connect(typeWidget, &TypeWidget::idChanged, this, [=]() {
-        QModelIndex const& index         = listView->selectionModel()->currentIndex();
-        QModelIndex const& originalIndex = proxyModel->mapToSource(index);
-        emit               model->dataChanged(originalIndex, originalIndex);
+        QModelIndex const& index = listView->selectionModel()->currentIndex();
+        if (index.isValid())
+        {
+            QModelIndex const& originalIndex = proxyModel->mapToSource(index);
+            emit               model->dataChanged(originalIndex, originalIndex);
+        }
     });
 }
 

@@ -69,10 +69,10 @@ public:
         std::vector<std::shared_ptr<T>> objects;
         for (auto& i : items)
         {
-            auto item = dynamic_cast<TemplateListItem<T>>(i.get());
+            auto item = dynamic_cast<TemplateListItem<T>*>(i.get());
             if (item)
             {
-                objects.push_back(item.getPtr());
+                objects.push_back(item->getPtr());
             }
         }
         return objects;
