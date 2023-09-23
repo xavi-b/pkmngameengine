@@ -7,6 +7,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
     createMenus();
 
     typesView = new TypesView;
+    pkmnsView = new PkmnsView;
 
     QWidget*     w          = new QWidget;
     QVBoxLayout* vLayout    = new QVBoxLayout;
@@ -30,6 +31,9 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
     gridLayout->addWidget(button4, 1, 0);
     QPushButton* button5 = new QPushButton(tr("Pkmns"));
     button5->setFixedSize(200, 150);
+    connect(button5, &QPushButton::clicked, this, [=]() {
+        stackedWidget->setCurrentWidget(pkmnsView);
+    });
     gridLayout->addWidget(button5, 1, 1);
 
     gridWidget->setLayout(gridLayout);
@@ -43,6 +47,10 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
         stackedWidget->setCurrentIndex(0);
     });
     stackedWidget->addWidget(typesView);
+    connect(pkmnsView, &PkmnsView::back, this, [=]() {
+        stackedWidget->setCurrentIndex(0);
+    });
+    stackedWidget->addWidget(pkmnsView);
 
     setCentralWidget(stackedWidget);
 }
@@ -64,41 +72,14 @@ void MainWindow::createMenus()
             return;
         else
         {
-            //            QFile file(fileName);
-
-            //            if (!file.open(QIODevice::ReadOnly))
-            //            {
-            //                QMessageBox::information(this, tr("Unable to open file"), file.errorString());
-            //                return;
-            //            }
-
             openedFileName = "";
-            types.clear();
 
             // Types
-            pt::ptree ptTypes;
-
-            std::ifstream typesFile(QDir(dirName).absoluteFilePath("types.txt").toStdString());
-            if (typesFile.is_open())
-            {
-                std::string       line;
-                std::stringstream stream;
-
-                while (getline(typesFile, line))
-                {
-                    if (line[0] != '#')
-                        stream << line << '\n';
-                }
-                typesFile.close();
-
-                pt::ini_parser::read_ini(stream, ptTypes);
-                types = Type::vectorFromPropertyTree(ptTypes);
-                typesView->setTypes(types);
-            }
-            else
-            {
-                QMessageBox::warning(this, "Types file issue", "Unable to open file for reading");
-            }
+            types = Type::vectorFromPropertyTree(readPropertyTree(dirName, "types.txt"));
+            typesView->setTypes(types);
+            // Pkmns
+            pkmns = Pkmn::vectorFromPropertyTree(readPropertyTree(dirName, "pokemon.txt"));
+            pkmnsView->setPkmns(pkmns);
 
             stackedWidget->setCurrentIndex(0);
             QSettings().setValue("lastDir", dirName);
@@ -130,6 +111,9 @@ void MainWindow::createMenus()
             // Types
             types = js::value_to<std::vector<Type::TypePtr>>(json.as_object()["types"]);
             typesView->setTypes(types);
+            // Pkmns
+            pkmns = js::value_to<std::vector<Pkmn::PkmnPtr>>(json.as_object()["pkmns"]);
+            pkmnsView->setPkmns(pkmns);
 
             stackedWidget->setCurrentIndex(0);
             QSettings().setValue("lastDir", QFileInfo(fileName).dir().path());
@@ -145,9 +129,26 @@ void MainWindow::createMenus()
         if (QString fileName = saveFile(true); !fileName.isEmpty())
             openedFileName = fileName;
     });
+    QAction* spritesAct = new QAction(tr("Select sprites folder"));
+    connect(spritesAct, &QAction::triggered, this, [=]() {
+        QString lastDir = QSettings().value("lastSpritesDir").toString();
+        QString dirName = QFileDialog::getExistingDirectory(this, tr("Open folder"), lastDir);
+
+        if (dirName.isEmpty())
+            return;
+        else
+        {
+            pkmnsView->setSpritesDirectory(dirName);
+
+            QSettings().setValue("lastSpritesDir", dirName);
+            QSettings().sync();
+        }
+    });
     fileMenu->addAction(openFolderAct);
     fileMenu->addAction(openFileAct);
     fileMenu->addAction(saveAct);
+    fileMenu->addSeparator();
+    fileMenu->addAction(spritesAct);
 }
 
 QString MainWindow::saveFile(bool saveAs)
@@ -175,6 +176,8 @@ QString MainWindow::saveFile(bool saveAs)
 
         // Types
         json["types"] = js::value_from(types);
+        // Pkmns
+        json["pkmns"] = js::value_from(pkmns);
 
         file.write(js::serialize(json).c_str());
     }
@@ -183,4 +186,31 @@ QString MainWindow::saveFile(bool saveAs)
     QSettings().sync();
 
     return fileName;
+}
+
+pt::ptree MainWindow::readPropertyTree(QString const& dirName, QString const& fileName)
+{
+    pt::ptree ptPkmns;
+
+    std::ifstream pkmnsFile(QDir(dirName).absoluteFilePath(fileName).toStdString());
+    if (pkmnsFile.is_open())
+    {
+        std::string       line;
+        std::stringstream stream;
+
+        while (getline(pkmnsFile, line))
+        {
+            if (line[0] != '#')
+                stream << line << '\n';
+        }
+        pkmnsFile.close();
+
+        pt::ini_parser::read_ini(stream, ptPkmns);
+    }
+    else
+    {
+        QMessageBox::warning(this, "Opening file issue", "Unable to open file for reading: " + fileName);
+    }
+
+    return ptPkmns;
 }

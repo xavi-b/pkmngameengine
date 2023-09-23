@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "editors/pkmnsview.h"
 #include "editors/typesview.h"
 
 #include <QFileDialog>
@@ -25,11 +26,16 @@ private:
     void    createMenus();
     QString saveFile(bool saveAs = false);
 
+    pt::ptree readPropertyTree(QString const& dirName, QString const& fileName);
+
     QStackedWidget* stackedWidget;
     TypesView*      typesView;
+    PkmnsView*      pkmnsView;
 
     QString openedFileName;
 
     std::vector<Type::TypePtr> types;
+    std::vector<Pkmn::PkmnPtr> pkmns;
 };
+
 #endif // MAINWINDOW_H
