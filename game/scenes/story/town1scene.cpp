@@ -22,6 +22,10 @@ std::string Town1Scene::name()
 
 std::unique_ptr<Scene> Town1Scene::nextScene()
 {
+    auto scene = MapScene::nextScene();
+    if (scene)
+        return scene;
+
     auto& layer = map->getLevels()[playerLevel]->getEventLayer();
     auto& event = (*layer.get())(playerX, playerY);
     if (event && event->getId() == "Road1")

@@ -40,7 +40,7 @@ void Map::setNRow(size_t v)
         levels[i]->setNRow(v);
 }
 
-std::vector<EncounterMethod> Map::getEncounterMethods() const
+std::vector<EncounterMethod> const& Map::getEncounterMethods() const
 {
     return encounterMethods;
 }

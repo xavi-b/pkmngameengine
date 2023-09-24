@@ -17,4 +17,6 @@ namespace lc = boost::locale;
 
 std::ostream& operator<<(std::ostream& o, SDL_Rect r);
 
+size_t randint(size_t min, size_t max);
+
 #endif // DEFINES_H

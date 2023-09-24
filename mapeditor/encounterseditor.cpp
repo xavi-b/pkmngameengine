@@ -52,7 +52,7 @@ EncountersEditor::EncountersEditor(QWidget* parent) : QWidget(parent)
                                                || encounterMethod->getType() == EncounterMethod::Type::LAND_MORNING
                                                || encounterMethod->getType() == EncounterMethod::Type::CAVE
                                                || encounterMethod->getType() == EncounterMethod::Type::WATER);
-                    densitySpinBox->setValue(encounterMethod->getDensity());
+                    densitySpinBox->setValue(densitySpinBox->isEnabled() ? encounterMethod->getDensity() : 0);
                     encountersModel->setEncounters(encounterMethod->getEncounters());
                 }
             });
@@ -73,6 +73,10 @@ EncountersEditor::EncountersEditor(QWidget* parent) : QWidget(parent)
             if (index.isValid())
             {
                 encountersModel->addEncounter(d.getEncounter());
+                auto type            = static_cast<EncounterMethod::Type>(index.row());
+                auto encounterMethod = currentEncounterMethod(type);
+                if (encounterMethod)
+                    encounterMethod->setEncounters(encountersModel->getEncounters());
             }
         }
     });

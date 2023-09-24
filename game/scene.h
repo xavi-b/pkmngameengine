@@ -20,6 +20,7 @@ public:
 
     virtual bool popScene() const;
     virtual bool pushScene() const;
+    virtual void popReset();
 
     virtual std::unique_ptr<Scene> nextScene();
 

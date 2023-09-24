@@ -1,8 +1,11 @@
 #ifndef MAPSCENE_H
 #define MAPSCENE_H
 
+#include "battlescene.h"
 #include "map.h"
+#include "pkmn.h"
 #include "scene.h"
+#include "utils.h"
 
 #include <SDL_image.h>
 #include <map>
@@ -37,6 +40,13 @@ public:
 
     virtual void initPlayerPosition(int x, int y, Direction direction);
 
+    virtual bool manageEncounters();
+
+    virtual bool pushScene() const override;
+    virtual void popReset() override;
+
+    virtual std::unique_ptr<Scene> nextScene() override;
+
 protected:
     static constexpr int TilePixelSize     = 32;
     static constexpr int PlayerPixelHeight = 48;
@@ -58,6 +68,8 @@ protected:
 
     Speed speed         = WALK;
     Speed previousSpeed = WALK;
+
+    Pkmn::PkmnPtr encounteredPkmn;
 };
 
 #endif // MAP_H

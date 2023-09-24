@@ -15,11 +15,12 @@ class Pkmn
 public:
     using PkmnPtr = std::shared_ptr<Pkmn>;
 
-    Pkmn();
+    Pkmn(PkmnDef::PkmnDefPtr type, size_t level);
 
 private:
     std::array<Move, 4> moves;
     PkmnDef::PkmnDefPtr type;
+    size_t              level = 0;
 };
 
 #endif // PKMN_H

@@ -1,8 +1,6 @@
 #ifndef PKMNDEF_H
 #define PKMNDEF_H
 
-#include "type.h"
-
 #include <boost/json.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/property_tree/ptree.hpp>

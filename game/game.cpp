@@ -41,6 +41,15 @@ Game::Game(int argc, char* argv[])
     gen.add_messages_path(".");
     gen.add_messages_domain(PROJECT_NAME);
 
+    std::ifstream     dataFile("resources/data.json");
+    std::stringstream buffer;
+    buffer << dataFile.rdbuf();
+    js::value json = js::parse(buffer.str());
+    // Types
+    data.types = js::value_to<std::vector<Type::TypePtr>>(json.as_object()["types"]);
+    // Pkmns
+    data.pkmns = js::value_to<std::vector<PkmnDef::PkmnDefPtr>>(json.as_object()["pkmns"]);
+
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
     TTF_Init();
     Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024);
@@ -108,6 +117,7 @@ int Game::exec()
                 printDebug();
                 std::cout << scenes.back()->name() << " scene popped !" << std::endl;
                 scenes.pop_back();
+                scenes.back()->popReset();
                 printDebug();
             }
             else

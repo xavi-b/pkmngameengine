@@ -4,6 +4,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <random>
 #include <sstream>
 
 MapScene::MapScene(SDL_Renderer* renderer, std::string const& mapPath) : Scene(renderer)
@@ -52,9 +53,14 @@ void MapScene::update(Inputs const* inputs)
     if (accumulatedTicks != 0)
         return;
 
+    bool encounter = manageEncounters();
+
     direction       = NONE;
     playerPreviousY = playerY;
     playerPreviousX = playerX;
+
+    if (encounter)
+        return;
 
     if (inputs->up)
     {
@@ -337,4 +343,82 @@ void MapScene::initPlayerPosition(int x, int y, Direction direction)
     playerPreviousX = x;
     playerPreviousY = y;
     this->direction = direction;
+}
+
+bool MapScene::manageEncounters()
+{
+    if (direction != NONE && !encounteredPkmn)
+    {
+        auto& level = map->getLevels()[playerLevel];
+
+        auto& specialTileLayer = level->getSpecialTileLayer();
+        auto& specialTile      = (*specialTileLayer.get())(playerX, playerY);
+        if (specialTile && *(specialTile.get()) == GRASS)
+        {
+            // TODO all cases
+            auto const& encounterMethods = map->getEncounterMethods();
+            auto it = std::find_if(encounterMethods.begin(), encounterMethods.end(), [=](EncounterMethod const& e) {
+                return e.getType() == EncounterMethod::Type::LAND;
+            });
+            if (it != encounterMethods.end())
+            {
+                auto const& encounterMethod = *it;
+                size_t      pkmnEncounter   = randint(0, 99);
+
+                if (Game::instance()->isDebug())
+                    std::cout << "PkmnEncounter: " << pkmnEncounter << "/" << encounterMethod.getDensity() << std::endl;
+
+                if (pkmnEncounter < encounterMethod.getDensity())
+                {
+                    std::random_device  rd;
+                    std::mt19937        gen(rd());
+                    auto const&         encounters = encounterMethod.getEncounters();
+                    std::vector<double> weights;
+                    double              accumulated = 0;
+                    for (auto const& e : encounters)
+                    {
+                        accumulated += e.getPercentage();
+                        weights.push_back(e.getPercentage());
+                    }
+                    for (auto& w : weights)
+                    {
+                        w /= accumulated;
+                    }
+                    std::discrete_distribution<> d(weights.begin(), weights.end());
+                    int                          eIndex = d(gen);
+                    Encounter                    e      = encounters[eIndex];
+
+                    if (Game::instance()->isDebug())
+                        std::cout << "PkmnDef: " << e.getPkmnId() << std::endl;
+
+                    PkmnDef::PkmnDefPtr pkmnDef = Game::instance()->data.pkmnDefFor(e.getPkmnId());
+                    if (pkmnDef)
+                        encounteredPkmn = std::make_shared<Pkmn>(pkmnDef, randint(e.getLevelMin(), e.getLevelMax()));
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+bool MapScene::pushScene() const
+{
+    return encounteredPkmn != nullptr;
+}
+
+void MapScene::popReset()
+{
+    encounteredPkmn.reset();
+}
+
+std::unique_ptr<Scene> MapScene::nextScene()
+{
+    if (encounteredPkmn)
+    {
+        auto scene = std::make_unique<BattleScene>(renderer);
+        return scene;
+    }
+    return nullptr;
 }

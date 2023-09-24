@@ -158,7 +158,7 @@ QString MainWindow::saveFile(bool saveAs)
     if (saveAs || openedFileName.isEmpty())
     {
         fileName =
-            QFileDialog::getSaveFileName(this, tr("Save map"), saveAs ? "" : openedFileName, tr("Map (*.pkmap)"));
+            QFileDialog::getSaveFileName(this, tr("Save map"), saveAs ? "" : openedFileName, tr("JSON (*.json)"));
     }
 
     if (fileName.isEmpty())

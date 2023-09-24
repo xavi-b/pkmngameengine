@@ -22,6 +22,11 @@ bool Scene::pushScene() const
     return false;
 }
 
+void Scene::popReset()
+{
+
+}
+
 std::unique_ptr<Scene> Scene::nextScene()
 {
     return nullptr;
