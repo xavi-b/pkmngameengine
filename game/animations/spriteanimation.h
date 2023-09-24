@@ -1,28 +1,29 @@
 #ifndef SPRITEANIMATION_H
 #define SPRITEANIMATION_H
 
-#include <vector>
-#include <memory>
-#include <functional>
 #include "animation.h"
-#include "renderutils.h"
 #include "effect.h"
+#include "renderutils.h"
+
 #include <SDL_image.h>
+#include <functional>
+#include <memory>
+#include <vector>
 
 class SpriteAnimation : public Animation
 {
 public:
     using RectLambda = std::function<SDL_Rect(SDL_Surface*, RenderSizes)>;
 
-    SpriteAnimation(SDL_Renderer* renderer, const std::string& spritePath, int duration);
+    SpriteAnimation(SDL_Renderer* renderer, std::string const& spritePath, int duration);
     ~SpriteAnimation();
 
     virtual void start() override;
     virtual void stop() override;
     virtual void incrementTicks() override;
-    virtual void draw(const Fps* fps, RenderSizes rs) override;
+    virtual void draw(Fps const* fps, RenderSizes rs) override;
 
-    void setRect(const RectLambda& rectLambda);
+    void setRect(RectLambda const& rectLambda);
     void addEffect(std::unique_ptr<Effect>&& effect);
 
     SDL_Surface* surface;

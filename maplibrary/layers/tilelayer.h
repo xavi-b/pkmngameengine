@@ -1,11 +1,12 @@
 #ifndef TILELAYER_H
 #define TILELAYER_H
 
-#include <vector>
+#include "layer.h"
+#include "tile.h"
+
 #include <memory>
 #include <string>
-#include "tile.h"
-#include "layer.h"
+#include <vector>
 
 class TileLayer : public Layer<Tile::TilePtr>
 {

@@ -1,17 +1,18 @@
 #ifndef GAME_H
 #define GAME_H
 
-#include <vector>
+#include "fps.h"
+#include "gamedata.h"
+#include "scene.h"
+
+#include <SDL.h>
+#include <SDL_mixer.h>
+#include <SDL_ttf.h>
+#include <boost/locale.hpp>
 #include <list>
 #include <memory>
 #include <string>
-#include <SDL.h>
-#include <SDL_ttf.h>
-#include <SDL_mixer.h>
-#include <boost/locale.hpp>
-#include "scene.h"
-#include "fps.h"
-#include "gamedata.h"
+#include <vector>
 
 class Game
 {

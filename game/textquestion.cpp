@@ -2,6 +2,7 @@
 
 #include "renderutils.h"
 #include "textspeech.h"
+
 #include <SDL_ttf.h>
 #include <iostream>
 
@@ -26,7 +27,7 @@ void TextQuestion::init()
     reset();
 }
 
-void TextQuestion::update(const Inputs* inputs)
+void TextQuestion::update(Inputs const* inputs)
 {
     if (inputs->A)
     {
@@ -44,7 +45,7 @@ void TextQuestion::update(const Inputs* inputs)
     }
 }
 
-void TextQuestion::draw(const Fps* /*fps*/, RenderSizes rs, Position pos)
+void TextQuestion::draw(Fps const* /*fps*/, RenderSizes rs, Position pos)
 {
     int borderSize    = 14;
     int dstBorderSize = borderSize * rs.wh / rs.ah;
@@ -54,7 +55,7 @@ void TextQuestion::draw(const Fps* /*fps*/, RenderSizes rs, Position pos)
     int dstHeight = height * rs.wh / rs.ah;
 
     int maxW = 0;
-    for (const auto& text : texts)
+    for (auto const& text : texts)
     {
         int w, h;
         TTF_SetFontSize(RenderUtils::instance()->font, fontSize);
@@ -76,7 +77,7 @@ void TextQuestion::draw(const Fps* /*fps*/, RenderSizes rs, Position pos)
     RenderUtils::drawBorderImage(renderer, rs, bgSurface, bgTexture, rect, borderSize, borderSize);
 
     int i = 0;
-    for (const auto& text : texts)
+    for (auto const& text : texts)
     {
         RenderUtils::drawGreyText(renderer,
                                   rs,
@@ -108,7 +109,7 @@ void TextQuestion::reset()
     selected     = false;
 }
 
-void TextQuestion::setTexts(const std::vector<std::string>& texts)
+void TextQuestion::setTexts(std::vector<std::string> const& texts)
 {
     this->texts = texts;
 }

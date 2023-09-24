@@ -1,13 +1,14 @@
 #ifndef MAPPERWIDGET_H
 #define MAPPERWIDGET_H
 
+#include "map.h"
+
+#include <QInputDialog>
 #include <QLabel>
 #include <QMouseEvent>
+#include <QPainter>
 #include <QResizeEvent>
 #include <QRubberBand>
-#include <QPainter>
-#include <QInputDialog>
-#include "map.h"
 
 class MapperWidget : public QWidget
 {

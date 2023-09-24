@@ -8,8 +8,8 @@ class Battle : public Scene
 public:
     Battle(SDL_Renderer* renderer);
 
-    virtual void update(const Inputs* inputs) override;
-    virtual void draw(const Fps* fps, RenderSizes rs) override;
+    virtual void update(Inputs const* inputs) override;
+    virtual void draw(Fps const* fps, RenderSizes rs) override;
 
     virtual std::unique_ptr<Scene> nextScene() override;
 

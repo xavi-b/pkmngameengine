@@ -1,17 +1,18 @@
 #ifndef ANIMATION_H
 #define ANIMATION_H
 
-#include <vector>
-#include <memory>
 #include "fps.h"
 #include "renderutils.h"
+
+#include <memory>
+#include <vector>
 
 struct AnimationFrame
 {
     int ticks    = 0;
     int duration = -1;
 
-    virtual void draw(const Fps* fps, RenderSizes rs) = 0;
+    virtual void draw(Fps const* fps, RenderSizes rs) = 0;
 };
 
 class Animation
@@ -26,14 +27,14 @@ public:
     virtual void incrementTicks();
     virtual bool isStarted() const;
     virtual bool isFinished() const;
-    virtual void draw(const Fps* fps, RenderSizes rs) = 0;
+    virtual void draw(Fps const* fps, RenderSizes rs) = 0;
     virtual void forceEnd();
 
 protected:
     SDL_Renderer* renderer;
 
-    bool  started         = false;
-    bool  finished        = false;
+    bool  started          = false;
+    bool  finished         = false;
     float accumulatedTicks = 0;
 };
 

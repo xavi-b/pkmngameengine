@@ -3,6 +3,7 @@
 
 #include "renderutils.h"
 #include "scene.h"
+
 #include <SDL_image.h>
 #include <SDL_mixer.h>
 
@@ -13,8 +14,8 @@ public:
     virtual ~TitleScene();
 
     virtual void init() override;
-    virtual void update(const Inputs* inputs) override;
-    virtual void draw(const Fps* fps, RenderSizes rs) override;
+    virtual void update(Inputs const* inputs) override;
+    virtual void draw(Fps const* fps, RenderSizes rs) override;
 
     virtual std::unique_ptr<Scene> nextScene() override;
 

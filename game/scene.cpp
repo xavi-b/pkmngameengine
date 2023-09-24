@@ -1,7 +1,6 @@
 #include "scene.h"
 
-Scene::Scene(SDL_Renderer* renderer)
-    : renderer(renderer)
+Scene::Scene(SDL_Renderer* renderer) : renderer(renderer)
 {
 }
 
@@ -30,5 +29,4 @@ std::unique_ptr<Scene> Scene::nextScene()
 
 void Scene::debug()
 {
-
 }

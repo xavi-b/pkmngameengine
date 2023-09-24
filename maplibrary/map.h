@@ -1,9 +1,10 @@
 #ifndef MAP_H
 #define MAP_H
 
-#include <vector>
-#include <memory>
 #include "level.h"
+
+#include <memory>
+#include <vector>
 
 class Map
 {

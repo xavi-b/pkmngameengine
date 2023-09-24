@@ -1,8 +1,9 @@
 #ifndef ENTITY_H
 #define ENTITY_H
 
-#include <memory>
 #include "sprite.h"
+
+#include <memory>
 
 class Entity
 {

@@ -1,15 +1,17 @@
 #ifndef MAPPERVIEWER_H
 #define MAPPERVIEWER_H
 
+#include "mapperwidget.h"
+
+#include <QLabel>
 #include <QScrollArea>
 #include <QScrollBar>
-#include <QLabel>
 #include <QWheelEvent>
-#include "mapperwidget.h"
 
 class MapperViewer : public QScrollArea
 {
     Q_OBJECT
+
 public:
     MapperViewer(QWidget* parent = nullptr);
 

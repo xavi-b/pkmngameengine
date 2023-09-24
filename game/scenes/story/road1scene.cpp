@@ -1,4 +1,5 @@
 #include "road1scene.h"
+
 #include "scenes/story/town1scene.h"
 
 Road1Scene::Road1Scene(SDL_Renderer* renderer) : MapScene(renderer, "resources/maps/road1.pkmap")

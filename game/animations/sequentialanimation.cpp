@@ -52,7 +52,7 @@ void SequentialAnimation::incrementTicks()
     }
 }
 
-void SequentialAnimation::draw(const Fps* fps, RenderSizes rs)
+void SequentialAnimation::draw(Fps const* fps, RenderSizes rs)
 {
     if (currentIndex < animations.size())
         animations[currentIndex]->draw(fps, rs);

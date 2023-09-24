@@ -23,7 +23,11 @@ void tag_invoke(js::value_from_tag, js::value& jv, Tile::TilePtr const& o)
 {
     if (o && !o->spritePath.empty())
     {
-        jv = {{"spritePath", o->spritePath}, {"col", o->col}, {"row", o->row}};
+        jv = {
+            {"spritePath", o->spritePath},
+            {"col",        o->col       },
+            {"row",        o->row       }
+        };
     }
     else
     {

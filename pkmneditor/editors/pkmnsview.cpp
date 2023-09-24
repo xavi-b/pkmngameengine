@@ -42,7 +42,7 @@ PkmnsView::PkmnsView(QWidget* parent) : QWidget(parent)
             QInputDialog::getText(this, tr("New Pkmn"), tr("Enter Pkmn ID:"), QLineEdit::Normal, QString(), &ok);
         if (ok)
         {
-            auto pkmn = std::make_shared<Pkmn>();
+            auto pkmn = std::make_shared<PkmnDef>();
             pkmn->setId(id.toStdString());
             model->appendItem(pkmn);
         }
@@ -81,8 +81,8 @@ PkmnsView::PkmnsView(QWidget* parent) : QWidget(parent)
     connect(listView->selectionModel(), &QItemSelectionModel::currentRowChanged, this, [=](QModelIndex const& index) {
         if (index.isValid())
         {
-            QModelIndex const&      originalIndex = proxyModel->mapToSource(index);
-            TemplateListItem<Pkmn>* item = dynamic_cast<TemplateListItem<Pkmn>*>(model->getItem(originalIndex));
+            QModelIndex const&         originalIndex = proxyModel->mapToSource(index);
+            TemplateListItem<PkmnDef>* item = dynamic_cast<TemplateListItem<PkmnDef>*>(model->getItem(originalIndex));
             if (item)
             {
                 auto pkmn = item->getPtr();
@@ -101,7 +101,7 @@ PkmnsView::PkmnsView(QWidget* parent) : QWidget(parent)
     });
 }
 
-void PkmnsView::setPkmns(std::vector<Pkmn::PkmnPtr> const& newPkmns)
+void PkmnsView::setPkmns(std::vector<PkmnDef::PkmnDefPtr> const& newPkmns)
 {
     model->setObjects(newPkmns);
 }

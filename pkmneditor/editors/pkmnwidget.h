@@ -1,7 +1,7 @@
 #ifndef PKMNWIDGET_H
 #define PKMNWIDGET_H
 
-#include "pkmn.h"
+#include "pkmndef.h"
 
 #include <QDir>
 #include <QFormLayout>
@@ -16,7 +16,7 @@ class PkmnWidget : public QWidget
 public:
     explicit PkmnWidget(QWidget* parent = nullptr);
 
-    void setPkmn(Pkmn::PkmnPtr const& pkmn);
+    void setPkmn(PkmnDef::PkmnDefPtr const& pkmn);
 
     void setSpritesDirectory(QString const& dirName);
 
@@ -24,7 +24,7 @@ signals:
     void idChanged();
 
 private:
-    Pkmn::PkmnPtr pkmn;
+    PkmnDef::PkmnDefPtr pkmn;
 
     QLineEdit* idLineEdit;
     QLineEdit* nameLineEdit;

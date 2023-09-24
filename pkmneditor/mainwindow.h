@@ -34,8 +34,8 @@ private:
 
     QString openedFileName;
 
-    std::vector<Type::TypePtr> types;
-    std::vector<Pkmn::PkmnPtr> pkmns;
+    std::vector<Type::TypePtr>       types;
+    std::vector<PkmnDef::PkmnDefPtr> pkmns;
 };
 
 #endif // MAINWINDOW_H

@@ -1,9 +1,10 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "mappereditor.h"
+
 #include <QMainWindow>
 #include <QSettings>
-#include "mappereditor.h"
 
 class MainWindow : public QMainWindow
 {

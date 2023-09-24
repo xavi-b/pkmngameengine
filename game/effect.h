@@ -1,11 +1,12 @@
 #ifndef EFFECT_H
 #define EFFECT_H
 
-#include <vector>
-#include <memory>
+#include "renderutils.h"
+
 #include <SDL.h>
 #include <SDL_image.h>
-#include "renderutils.h"
+#include <memory>
+#include <vector>
 
 class Effect
 {
@@ -23,8 +24,11 @@ protected:
 class MoveEffect : public Effect
 {
 public:
-    MoveEffect(
-        SDL_Renderer* renderer, SDL_Texture* texture, SDL_Surface* surface, SDL_Point startOffset, SDL_Point endOffset);
+    MoveEffect(SDL_Renderer* renderer,
+               SDL_Texture*  texture,
+               SDL_Surface*  surface,
+               SDL_Point     startOffset,
+               SDL_Point     endOffset);
 
     virtual void apply(int accumulatedTicks, int duration, RenderSizes rs, SDL_Rect& dstRect) override;
 
@@ -36,8 +40,11 @@ protected:
 class SizeEffect : public Effect
 {
 public:
-    SizeEffect(
-        SDL_Renderer* renderer, SDL_Texture* texture, SDL_Surface* surface, SDL_Point startRect, SDL_Point endRect);
+    SizeEffect(SDL_Renderer* renderer,
+               SDL_Texture*  texture,
+               SDL_Surface*  surface,
+               SDL_Point     startRect,
+               SDL_Point     endRect);
 
     virtual void apply(int accumulatedTicks, int duration, RenderSizes rs, SDL_Rect& dstRect) override;
 
@@ -49,8 +56,11 @@ protected:
 class ColorEffect : public Effect
 {
 public:
-    ColorEffect(
-        SDL_Renderer* renderer, SDL_Texture* texture, SDL_Surface* surface, SDL_Color startColor, SDL_Color endColor);
+    ColorEffect(SDL_Renderer* renderer,
+                SDL_Texture*  texture,
+                SDL_Surface*  surface,
+                SDL_Color     startColor,
+                SDL_Color     endColor);
 
     virtual void apply(int accumulatedTicks, int duration, RenderSizes rs, SDL_Rect& dstRect) override;
 

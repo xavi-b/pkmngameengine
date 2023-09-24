@@ -1,11 +1,12 @@
 #ifndef TEXTQUESTION_H
 #define TEXTQUESTION_H
 
-#include "inputs.h"
-#include <vector>
-#include <string>
-#include <SDL_image.h>
 #include "fps.h"
+#include "inputs.h"
+
+#include <SDL_image.h>
+#include <string>
+#include <vector>
 
 class TextQuestion
 {

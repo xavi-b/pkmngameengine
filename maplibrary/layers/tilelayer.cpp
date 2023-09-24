@@ -36,10 +36,12 @@ void TileLayer::setVisible(bool value)
 
 void tag_invoke(js::value_from_tag, js::value& jv, std::unique_ptr<TileLayer> const& o)
 {
-    jv = {{"elements", js::value_from<std::vector<std::vector<Tile::TilePtr>> const&>(o->elements)},
-          {"nCol", o->nCol},
-          {"nRow", o->nRow},
-          {"type", o->type}};
+    jv = {
+        {"elements", js::value_from<std::vector<std::vector<Tile::TilePtr>> const&>(o->elements)},
+        {"nCol",     o->nCol                                                                    },
+        {"nRow",     o->nRow                                                                    },
+        {"type",     o->type                                                                    }
+    };
 }
 
 std::unique_ptr<TileLayer> tag_invoke(js::value_to_tag<std::unique_ptr<TileLayer>>, js::value const& jv)

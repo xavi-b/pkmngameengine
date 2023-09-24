@@ -2,6 +2,7 @@
 #define TITLEMENU_H
 
 #include "scene.h"
+
 #include <SDL_image.h>
 
 class TitleMenu : public Scene

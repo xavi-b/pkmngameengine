@@ -11,7 +11,7 @@ class ImageWidget : public QLabel
 public:
     ImageWidget(QWidget* parent = nullptr);
 
-    void setPixmap(const QString& pixmapPath);
+    void setPixmap(QString const& pixmapPath);
 
     QPair<QString, QRect> currentSelectionPixmap() const;
 

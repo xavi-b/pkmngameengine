@@ -6,9 +6,11 @@ EventLayer::EventLayer(size_t nCol, size_t nRow) : Layer(nCol, nRow)
 
 void tag_invoke(js::value_from_tag, js::value& jv, std::unique_ptr<EventLayer> const& o)
 {
-    jv = {{"elements", js::value_from<std::vector<std::vector<Event::EventPtr>> const&>(o->elements)},
-          {"nCol", o->nCol},
-          {"nRow", o->nRow}};
+    jv = {
+        {"elements", js::value_from<std::vector<std::vector<Event::EventPtr>> const&>(o->elements)},
+        {"nCol",     o->nCol                                                                      },
+        {"nRow",     o->nRow                                                                      }
+    };
 }
 
 std::unique_ptr<EventLayer> tag_invoke(js::value_to_tag<std::unique_ptr<EventLayer>>, js::value const& jv)

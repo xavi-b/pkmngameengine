@@ -1,10 +1,9 @@
 #ifndef LAYER_H
 #define LAYER_H
 
-#include <vector>
-#include <memory>
-
 #include <boost/json.hpp>
+#include <memory>
+#include <vector>
 namespace js = boost::json;
 
 template <class T>

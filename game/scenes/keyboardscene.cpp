@@ -14,12 +14,12 @@ void KeyboardScene::init()
     keyboard->init();
 }
 
-void KeyboardScene::update(const Inputs* inputs)
+void KeyboardScene::update(Inputs const* inputs)
 {
     keyboard->update(inputs);
 }
 
-void KeyboardScene::draw(const Fps* fps, RenderSizes rs)
+void KeyboardScene::draw(Fps const* fps, RenderSizes rs)
 {
     keyboard->draw(fps, rs);
 }

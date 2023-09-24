@@ -3,6 +3,7 @@
 
 #include "animations/textanimation.h"
 #include "inputs.h"
+
 #include <SDL_image.h>
 
 class TextSpeech
@@ -14,14 +15,14 @@ public:
     ~TextSpeech();
 
     void init();
-    void update(const Inputs* inputs);
-    void draw(const Fps* fps, RenderSizes rs);
+    void update(Inputs const* inputs);
+    void draw(Fps const* fps, RenderSizes rs);
 
     bool shouldClose() const;
     bool mayClose() const;
     void reset();
 
-    void setTexts(const std::vector<std::string>& texts);
+    void setTexts(std::vector<std::string> const& texts);
 
 private:
     SDL_Renderer* renderer;

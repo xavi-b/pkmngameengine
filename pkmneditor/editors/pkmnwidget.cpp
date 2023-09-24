@@ -25,7 +25,7 @@ PkmnWidget::PkmnWidget(QWidget* parent) : QWidget(parent)
     setLayout(layout);
 }
 
-void PkmnWidget::setPkmn(Pkmn::PkmnPtr const& newPkmn)
+void PkmnWidget::setPkmn(PkmnDef::PkmnDefPtr const& newPkmn)
 {
     pkmn = newPkmn;
     idLineEdit->setText(newPkmn->getId().c_str());

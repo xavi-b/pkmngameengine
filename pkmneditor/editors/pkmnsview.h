@@ -19,7 +19,7 @@ class PkmnsView : public QWidget
 public:
     explicit PkmnsView(QWidget* parent = nullptr);
 
-    void setPkmns(std::vector<Pkmn::PkmnPtr> const& newPkmns);
+    void setPkmns(std::vector<PkmnDef::PkmnDefPtr> const& newPkmns);
     void setSpritesDirectory(QString const& dirName);
 
 signals:
@@ -32,7 +32,7 @@ private:
     QListView*  listView;
     PkmnWidget* pkmnWidget;
 
-    std::vector<Pkmn::PkmnPtr> pkmns;
+    std::vector<PkmnDef::PkmnDefPtr> pkmns;
 
     QString spritesDirectory;
 };

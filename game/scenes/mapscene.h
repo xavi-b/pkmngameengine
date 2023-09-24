@@ -1,13 +1,14 @@
 #ifndef MAPSCENE_H
 #define MAPSCENE_H
 
-#include <vector>
+#include "map.h"
+#include "scene.h"
+
+#include <SDL_image.h>
+#include <map>
 #include <memory>
 #include <string>
-#include <map>
-#include <SDL_image.h>
-#include "scene.h"
-#include "map.h"
+#include <vector>
 
 class MapScene : public Scene
 {

@@ -1,10 +1,10 @@
 #include "mapscene.h"
 
-#include <fstream>
-#include <sstream>
-#include <iostream>
-
 #include "game.h"
+
+#include <fstream>
+#include <iostream>
+#include <sstream>
 
 MapScene::MapScene(SDL_Renderer* renderer, std::string const& mapPath) : Scene(renderer)
 {

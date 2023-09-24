@@ -1,9 +1,9 @@
 #ifndef CHECKCOMBOBOX_H
 #define CHECKCOMBOBOX_H
 
+#include <QCheckBox>
 #include <QComboBox>
 #include <QStyledItemDelegate>
-#include <QCheckBox>
 
 class CheckBoxDelegate : public QStyledItemDelegate
 {
@@ -12,7 +12,7 @@ class CheckBoxDelegate : public QStyledItemDelegate
 public:
     CheckBoxDelegate(QObject* parent = nullptr);
 
-    void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+    void paint(QPainter* painter, QStyleOptionViewItem const& option, QModelIndex const& index) const override;
 
 signals:
     void itemSelected(int index);
@@ -20,8 +20,8 @@ signals:
 protected:
     bool editorEvent(QEvent*                     event,
                      QAbstractItemModel*         model,
-                     const QStyleOptionViewItem& option,
-                     const QModelIndex&          index) override;
+                     QStyleOptionViewItem const& option,
+                     QModelIndex const&          index) override;
 };
 
 class CheckableComboBox : public QComboBox

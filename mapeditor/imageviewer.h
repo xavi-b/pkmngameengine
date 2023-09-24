@@ -1,19 +1,21 @@
 #ifndef IMAGEVIEWER_H
 #define IMAGEVIEWER_H
 
+#include "imagewidget.h"
+
+#include <QLabel>
 #include <QScrollArea>
 #include <QScrollBar>
-#include <QLabel>
 #include <QWheelEvent>
-#include "imagewidget.h"
 
 class ImageViewer : public QScrollArea
 {
     Q_OBJECT
+
 public:
     ImageViewer(QWidget* parent = nullptr);
 
-    void setPixmap(const QString& pixmap);
+    void setPixmap(QString const& pixmap);
     void scaleContent(double factor);
     void adjustScrollBar(QScrollBar* scrollBar, double factor);
 

@@ -1,11 +1,10 @@
 #ifndef TILE_H
 #define TILE_H
 
-#include <vector>
+#include <boost/json.hpp>
 #include <memory>
 #include <string>
-
-#include <boost/json.hpp>
+#include <vector>
 namespace js = boost::json;
 
 class Tile

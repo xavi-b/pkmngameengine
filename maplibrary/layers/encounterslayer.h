@@ -1,9 +1,10 @@
 #ifndef ENCOUNTERSLAYER_H
 #define ENCOUNTERSLAYER_H
 
-#include <vector>
-#include <memory>
 #include "layer.h"
+
+#include <memory>
+#include <vector>
 
 enum EncounterType
 {

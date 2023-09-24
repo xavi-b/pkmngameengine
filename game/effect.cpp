@@ -7,8 +7,11 @@ Effect::Effect(SDL_Renderer* renderer, SDL_Texture* texture, SDL_Surface* surfac
 {
 }
 
-MoveEffect::MoveEffect(
-    SDL_Renderer* renderer, SDL_Texture* texture, SDL_Surface* surface, SDL_Point startOffset, SDL_Point endOffset)
+MoveEffect::MoveEffect(SDL_Renderer* renderer,
+                       SDL_Texture*  texture,
+                       SDL_Surface*  surface,
+                       SDL_Point     startOffset,
+                       SDL_Point     endOffset)
     : Effect(renderer, texture, surface), startOffset(startOffset), endOffset(endOffset)
 {
 }
@@ -20,8 +23,11 @@ void MoveEffect::apply(int accumulatedTicks, int duration, RenderSizes rs, SDL_R
     dstRect.y = dstRect.y + (startOffset.y + (endOffset.y - startOffset.y) * pos) * rs.wh / rs.ah;
 }
 
-SizeEffect::SizeEffect(
-    SDL_Renderer* renderer, SDL_Texture* texture, SDL_Surface* surface, SDL_Point startRect, SDL_Point endRect)
+SizeEffect::SizeEffect(SDL_Renderer* renderer,
+                       SDL_Texture*  texture,
+                       SDL_Surface*  surface,
+                       SDL_Point     startRect,
+                       SDL_Point     endRect)
     : Effect(renderer, texture, surface), startRect(startRect), endRect(endRect)
 {
 }
@@ -33,8 +39,11 @@ void SizeEffect::apply(int accumulatedTicks, int duration, RenderSizes rs, SDL_R
     dstRect.h = (startRect.y + (endRect.x - startRect.y) * pos) * rs.wh / rs.ah;
 }
 
-ColorEffect::ColorEffect(
-    SDL_Renderer* renderer, SDL_Texture* texture, SDL_Surface* surface, SDL_Color startColor, SDL_Color endColor)
+ColorEffect::ColorEffect(SDL_Renderer* renderer,
+                         SDL_Texture*  texture,
+                         SDL_Surface*  surface,
+                         SDL_Color     startColor,
+                         SDL_Color     endColor)
     : Effect(renderer, texture, surface), startColor(startColor), endColor(endColor)
 {
 }

@@ -1,10 +1,11 @@
 #ifndef TOWN1SCENE_H
 #define TOWN1SCENE_H
 
-#include <vector>
+#include "scenes/mapscene.h"
+
 #include <memory>
 #include <string>
-#include "scenes/mapscene.h"
+#include <vector>
 
 class Town1Scene : public MapScene
 {

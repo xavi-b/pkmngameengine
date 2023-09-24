@@ -1,8 +1,8 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
-#include <string>
 #include <boost/property_tree/ptree.hpp>
+#include <string>
 
 class Settings
 {

@@ -26,7 +26,7 @@ void Keyboard::init()
     currentPos = 0;
 }
 
-void Keyboard::update(const Inputs* inputs)
+void Keyboard::update(Inputs const* inputs)
 {
     int col = currentPos % NbRowBoxes;
     int row = currentPos / NbRowBoxes;
@@ -91,12 +91,12 @@ void Keyboard::update(const Inputs* inputs)
     }
 }
 
-void Keyboard::draw(const Fps* /*fps*/, RenderSizes rs)
+void Keyboard::draw(Fps const* /*fps*/, RenderSizes rs)
 {
     SDL_RenderCopy(renderer, bgTexture, NULL, NULL);
 
-    const int topMargin    = 96;
-    const int dstTopMargin = topMargin * rs.wh / rs.ah;
+    int const topMargin    = 96;
+    int const dstTopMargin = topMargin * rs.wh / rs.ah;
 
     SDL_Rect dstRect;
     dstRect.x = (rs.ww - keyboardBgSurface->w * rs.ww / rs.aw) / 2;

@@ -2,6 +2,7 @@
 
 #include "renderutils.h"
 #include "settings.h"
+
 #include <SDL_ttf.h>
 #include <iostream>
 
@@ -23,7 +24,7 @@ void TextSpeech::init()
         animations[currentAnimation]->start();
 }
 
-void TextSpeech::update(const Inputs* inputs)
+void TextSpeech::update(Inputs const* inputs)
 {
     if (currentAnimation < animations.size())
     {
@@ -47,7 +48,7 @@ void TextSpeech::update(const Inputs* inputs)
     }
 }
 
-void TextSpeech::draw(const Fps* /*fps*/, RenderSizes rs)
+void TextSpeech::draw(Fps const* /*fps*/, RenderSizes rs)
 {
     int borderSize    = 14;
     int dstBorderSize = borderSize * rs.wh / rs.ah;
@@ -88,8 +89,8 @@ bool TextSpeech::shouldClose() const
 
 bool TextSpeech::mayClose() const
 {
-    return currentAnimation == (animations.size() - 1) &&
-           (animations.size() == 0 || animations[currentAnimation]->isFinished());
+    return currentAnimation == (animations.size() - 1)
+        && (animations.size() == 0 || animations[currentAnimation]->isFinished());
 }
 
 void TextSpeech::reset()
@@ -97,9 +98,9 @@ void TextSpeech::reset()
     currentAnimation = 0;
 }
 
-void TextSpeech::setTexts(const std::vector<std::string>& texts)
+void TextSpeech::setTexts(std::vector<std::string> const& texts)
 {
     animations.clear();
-    for (const auto& text : texts)
+    for (auto const& text : texts)
         animations.emplace_back(std::make_unique<TextAnimation>(renderer, text));
 }

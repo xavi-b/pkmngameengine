@@ -2,8 +2,9 @@
 #define LEAVESCENE_H
 
 #include "scene.h"
-#include "textspeech.h"
 #include "textquestion.h"
+#include "textspeech.h"
+
 #include <SDL_image.h>
 
 class LeaveScene : public Scene

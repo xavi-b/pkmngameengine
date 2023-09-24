@@ -1,13 +1,14 @@
 #include "mappereditor.h"
 
-#include <QVBoxLayout>
+#include "checkablecombobox.h"
+#include "layersmodel.h"
+#include "levelsmodel.h"
+
 #include <QCheckBox>
 #include <QComboBox>
 #include <QPushButton>
 #include <QSpinBox>
-#include "checkablecombobox.h"
-#include "levelsmodel.h"
-#include "layersmodel.h"
+#include <QVBoxLayout>
 
 MapperEditor::MapperEditor(QWidget* parent) : QWidget(parent)
 {

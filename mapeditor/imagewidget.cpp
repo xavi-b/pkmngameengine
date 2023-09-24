@@ -11,7 +11,7 @@ ImageWidget::ImageWidget(QWidget* parent) : QLabel(parent)
     rubberBand->show();
 }
 
-void ImageWidget::setPixmap(const QString& pixmapPath)
+void ImageWidget::setPixmap(QString const& pixmapPath)
 {
     QLabel::setPixmap(pixmapPath);
     this->pixmapPath = pixmapPath;

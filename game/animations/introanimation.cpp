@@ -1,8 +1,8 @@
 #include "introanimation.h"
 
-#include "spriteanimation.h"
 #include "parallelanimation.h"
 #include "sequentialanimation.h"
+#include "spriteanimation.h"
 
 IntroAnimation::IntroAnimation(SDL_Renderer* renderer) : SequentialAnimation(renderer)
 {

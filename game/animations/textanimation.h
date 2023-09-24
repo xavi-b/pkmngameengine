@@ -6,12 +6,12 @@
 class TextAnimation : public Animation
 {
 public:
-    TextAnimation(SDL_Renderer* renderer, const std::string& text);
+    TextAnimation(SDL_Renderer* renderer, std::string const& text);
 
     virtual void start() override;
     virtual void stop() override;
     virtual void incrementTicks() override;
-    virtual void draw(const Fps* fps, RenderSizes rs) override;
+    virtual void draw(Fps const* fps, RenderSizes rs) override;
     virtual void forceEnd() override;
 
     std::string currentText() const;

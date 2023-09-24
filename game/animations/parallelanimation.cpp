@@ -42,7 +42,7 @@ void ParallelAnimation::incrementTicks()
     }
 }
 
-void ParallelAnimation::draw(const Fps* fps, RenderSizes rs)
+void ParallelAnimation::draw(Fps const* fps, RenderSizes rs)
 {
     for (auto& a : animations)
         a->draw(fps, rs);

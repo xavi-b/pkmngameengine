@@ -78,7 +78,7 @@ void MainWindow::createMenus()
             types = Type::vectorFromPropertyTree(readPropertyTree(dirName, "types.txt"));
             typesView->setTypes(types);
             // Pkmns
-            pkmns = Pkmn::vectorFromPropertyTree(readPropertyTree(dirName, "pokemon.txt"));
+            pkmns = PkmnDef::vectorFromPropertyTree(readPropertyTree(dirName, "pokemon.txt"));
             pkmnsView->setPkmns(pkmns);
 
             stackedWidget->setCurrentIndex(0);
@@ -112,7 +112,7 @@ void MainWindow::createMenus()
             types = js::value_to<std::vector<Type::TypePtr>>(json.as_object()["types"]);
             typesView->setTypes(types);
             // Pkmns
-            pkmns = js::value_to<std::vector<Pkmn::PkmnPtr>>(json.as_object()["pkmns"]);
+            pkmns = js::value_to<std::vector<PkmnDef::PkmnDefPtr>>(json.as_object()["pkmns"]);
             pkmnsView->setPkmns(pkmns);
 
             stackedWidget->setCurrentIndex(0);

@@ -1,12 +1,12 @@
 #include "game.h"
 
-#include "scenes/titlescene.h"
-#include "scenes/leavescene.h"
 #include "renderutils.h"
+#include "scenes/leavescene.h"
+#include "scenes/titlescene.h"
 
 #include <algorithm>
-#include <iostream>
 #include <boost/program_options.hpp>
+#include <iostream>
 
 Game* Game::sInstance = nullptr;
 

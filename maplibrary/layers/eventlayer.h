@@ -1,10 +1,11 @@
 #ifndef EVENTLAYER_H
 #define EVENTLAYER_H
 
-#include <vector>
-#include <memory>
 #include "event.h"
 #include "layer.h"
+
+#include <memory>
+#include <vector>
 
 class EventLayer : public Layer<Event::EventPtr>
 {

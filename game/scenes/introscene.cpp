@@ -1,9 +1,9 @@
 #include "introscene.h"
 
-#include "keyboardscene.h"
 #include "game.h"
-#include "utils.h"
+#include "keyboardscene.h"
 #include "scenes/story/town1scene.h"
+#include "utils.h"
 
 #include <iostream>
 

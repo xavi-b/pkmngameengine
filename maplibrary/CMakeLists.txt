@@ -5,6 +5,10 @@ message("Compiling \"${MODULE_NAME}\"")
 
 add_library(${MODULE_NAME} "")
 
+install(TARGETS ${MODULE_NAME}
+    BUNDLE DESTINATION .
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+
 # boost
 find_package(Boost COMPONENTS json REQUIRED)
 include_directories(${Boost_INCLUDE_DIR})

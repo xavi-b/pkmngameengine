@@ -2,14 +2,15 @@
 #define FPS_H
 
 #include "renderutils.h"
-#include <string>
+
 #include <SDL.h>
+#include <string>
 
 #define FPS 60.0
 
 struct Fps
 {
-    static const int TickDelay = 100;
+    static int const TickDelay = 100;
 
     Fps(SDL_Renderer* renderer);
     ~Fps();

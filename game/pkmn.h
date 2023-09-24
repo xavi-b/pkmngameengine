@@ -1,17 +1,13 @@
 #ifndef PKMN_H
 #define PKMN_H
 
+#include "pkmndef.h"
+
 #include <array>
 #include <vector>
 
-struct Attack
+struct Move
 {
-
-};
-
-struct Type
-{
-
 };
 
 class Pkmn
@@ -20,8 +16,8 @@ public:
     Pkmn();
 
 private:
-    std::array<Attack, 4> attacks;
-    std::vector<Type> types;
+    std::array<Move, 4> moves;
+    PkmnDef::PkmnDefPtr type;
 };
 
 #endif // PKMN_H

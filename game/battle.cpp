@@ -1,22 +1,22 @@
 #include "battle.h"
 
-Battle::Battle(SDL_Renderer* renderer)
-    : Scene(renderer)
+Battle::Battle(SDL_Renderer* renderer) : Scene(renderer)
 {
 }
 
-void Battle::update(const Inputs* inputs)
+void Battle::update(Inputs const* inputs)
 {
     if (inputs->B)
         goToNextScene = true;
 }
 
-void Battle::draw(const Fps* /*fps*/, RenderSizes /*rs*/)
+void Battle::draw(Fps const* /*fps*/, RenderSizes /*rs*/)
 {
     SDL_SetRenderDrawColor(renderer, 0xFF, 0x00, 0x00, 0xFF);
 }
 
 #include "scenes/titlescene.h"
+
 std::unique_ptr<Scene> Battle::nextScene()
 {
     if (goToNextScene)

@@ -1,8 +1,8 @@
 #ifndef KEYBOARDSCENE_H
 #define KEYBOARDSCENE_H
 
-#include "scene.h"
 #include "keyboard.h"
+#include "scene.h"
 
 class KeyboardScene : public Scene
 {
@@ -11,8 +11,8 @@ public:
     virtual ~KeyboardScene();
 
     virtual void init() override;
-    virtual void update(const Inputs* inputs) override;
-    virtual void draw(const Fps* fps, RenderSizes rs) override;
+    virtual void update(Inputs const* inputs) override;
+    virtual void draw(Fps const* fps, RenderSizes rs) override;
 
     virtual bool popScene() const override;
 

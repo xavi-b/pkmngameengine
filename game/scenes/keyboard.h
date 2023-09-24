@@ -2,8 +2,9 @@
 #define KEYBOARD_H
 
 #include "scene.h"
-#include <string>
+
 #include <SDL_image.h>
+#include <string>
 
 class Keyboard
 {
@@ -12,8 +13,8 @@ public:
     virtual ~Keyboard();
 
     virtual void init();
-    virtual void update(const Inputs* inputs);
-    virtual void draw(const Fps* fps, RenderSizes rs);
+    virtual void update(Inputs const* inputs);
+    virtual void draw(Fps const* fps, RenderSizes rs);
     virtual bool isFinished() const;
 
 private:

@@ -1,10 +1,10 @@
 #include "titlemenu.h"
 
+#include "game.h"
 #include "introscene.h"
 #include "scenes/story/town1scene.h"
-#include "titlescene.h"
-#include "game.h"
 #include "settings.h"
+#include "titlescene.h"
 #include "utils.h"
 
 TitleMenu::TitleMenu(SDL_Renderer* renderer) : Scene(renderer)

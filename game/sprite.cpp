@@ -2,5 +2,4 @@
 
 Sprite::Sprite()
 {
-
 }

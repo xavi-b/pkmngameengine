@@ -6,7 +6,7 @@
 class GrassTile : public Tile
 {
 public:
-    GrassTile(const std::string& spritePath, int row, int col);
+    GrassTile(std::string const& spritePath, int row, int col);
 };
 
 #endif // GRASSTILE_H

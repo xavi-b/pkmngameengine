@@ -1,11 +1,12 @@
 #ifndef LEVEL_H
 #define LEVEL_H
 
-#include <vector>
-#include <memory>
-#include "layers/tilelayer.h"
-#include "layers/eventlayer.h"
 #include "layers/encounterslayer.h"
+#include "layers/eventlayer.h"
+#include "layers/tilelayer.h"
+
+#include <memory>
+#include <vector>
 
 class Level
 {

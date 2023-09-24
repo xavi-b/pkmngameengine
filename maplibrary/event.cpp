@@ -13,7 +13,9 @@ void tag_invoke(js::value_from_tag, js::value& jv, Event::EventPtr const& o)
 {
     if (o && !o->id.empty())
     {
-        jv = {{"id", o->id}};
+        jv = {
+            {"id", o->id}
+        };
     }
     else
     {

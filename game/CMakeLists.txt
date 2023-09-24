@@ -6,6 +6,10 @@ message("Compiling \"${MODULE_NAME}\"")
 add_executable(${MODULE_NAME} "")
 add_definitions(-DPROJECT_NAME="${PROJECT_NAME}")
 
+install(TARGETS ${MODULE_NAME}
+    BUNDLE DESTINATION .
+    LIBRARY DESTINATION ${CMAKE_INSTALL_BINDIR})
+
 # maplibrary
 target_link_libraries(${MODULE_NAME} maplibrary)
 
@@ -91,4 +95,4 @@ target_sources(${MODULE_NAME}
    PRIVATE
        ${RC_FILES}
 )
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/resources DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/resources DESTINATION ${CMAKE_INSTALL_BINDIR})

@@ -1,9 +1,10 @@
 #ifndef SEQUENTIALANIMATION_H
 #define SEQUENTIALANIMATION_H
 
-#include <vector>
-#include <memory>
 #include "animation.h"
+
+#include <memory>
+#include <vector>
 
 class SequentialAnimation : public Animation
 {
@@ -14,7 +15,7 @@ public:
     virtual void stop() override;
     virtual void reset() override;
     virtual void incrementTicks() override;
-    virtual void draw(const Fps* fps, RenderSizes rs) override;
+    virtual void draw(Fps const* fps, RenderSizes rs) override;
     virtual void forceEnd() override;
 
     void addAnimation(std::unique_ptr<Animation>&& animation);

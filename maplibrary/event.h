@@ -1,11 +1,10 @@
 #ifndef EVENT_H
 #define EVENT_H
 
-#include <vector>
+#include <boost/json.hpp>
 #include <memory>
 #include <string>
-
-#include <boost/json.hpp>
+#include <vector>
 namespace js = boost::json;
 
 class Event

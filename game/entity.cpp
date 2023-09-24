@@ -2,5 +2,4 @@
 
 Entity::Entity()
 {
-
 }

@@ -1,9 +1,10 @@
 #ifndef PARALLELANIMATION_H
 #define PARALLELANIMATION_H
 
-#include <vector>
-#include <memory>
 #include "animation.h"
+
+#include <memory>
+#include <vector>
 
 class ParallelAnimation : public Animation
 {
@@ -13,7 +14,7 @@ public:
     virtual void start() override;
     virtual void reset() override;
     virtual void incrementTicks() override;
-    virtual void draw(const Fps* fps, RenderSizes rs) override;
+    virtual void draw(Fps const* fps, RenderSizes rs) override;
     virtual void forceEnd() override;
 
     void addAnimation(std::unique_ptr<Animation>&& animation);

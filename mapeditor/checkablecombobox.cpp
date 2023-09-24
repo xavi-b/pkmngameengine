@@ -1,7 +1,7 @@
 #include "checkablecombobox.h"
 
-#include <QListView>
 #include <QApplication>
+#include <QListView>
 #include <QMouseEvent>
 
 CheckBoxDelegate::CheckBoxDelegate(QObject* parent) : QStyledItemDelegate(parent)
@@ -10,8 +10,8 @@ CheckBoxDelegate::CheckBoxDelegate(QObject* parent) : QStyledItemDelegate(parent
 
 bool CheckBoxDelegate::editorEvent(QEvent*                     event,
                                    QAbstractItemModel*         model,
-                                   const QStyleOptionViewItem& option,
-                                   const QModelIndex&          index)
+                                   QStyleOptionViewItem const& option,
+                                   QModelIndex const&          index)
 {
     if (event->type() == QEvent::MouseButtonPress)
     {
@@ -39,7 +39,7 @@ bool CheckBoxDelegate::editorEvent(QEvent*                     event,
     return QStyledItemDelegate::editorEvent(event, model, option, index);
 }
 
-void CheckBoxDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+void CheckBoxDelegate::paint(QPainter* painter, QStyleOptionViewItem const& option, QModelIndex const& index) const
 {
     bool               value = index.data(Qt::UserRole).toBool();
     QStyleOptionButton checkBoxOption;

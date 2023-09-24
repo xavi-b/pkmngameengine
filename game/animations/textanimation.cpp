@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-TextAnimation::TextAnimation(SDL_Renderer* renderer, const std::string& text) : Animation(renderer), text(text)
+TextAnimation::TextAnimation(SDL_Renderer* renderer, std::string const& text) : Animation(renderer), text(text)
 {
 }
 
@@ -26,7 +26,7 @@ void TextAnimation::incrementTicks()
         forceEnd();
 }
 
-void TextAnimation::draw(const Fps* /*fps*/, RenderSizes /*rs*/)
+void TextAnimation::draw(Fps const* /*fps*/, RenderSizes /*rs*/)
 {
 }
 

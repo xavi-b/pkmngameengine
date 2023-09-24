@@ -9,9 +9,9 @@
 #define WINDOWS
 #endif
 
-#include <iostream>
 #include <SDL.h>
 #include <boost/locale.hpp>
+#include <iostream>
 
 namespace lc = boost::locale;
 
