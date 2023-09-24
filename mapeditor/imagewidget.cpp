@@ -37,6 +37,7 @@ void ImageWidget::mousePressEvent(QMouseEvent* event)
 
         rubberBand->setGeometry(QRect(pressPoint * selSize, size * selSize));
         event->accept();
+        emit currentSelectionChanged();
     }
     else
     {
@@ -57,6 +58,7 @@ void ImageWidget::mouseMoveEvent(QMouseEvent* event)
 
         rubberBand->setGeometry(QRect(pressPoint * selSize, size * selSize));
         event->accept();
+        emit currentSelectionChanged();
     }
     else
     {
@@ -77,6 +79,7 @@ void ImageWidget::mouseReleaseEvent(QMouseEvent* event)
 
         rubberBand->setGeometry(QRect(pressPoint * selSize, size * selSize));
         event->accept();
+        emit currentSelectionChanged();
     }
     else
     {

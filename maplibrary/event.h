@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+
 namespace js = boost::json;
 
 class Event

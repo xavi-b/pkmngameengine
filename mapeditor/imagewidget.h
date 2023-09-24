@@ -8,12 +8,17 @@
 
 class ImageWidget : public QLabel
 {
+    Q_OBJECT
+
 public:
     ImageWidget(QWidget* parent = nullptr);
 
     void setPixmap(QString const& pixmapPath);
 
     QPair<QString, QRect> currentSelectionPixmap() const;
+
+signals:
+    void currentSelectionChanged();
 
 protected:
     virtual void mousePressEvent(QMouseEvent* event) override;

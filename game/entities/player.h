@@ -18,8 +18,8 @@ public:
 
     std::string name;
 
-    std::vector<std::unique_ptr<Item>>   items;
-    std::array<std::unique_ptr<Pkmn>, 6> pkmns;
+    std::vector<std::unique_ptr<Item>> items;
+    std::array<Pkmn::PkmnPtr, 6>       pkmns;
 };
 
 #endif // PLAYER_H

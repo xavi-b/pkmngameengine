@@ -96,21 +96,12 @@ void tag_invoke(js::value_from_tag, js::value& jv, Type::TypePtr const& o)
 {
     if (o && !o->id.empty())
     {
-        js::array jsWeaknesses;
-        for (auto const& e : o->weaknesses)
-            jsWeaknesses.push_back(js::value(e));
-        js::array jsResistances;
-        for (auto const& e : o->resistances)
-            jsResistances.push_back(js::value(e));
-        js::array jsImmunities;
-        for (auto const& e : o->immunities)
-            jsImmunities.push_back(js::value(e));
         jv = {
-            {"id",          o->id        },
-            {"name",        o->name      },
-            {"weaknesses",  jsWeaknesses },
-            {"resistances", jsResistances},
-            {"immunities",  jsImmunities }
+            {"id",          o->id                                                          },
+            {"name",        o->name                                                        },
+            {"weaknesses",  js::value_from<std::vector<std::string> const&>(o->weaknesses) },
+            {"resistances", js::value_from<std::vector<std::string> const&>(o->resistances)},
+            {"immunities",  js::value_from<std::vector<std::string> const&>(o->immunities) }
         };
     }
     else
@@ -130,15 +121,12 @@ Type::TypePtr tag_invoke(js::value_to_tag<Type::TypePtr>, js::value const& jv)
         return nullptr;
     else
     {
-        auto type  = std::make_shared<Type>();
-        type->id   = id;
-        type->name = js::value_to<std::string>(obj.at("name"));
-        for (auto& value : obj.at("weaknesses").as_array())
-            type->weaknesses.push_back(js::value_to<std::string>(value));
-        for (auto& value : obj.at("resistances").as_array())
-            type->resistances.push_back(js::value_to<std::string>(value));
-        for (auto& value : obj.at("immunities").as_array())
-            type->immunities.push_back(js::value_to<std::string>(value));
+        auto type         = std::make_shared<Type>();
+        type->id          = id;
+        type->name        = js::value_to<std::string>(obj.at("name"));
+        type->weaknesses  = js::value_to<std::vector<std::string>>(obj.at("weaknesses"));
+        type->resistances = js::value_to<std::vector<std::string>>(obj.at("resistances"));
+        type->immunities  = js::value_to<std::vector<std::string>>(obj.at("immunities"));
         return type;
     }
 }

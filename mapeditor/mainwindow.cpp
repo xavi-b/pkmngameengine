@@ -1,7 +1,5 @@
 #include "mainwindow.h"
 
-#include "imageviewer.h"
-
 #include <QFileDialog>
 #include <QFileSystemModel>
 #include <QHBoxLayout>
@@ -31,11 +29,11 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
         treeView->hideColumn(i);
     l->addWidget(treeView);
 
-    ImageViewer* imageArea = new ImageViewer;
-    l->addWidget(imageArea);
+    imageViewer = new ImageViewer;
+    l->addWidget(imageViewer);
 
-    mapArea = new MapperEditor;
-    l->addWidget(mapArea, 1);
+    mapEditor = new MapperEditor;
+    l->addWidget(mapEditor, 1);
 
     w->setLayout(l);
     setCentralWidget(w);
@@ -47,12 +45,13 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
                 QFileInfo info = model->fileInfo(current);
                 if (info.suffix().compare("png", Qt::CaseInsensitive) == 0)
                 {
-                    imageArea->setPixmap(info.filePath());
+                    imageViewer->setPixmap(info.filePath());
                 }
             });
 
-    connect(mapArea->viewer()->contentWidget(), &MapperWidget::entered, this, [=]() {
-        mapArea->viewer()->contentWidget()->setSelectionPixmap(imageArea->contentWidget()->currentSelectionPixmap());
+    connect(imageViewer->contentWidget(), &ImageWidget::currentSelectionChanged, this, [=]() {
+        mapEditor->getMapperViewer()->contentWidget()->setSelectionPixmap(
+            imageViewer->contentWidget()->currentSelectionPixmap());
     });
 }
 
@@ -60,16 +59,29 @@ MainWindow::~MainWindow()
 {
 }
 
+void MainWindow::keyPressEvent(QKeyEvent* event)
+{
+    if (event->key() == Qt::Key_Escape)
+    {
+        mapEditor->getMapperViewer()->contentWidget()->setSelectionPixmap({});
+        event->accept();
+        return;
+    }
+    event->ignore();
+}
+
 void MainWindow::keyReleaseEvent(QKeyEvent* event)
 {
     int index = event->key() - Qt::Key_0;
-    if (index >= 0 && index < int(mapArea->viewer()->contentWidget()->getWorkingLevel()->getTileLayers().size()))
+    if (index >= 0
+        && index < int(mapEditor->getMapperViewer()->contentWidget()->getWorkingLevel()->getTileLayers().size()))
     {
         if (event->modifiers() & Qt::ControlModifier)
-            mapArea->viewer()->contentWidget()->setLayerVisible(
-                index, !mapArea->viewer()->contentWidget()->isLayerVisible(index));
+            mapEditor->getMapperViewer()->contentWidget()->setLayerVisible(
+                index,
+                !mapEditor->getMapperViewer()->contentWidget()->isLayerVisible(index));
         else
-            mapArea->viewer()->contentWidget()->setWorkingLayerIndex(index);
+            mapEditor->getMapperViewer()->contentWidget()->setWorkingLayerIndex(index);
         event->accept();
         return;
     }
@@ -83,7 +95,7 @@ void MainWindow::createMenus()
     newAct->setShortcuts(QKeySequence::New);
     connect(newAct, &QAction::triggered, this, [=]() {
         openedFileName.clear();
-        mapArea->viewer()->contentWidget()->swapMap(std::make_unique<Map>(5, 5));
+        mapEditor->swapMap(std::make_unique<Map>(5, 5));
     });
     QAction* openAct = new QAction(tr("&Open map"));
     openAct->setShortcuts(QKeySequence::Open);
@@ -105,7 +117,7 @@ void MainWindow::createMenus()
 
             openedFileName  = fileName;
             QByteArray data = file.readAll();
-            mapArea->viewer()->contentWidget()->swapMap(js::value_to<std::unique_ptr<Map>>(js::parse(data.data())));
+            mapEditor->swapMap(js::value_to<std::unique_ptr<Map>>(js::parse(data.data())));
 
             QSettings().setValue("lastDir", QFileInfo(fileName).dir().path());
             QSettings().sync();
@@ -147,7 +159,9 @@ QString MainWindow::saveFile(bool saveAs)
             return {};
         }
 
-        file.write(js::serialize(js::value_from(mapArea->viewer()->contentWidget()->getMap())).c_str());
+        auto& map = mapEditor->getMapperViewer()->contentWidget()->getMap();
+        map->setEncounterMethods(mapEditor->getEncountersEditor()->getEncounterMethods());
+        file.write(js::serialize(js::value_from(map)).c_str());
     }
 
     QSettings().setValue("lastDir", QFileInfo(fileName).dir().path());

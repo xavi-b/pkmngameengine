@@ -13,6 +13,8 @@ struct Move
 class Pkmn
 {
 public:
+    using PkmnPtr = std::shared_ptr<Pkmn>;
+
     Pkmn();
 
 private:

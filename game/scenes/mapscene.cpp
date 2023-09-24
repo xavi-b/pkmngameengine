@@ -67,6 +67,11 @@ void MapScene::update(Inputs const* inputs)
             if (l != playerLevel)
                 continue;
 
+            auto& specialTileLayer = level->getSpecialTileLayer();
+            auto& specialTile      = (*specialTileLayer.get())(playerX, playerY - 1);
+            if (specialTile && *(specialTile.get()) != GRASS)
+                continue;
+
             for (size_t h = 0; h < level->getTileLayers().size(); ++h)
             {
                 auto& layer = level->getTileLayers()[h];
@@ -94,6 +99,11 @@ void MapScene::update(Inputs const* inputs)
             auto& level = map->getLevels()[l];
 
             if (l != playerLevel)
+                continue;
+
+            auto& specialTileLayer = level->getSpecialTileLayer();
+            auto& specialTile      = (*specialTileLayer.get())(playerX, playerY + 1);
+            if (specialTile && *(specialTile.get()) != GRASS)
                 continue;
 
             for (size_t h = 0; h < level->getTileLayers().size(); ++h)
@@ -125,6 +135,11 @@ void MapScene::update(Inputs const* inputs)
             if (l != playerLevel)
                 continue;
 
+            auto& specialTileLayer = level->getSpecialTileLayer();
+            auto& specialTile      = (*specialTileLayer.get())(playerX - 1, playerY);
+            if (specialTile && *(specialTile.get()) != GRASS)
+                continue;
+
             for (size_t h = 0; h < level->getTileLayers().size(); ++h)
             {
                 auto& layer = level->getTileLayers()[h];
@@ -152,6 +167,11 @@ void MapScene::update(Inputs const* inputs)
             auto& level = map->getLevels()[l];
 
             if (l != playerLevel)
+                continue;
+
+            auto& specialTileLayer = level->getSpecialTileLayer();
+            auto& specialTile      = (*specialTileLayer.get())(playerX + 1, playerY);
+            if (specialTile && *(specialTile.get()) != GRASS)
                 continue;
 
             for (size_t h = 0; h < level->getTileLayers().size(); ++h)

@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "imageviewer.h"
 #include "mappereditor.h"
 
 #include <QMainWindow>
@@ -15,13 +16,15 @@ public:
     ~MainWindow();
 
 protected:
+    virtual void keyPressEvent(QKeyEvent* event) override;
     virtual void keyReleaseEvent(QKeyEvent* event) override;
 
 private:
     void    createMenus();
     QString saveFile(bool saveAs = false);
 
-    MapperEditor* mapArea;
+    ImageViewer*  imageViewer;
+    MapperEditor* mapEditor;
     QString       openedFileName;
 };
 #endif // MAINWINDOW_H

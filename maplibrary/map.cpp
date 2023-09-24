@@ -40,12 +40,23 @@ void Map::setNRow(size_t v)
         levels[i]->setNRow(v);
 }
 
+std::vector<EncounterMethod> Map::getEncounterMethods() const
+{
+    return encounterMethods;
+}
+
+void Map::setEncounterMethods(std::vector<EncounterMethod> const& newEncounterMethods)
+{
+    encounterMethods = newEncounterMethods;
+}
+
 void tag_invoke(js::value_from_tag, js::value& jv, std::unique_ptr<Map> const& o)
 {
     jv = {
-        {"nCol",   o->nCol                                                              },
-        {"nRow",   o->nRow                                                              },
-        {"levels", js::value_from<std::vector<std::unique_ptr<Level>> const&>(o->levels)}
+        {"nCol",             o->nCol                                                                 },
+        {"nRow",             o->nRow                                                                 },
+        {"levels",           js::value_from<std::vector<std::unique_ptr<Level>> const&>(o->levels)   },
+        {"encounterMethods", js::value_from<std::vector<EncounterMethod> const&>(o->encounterMethods)}
     };
 }
 
@@ -56,6 +67,8 @@ std::unique_ptr<Map> tag_invoke(js::value_to_tag<std::unique_ptr<Map>>, js::valu
         std::make_unique<Map>(js::value_to<size_t>(obj.at("nCol")), js::value_to<size_t>(obj.at("nRow")));
 
     o->levels = js::value_to<std::vector<std::unique_ptr<Level>>>(obj.at("levels"));
+    if (obj.contains("encounterMethods"))
+        o->encounterMethods = js::value_to<std::vector<EncounterMethod>>(obj.at("encounterMethods"));
 
     return o;
 }

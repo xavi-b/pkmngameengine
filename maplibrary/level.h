@@ -1,8 +1,8 @@
 #ifndef LEVEL_H
 #define LEVEL_H
 
-#include "layers/encounterslayer.h"
 #include "layers/eventlayer.h"
+#include "layers/specialtilelayer.h"
 #include "layers/tilelayer.h"
 
 #include <memory>
@@ -17,6 +17,7 @@ public:
 
     std::vector<std::unique_ptr<TileLayer>>& getTileLayers();
     std::unique_ptr<EventLayer>&             getEventLayer();
+    std::unique_ptr<SpecialTileLayer>&       getSpecialTileLayer();
 
     bool isVisible() const;
     void setVisible(bool value);
@@ -33,7 +34,7 @@ private:
 
     std::vector<std::unique_ptr<TileLayer>> tileLayers;
     std::unique_ptr<EventLayer>             eventLayer;
-    std::unique_ptr<EncountersLayer>        encountersLayer;
+    std::unique_ptr<SpecialTileLayer>       specialTileLayer;
 };
 
 #endif // LEVEL_H

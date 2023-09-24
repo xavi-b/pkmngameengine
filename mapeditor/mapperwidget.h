@@ -15,6 +15,13 @@ class MapperWidget : public QWidget
     Q_OBJECT
 
 public:
+    enum LayerType
+    {
+        TILES,
+        EVENTS,
+        SPECIAL_TILE
+    };
+
     MapperWidget(QWidget* parent = nullptr);
 
     void          setSelectionPixmap(QPair<QString, QRect> const& data);
@@ -39,7 +46,8 @@ public:
     void removeLevel(int index);
 
     void setBelowLevelsOpacity(bool opacity);
-    void setEventLayerEdition(bool edit);
+    void setLayerType(LayerType type);
+    void setCurrentSpecialTileType(SpecialTileType type);
 
     std::unique_ptr<Map> const& getMap() const;
     void                        swapMap(std::unique_ptr<Map>&& newMap);
@@ -59,8 +67,6 @@ signals:
 
     void reset();
 
-    void entered();
-
 protected:
     virtual void mousePressEvent(QMouseEvent* event) override;
     virtual void mouseMoveEvent(QMouseEvent* event) override;
@@ -79,13 +85,15 @@ private:
     QPixmap                overlayPixmap;
     QMap<QString, QPixmap> pixmaps;
     QPoint                 origin;
-    bool                   pressed = false;
+    bool                   pressed             = false;
+    bool                   showSelectionPixmap = false;
 
     std::unique_ptr<Map> map;
     int                  workingLayerIndex  = 0;
     int                  workingLevelIndex  = 0;
     bool                 belowLevelsOpacity = false;
-    bool                 eventLayerEdition  = false;
+    LayerType            layerType          = TILES;
+    SpecialTileType      specialTileType    = SpecialTileType::GRASS;
 };
 
 #endif // MAPPERWIDGET_H

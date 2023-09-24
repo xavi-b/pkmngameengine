@@ -52,8 +52,13 @@ void CheckBoxDelegate::paint(QPainter* painter, QStyleOptionViewItem const& opti
     textOption.rect             = option.rect.adjusted(20, 0, 0, 0);
     textOption.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
     QString text                = index.data(Qt::DisplayRole).toString();
-    QApplication::style()->drawItemText(
-        painter, textOption.rect, textOption.displayAlignment, option.palette, true, text, QPalette::WindowText);
+    QApplication::style()->drawItemText(painter,
+                                        textOption.rect,
+                                        textOption.displayAlignment,
+                                        option.palette,
+                                        true,
+                                        text,
+                                        QPalette::WindowText);
 }
 
 CheckableComboBox::CheckableComboBox(QWidget* parent) : QComboBox(parent)

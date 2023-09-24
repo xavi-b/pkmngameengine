@@ -24,6 +24,9 @@ set(PROJECT_SOURCES
         checkablecombobox.h checkablecombobox.cpp
         levelsmodel.h levelsmodel.cpp
         layersmodel.h layersmodel.cpp
+        encounterseditor.h encounterseditor.cpp
+        encountersmodel.h encountersmodel.cpp
+        encounterdialog.h encounterdialog.cpp
 )
 
 qt_add_executable(${MODULE_NAME}

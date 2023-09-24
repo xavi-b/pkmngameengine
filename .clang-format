@@ -4,6 +4,7 @@ AlignArrayOfStructures: Left
 AlignConsecutiveAssignments: true
 AlignConsecutiveDeclarations: true
 AlignOperands: AlignAfterOperator
+AllowAllArgumentsOnNextLine: false
 AllowAllParametersOfDeclarationOnNextLine: false
 AllowShortLambdasOnASingleLine: None
 AlwaysBreakTemplateDeclarations: Yes

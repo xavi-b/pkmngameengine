@@ -28,8 +28,11 @@ IntroAnimation::IntroAnimation(SDL_Renderer* renderer) : SequentialAnimation(ren
     });
     SDL_Point startOffset = {-300, 0};
     SDL_Point endOffset   = {0, 0};
-    auto      moveEffect  = std::make_unique<MoveEffect>(
-        renderer, baseSpriteAnimation->texture, baseSpriteAnimation->surface, startOffset, endOffset);
+    auto      moveEffect  = std::make_unique<MoveEffect>(renderer,
+                                                   baseSpriteAnimation->texture,
+                                                   baseSpriteAnimation->surface,
+                                                   startOffset,
+                                                   endOffset);
     baseSpriteAnimation->addEffect(std::move(moveEffect));
 
     duration = 5;
@@ -50,8 +53,11 @@ IntroAnimation::IntroAnimation(SDL_Renderer* renderer) : SequentialAnimation(ren
     });
     SDL_Color startColor  = {0, 0, 0, 255};
     SDL_Color endColor    = {255, 255, 255, 255};
-    auto      colorEffect = std::make_unique<ColorEffect>(
-        renderer, oakSpriteAnimation->texture, oakSpriteAnimation->surface, startColor, endColor);
+    auto      colorEffect = std::make_unique<ColorEffect>(renderer,
+                                                     oakSpriteAnimation->texture,
+                                                     oakSpriteAnimation->surface,
+                                                     startColor,
+                                                     endColor);
     oakSpriteAnimation->addEffect(std::move(colorEffect));
 
     parallelAnimation->addAnimation(std::move(baseSpriteAnimation));

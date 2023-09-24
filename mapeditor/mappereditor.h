@@ -1,6 +1,7 @@
 #ifndef MAPPEREDITOR_H
 #define MAPPEREDITOR_H
 
+#include "encounterseditor.h"
 #include "mapperviewer.h"
 
 class MapperEditor : public QWidget
@@ -8,10 +9,14 @@ class MapperEditor : public QWidget
 public:
     MapperEditor(QWidget* parent = nullptr);
 
-    MapperViewer* viewer() const;
+    void swapMap(std::unique_ptr<Map>&& newMap);
+
+    MapperViewer*     getMapperViewer() const;
+    EncountersEditor* getEncountersEditor() const;
 
 private:
-    MapperViewer* mapperViewer;
+    MapperViewer*     mapperViewer;
+    EncountersEditor* encountersEditor;
 };
 
 #endif // MAPPEREDITOR_H

@@ -20,6 +20,9 @@ public:
 
     MapperWidget* contentWidget() const;
 
+signals:
+    void entered();
+
 protected:
     virtual void wheelEvent(QWheelEvent* event) override;
     virtual void mousePressEvent(QMouseEvent* event) override;
