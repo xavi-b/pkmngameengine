@@ -1,6 +1,6 @@
 #include "encountermethod.h"
 
-std::string EncounterMethod::EncounterMethodTypeToString(Type e)
+std::string EncounterMethod::TypeToString(Type e)
 {
     switch (e)
     {

@@ -1,4 +1,4 @@
-#include "textspeech.h"
+#include "battlespeech.h"
 
 #include "renderutils.h"
 #include "settings.h"
@@ -6,25 +6,25 @@
 #include <SDL_ttf.h>
 #include <iostream>
 
-TextSpeech::TextSpeech(SDL_Renderer* renderer) : renderer(renderer)
+BattleSpeech::BattleSpeech(SDL_Renderer* renderer) : renderer(renderer)
 {
     bgSurface = IMG_Load("resources/Graphics/Windowskins/choice 1.png");
     bgTexture = SDL_CreateTextureFromSurface(renderer, bgSurface);
 }
 
-TextSpeech::~TextSpeech()
+BattleSpeech::~BattleSpeech()
 {
     SDL_DestroyTexture(bgTexture);
     SDL_FreeSurface(bgSurface);
 }
 
-void TextSpeech::init()
+void BattleSpeech::init()
 {
     if (currentAnimation < animations.size())
         animations[currentAnimation]->start();
 }
 
-void TextSpeech::update(Inputs const* inputs)
+void BattleSpeech::update(Inputs const* inputs)
 {
     if (currentAnimation < animations.size())
     {
@@ -48,10 +48,10 @@ void TextSpeech::update(Inputs const* inputs)
     }
 }
 
-void TextSpeech::draw(Fps const* /*fps*/, RenderSizes rs)
+void BattleSpeech::draw(Fps const* /*fps*/, RenderSizes rs)
 {
-    int borderSize     = 14;
-    int dstBorderSizeY = borderSize * rs.wh / rs.ah;
+    int borderSize    = 14;
+    int dstBorderSize = borderSize * rs.wh / rs.ah;
 
     int height    = 2 * TextBoxSize;
     int dstHeight = height * rs.wh / rs.ah;
@@ -78,27 +78,27 @@ void TextSpeech::draw(Fps const* /*fps*/, RenderSizes rs)
                                                   {79, 199, 255, 255},
                                                   fontSize,
                                                   rect.x + dstPaddingX,
-                                                  rect.y + dstPaddingY * 2 - dstBorderSizeY * 2,
+                                                  rect.y + dstPaddingY * 2 - dstBorderSize * 2,
                                                   rs.aw - padding * 2);
 }
 
-bool TextSpeech::shouldClose() const
+bool BattleSpeech::shouldClose() const
 {
     return currentAnimation >= animations.size();
 }
 
-bool TextSpeech::mayClose() const
+bool BattleSpeech::mayClose() const
 {
     return currentAnimation == (animations.size() - 1)
         && (animations.size() == 0 || animations[currentAnimation]->isFinished());
 }
 
-void TextSpeech::reset()
+void BattleSpeech::reset()
 {
     currentAnimation = 0;
 }
 
-void TextSpeech::setTexts(std::vector<std::string> const& texts)
+void BattleSpeech::setTexts(std::vector<std::string> const& texts)
 {
     animations.clear();
     for (auto const& text : texts)

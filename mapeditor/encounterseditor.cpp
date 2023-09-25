@@ -4,9 +4,9 @@ EncountersEditor::EncountersEditor(QWidget* parent) : QWidget(parent)
 {
     QStringListModel* encounterMethodsModel = new QStringListModel;
     QStringList       encounterMethods;
-    for (size_t i = EncounterMethod::Type::LAND; i < EncounterMethod::EncounterMethodTypeCount; ++i)
+    for (size_t i = EncounterMethod::Type::LAND; i < EncounterMethod::TypeCount; ++i)
         encounterMethods.append(
-            EncounterMethod::EncounterMethodTypeToString(static_cast<EncounterMethod::Type>(i)).c_str());
+            EncounterMethod::TypeToString(static_cast<EncounterMethod::Type>(i)).c_str());
     encounterMethodsModel->setStringList(encounterMethods);
 
     EncountersModel*     encountersModel = new EncountersModel;

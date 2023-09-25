@@ -1,8 +1,8 @@
 #ifndef BATTLESCENE_H
 #define BATTLESCENE_H
 
+#include "battles/battleactions.h"
 #include "scene.h"
-#include "textquestion.h"
 #include "textspeech.h"
 
 #include <SDL_image.h>
@@ -24,8 +24,8 @@ public:
     virtual std::string name() override;
 
 private:
-    std::unique_ptr<TextSpeech>   quitSpeech;
-    std::unique_ptr<TextQuestion> quitQuestion;
+    std::unique_ptr<TextSpeech>    quitSpeech;
+    std::unique_ptr<BattleActions> battleActions;
 };
 
 #endif // BATTLESCENE_H

@@ -32,8 +32,8 @@ public:
         __SIZE
     };
 
-    static constexpr std::int32_t EncounterMethodTypeCount = Type::__SIZE + Type::LAND;
-    static std::string            EncounterMethodTypeToString(Type e);
+    static constexpr size_t TypeCount = Type::__SIZE + Type::LAND;
+    static std::string      TypeToString(Type e);
 
     EncounterMethod(Type type);
 

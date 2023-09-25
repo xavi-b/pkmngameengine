@@ -10,9 +10,8 @@ BattleScene::BattleScene(SDL_Renderer* renderer) : Scene(renderer)
     texts.push_back(lc::translate("Quit ?"));
     quitSpeech->setTexts(texts);
     quitSpeech->init();
-    quitQuestion = std::make_unique<TextQuestion>(renderer);
-    quitQuestion->setTexts({lc::translate("Yes"), lc::translate("No")});
-    quitQuestion->init();
+    battleActions = std::make_unique<BattleActions>(renderer);
+    battleActions->init();
 }
 
 BattleScene::~BattleScene()
@@ -27,31 +26,28 @@ void BattleScene::update(Inputs const* inputs)
 {
     if (quitSpeech->mayClose())
     {
-        quitQuestion->update(inputs);
+        battleActions->update(inputs);
     }
     else
     {
         quitSpeech->update(inputs);
     }
 
-    if (quitQuestion->isFinished())
+    if (battleActions->isFinished())
     {
-        if (quitQuestion->selectedIndex() == 0)
-        {
-            Game::instance()->quit();
-        }
+        // TODO
     }
 }
 
 void BattleScene::draw(Fps const* fps, RenderSizes rs)
 {
     quitSpeech->draw(fps, rs);
-    quitQuestion->draw(fps, rs, TextQuestion::Right);
+    battleActions->draw(fps, rs);
 }
 
 bool BattleScene::popScene() const
 {
-    return quitQuestion->isFinished();
+    return false;
 }
 
 std::unique_ptr<Scene> BattleScene::nextScene()
