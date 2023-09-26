@@ -91,7 +91,7 @@ void TextQuestion::draw(Fps const* /*fps*/, RenderSizes rs, Position pos)
     RenderUtils::drawBorderImage(renderer, rs, bgSurface, bgTexture, rect, borderSize, borderSize);
 
     int textAdjustX = 2 * rs.ww / rs.aw;
-    int textAdjustY = -2 * rs.wh / rs.ah;
+    int textAdjustY = -4 * rs.wh / rs.ah;
 
     int i = 0;
     for (auto const& text : texts)

@@ -70,7 +70,7 @@ void TextSpeech::draw(Fps const* /*fps*/, RenderSizes rs)
     int dstPaddingX      = paddingX * rs.ww / rs.aw;
     int dstPaddingY      = (dstHeight - dstTextBoxHeight) / 2;
 
-    int textAdjustY = -2 * rs.wh / rs.ah;
+    int textAdjustY = -4 * rs.wh / rs.ah;
 
     if (currentAnimation < animations.size())
         RenderUtils::drawGreyTextWithIntroWrapped(renderer,

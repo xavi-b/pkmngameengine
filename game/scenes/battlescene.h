@@ -2,7 +2,9 @@
 #define BATTLESCENE_H
 
 #include "battles/battleactions.h"
+#include "battles/battlebackground.h"
 #include "battles/battlespeech.h"
+#include "battles/moveselection.h"
 #include "scene.h"
 
 #include <SDL_image.h>
@@ -24,8 +26,21 @@ public:
     virtual std::string name() override;
 
 private:
-    std::unique_ptr<BattleSpeech>  battleSpeech;
-    std::unique_ptr<BattleActions> battleActions;
+    enum State
+    {
+        MENU,
+        MOVES,
+        ITEMS,
+        PKMNS,
+        RUN
+    };
+
+    std::unique_ptr<BattleBackground> battleBackground;
+    std::unique_ptr<BattleSpeech>     battleSpeech;
+    std::unique_ptr<BattleActions>    battleActions;
+    std::unique_ptr<MoveSelection>    moveSelection;
+
+    State state = MENU;
 };
 
 #endif // BATTLESCENE_H

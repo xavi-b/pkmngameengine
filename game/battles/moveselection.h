@@ -1,5 +1,5 @@
-#ifndef BATTLEACTIONS_H
-#define BATTLEACTIONS_H
+#ifndef MOVESELECTION_H
+#define MOVESELECTION_H
 
 #include "fps.h"
 #include "inputs.h"
@@ -9,30 +9,18 @@
 #include <string>
 #include <vector>
 
-class BattleActions
+class MoveSelection
 {
 public:
     static constexpr int NElements    = 2;
     static constexpr int TextWidth    = 60;
     static constexpr int ArrowSize    = 16;
     static constexpr int TextPaddingX = 10;
-    static constexpr int TextBoxWidth =
-        TextSpeech::TextBoxBorderSize * 2 + (ArrowSize + TextWidth) * NElements + TextPaddingX * (NElements + 1);
 
-    enum Type
-    {
-        MOVES,
-        BAG,
-        PKNMS,
-        RUN,
-        __SIZE
-    };
+    static constexpr size_t MoveCount = 4;
 
-    static constexpr size_t TypeCount = Type::__SIZE + Type::MOVES;
-    static std::string      TypeToString(Type e);
-
-    BattleActions(SDL_Renderer* renderer);
-    ~BattleActions();
+    MoveSelection(SDL_Renderer* renderer);
+    ~MoveSelection();
 
     void init();
     void update(Inputs const* inputs);
@@ -41,8 +29,9 @@ public:
     bool isFinished() const;
     void reset();
 
-    int  selectedIndex() const;
-    Type selectedAction() const;
+    int selectedIndex() const;
+
+    bool shouldQuit() const;
 
 private:
     SDL_Renderer* renderer;
@@ -53,6 +42,7 @@ private:
 
     bool selected     = false;
     int  currentIndex = 0;
+    bool quit         = false;
 };
 
-#endif // BATTLEACTIONS_H
+#endif // MOVESELECTION_H

@@ -1,4 +1,4 @@
-#include "battleactions.h"
+#include "moveselection.h"
 
 #include "game.h"
 #include "renderutils.h"
@@ -7,24 +7,7 @@
 #include <SDL_ttf.h>
 #include <iostream>
 
-std::string BattleActions::TypeToString(Type e)
-{
-    switch (e)
-    {
-    case MOVES:
-        return "FIGHT";
-    case BAG:
-        return "BAG";
-    case PKNMS:
-        return "PKNMS";
-    case RUN:
-        return "RUN";
-    default:
-        return "???";
-    }
-}
-
-BattleActions::BattleActions(SDL_Renderer* renderer) : renderer(renderer)
+MoveSelection::MoveSelection(SDL_Renderer* renderer) : renderer(renderer)
 {
     bgSurface        = IMG_Load("resources/Graphics/Windowskins/choice 1.png");
     bgTexture        = SDL_CreateTextureFromSurface(renderer, bgSurface);
@@ -32,7 +15,7 @@ BattleActions::BattleActions(SDL_Renderer* renderer) : renderer(renderer)
     selectionTexture = SDL_CreateTextureFromSurface(renderer, selectionSurface);
 }
 
-BattleActions::~BattleActions()
+MoveSelection::~MoveSelection()
 {
     SDL_DestroyTexture(bgTexture);
     SDL_FreeSurface(bgSurface);
@@ -40,52 +23,57 @@ BattleActions::~BattleActions()
     SDL_FreeSurface(selectionSurface);
 }
 
-void BattleActions::init()
+void MoveSelection::init()
 {
     reset();
 }
 
-void BattleActions::update(Inputs const* inputs)
+void MoveSelection::update(Inputs const* inputs)
 {
     if (inputs->A)
     {
         selected = true;
     }
+    else if (inputs->B)
+    {
+        quit     = true;
+        selected = false;
+    }
     else if (inputs->right)
     {
         if (currentIndex % 2 == 0) // first column
-            currentIndex = (currentIndex + 1) % TypeCount;
+            currentIndex = (currentIndex + 1) % MoveCount;
         if (Game::instance()->isDebug())
-            std::cout << "BattleActions: " << currentIndex << std::endl;
+            std::cout << "MoveSelection: " << currentIndex << std::endl;
     }
     else if (inputs->left)
     {
         if (currentIndex % 2 == 1) // second column
-            currentIndex = (currentIndex - 1 + TypeCount) % TypeCount;
+            currentIndex = (currentIndex - 1 + MoveCount) % MoveCount;
         if (Game::instance()->isDebug())
-            std::cout << "BattleActions: " << currentIndex << std::endl;
+            std::cout << "MoveSelection: " << currentIndex << std::endl;
     }
     else if (inputs->down)
     {
-        if (currentIndex < int(TypeCount) - 2) // second row
-            currentIndex = (currentIndex + 2) % TypeCount;
+        if (currentIndex < int(MoveCount) - 2) // second row
+            currentIndex = (currentIndex + 2) % MoveCount;
         if (Game::instance()->isDebug())
-            std::cout << "BattleActions: " << currentIndex << std::endl;
+            std::cout << "MoveSelection: " << currentIndex << std::endl;
     }
     else if (inputs->up)
     {
         if (currentIndex > 1) // second row
-            currentIndex = (currentIndex - 2 + TypeCount) % TypeCount;
+            currentIndex = (currentIndex - 2 + MoveCount) % MoveCount;
         if (Game::instance()->isDebug())
-            std::cout << "BattleActions: " << currentIndex << std::endl;
+            std::cout << "MoveSelection: " << currentIndex << std::endl;
     }
 }
 
-void BattleActions::draw(Fps const* /*fps*/, RenderSizes rs)
+void MoveSelection::draw(Fps const* /*fps*/, RenderSizes rs)
 {
-    std::vector<std::string> texts;
-    for (size_t i = Type::MOVES; i < TypeCount; ++i)
-        texts.push_back(TypeToString(static_cast<Type>(i)));
+    std::vector<std::string> movesTexts;
+    for (size_t i = 0; i < MoveCount; ++i)
+        movesTexts.push_back(std::string("MOVE ") + std::to_string(i + 1)); // TODO
 
     int borderSize     = TextSpeech::TextBoxBorderSize;
     int dstBorderSizeX = borderSize * rs.ww / rs.aw;
@@ -97,28 +85,31 @@ void BattleActions::draw(Fps const* /*fps*/, RenderSizes rs)
     int dstTextHeight = fontSize * rs.wh / rs.ah;
 
     int dstPaddingY = (dstHeight - dstTextHeight * NElements) / (NElements + 1);
-    int dstWidth    = BattleActions::TextBoxWidth * rs.ww / rs.aw;
-    int dstPaddingX = BattleActions::TextPaddingX * rs.ww / rs.aw;
+    int dstPaddingX = MoveSelection::TextPaddingX * rs.ww / rs.aw;
 
-    int selectionSurfaceWidth     = BattleActions::ArrowSize;
+    int percentage    = 60;
+    int dstMovesWidth = rs.ww * percentage / 100;
+    int dstInfoWidth  = rs.ww - dstMovesWidth;
+
+    int selectionSurfaceWidth     = MoveSelection::ArrowSize;
     int dstSelectionSurfaceWidth  = selectionSurfaceWidth * rs.ww / rs.aw;
     int selectionSurfaceHeight    = selectionSurface->h;
     int dstSelectionSurfaceHeight = selectionSurfaceHeight * rs.wh / rs.ah;
-    int selectionTotalWidth       = BattleActions::ArrowSize + BattleActions::TextWidth;
-    int dstSelectionTotalWidth    = selectionTotalWidth * rs.ww / rs.aw;
+    int dstSelectionTotalWidth    = (dstMovesWidth - 2 * dstBorderSizeX - dstPaddingX) / 2;
 
     int textAdjustX = 2 * rs.ww / rs.aw;
     int textAdjustY = -4 * rs.wh / rs.ah;
 
     SDL_Rect rect;
-    rect.w = dstWidth;
-    rect.x = rs.ww - rect.w;
+
+    rect.w = dstMovesWidth;
+    rect.x = 0;
     rect.h = dstHeight;
     rect.y = rs.wh - rect.h;
     RenderUtils::drawBorderImage(renderer, rs, bgSurface, bgTexture, rect, borderSize, borderSize);
 
     int i = 0;
-    for (auto const& text : texts)
+    for (auto const& text : movesTexts)
     {
         RenderUtils::drawGreyText(renderer,
                                   rs,
@@ -139,24 +130,32 @@ void BattleActions::draw(Fps const* /*fps*/, RenderSizes rs)
         }
         ++i;
     }
+
+    rect.w = dstInfoWidth;
+    rect.x = dstMovesWidth;
+    rect.h = dstHeight;
+    rect.y = rs.wh - rect.h;
+    RenderUtils::drawBorderImage(renderer, rs, bgSurface, bgTexture, rect, borderSize, borderSize);
 }
 
-bool BattleActions::isFinished() const
+bool MoveSelection::isFinished() const
 {
     return selected;
 }
 
-void BattleActions::reset()
+void MoveSelection::reset()
 {
-    selected = false;
+    currentIndex = 0;
+    selected     = false;
+    quit         = false;
 }
 
-int BattleActions::selectedIndex() const
+int MoveSelection::selectedIndex() const
 {
     return currentIndex;
 }
 
-BattleActions::Type BattleActions::selectedAction() const
+bool MoveSelection::shouldQuit() const
 {
-    return static_cast<Type>(currentIndex);
+    return quit;
 }

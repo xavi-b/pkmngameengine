@@ -5,13 +5,16 @@
 
 BattleScene::BattleScene(SDL_Renderer* renderer) : Scene(renderer)
 {
-    battleSpeech = std::make_unique<BattleSpeech>(renderer);
+    battleBackground = std::make_unique<BattleBackground>(renderer);
+    battleSpeech     = std::make_unique<BattleSpeech>(renderer);
     std::vector<std::string> texts;
     texts.push_back(lc::translate("What should AAAAAAAAAAAA do ?"));
     battleSpeech->setTexts(texts);
     battleSpeech->init();
     battleActions = std::make_unique<BattleActions>(renderer);
     battleActions->init();
+    moveSelection = std::make_unique<MoveSelection>(renderer);
+    moveSelection->init();
 }
 
 BattleScene::~BattleScene()
@@ -20,34 +23,70 @@ BattleScene::~BattleScene()
 
 void BattleScene::init()
 {
+    state = MENU;
 }
 
 void BattleScene::update(Inputs const* inputs)
 {
-    if (battleSpeech->mayClose())
+    if (state == MENU)
     {
-        battleActions->update(inputs);
-    }
-    else
-    {
-        battleSpeech->update(inputs);
-    }
+        if (battleSpeech->mayClose())
+        {
+            battleActions->update(inputs);
+        }
+        else
+        {
+            battleSpeech->update(inputs);
+        }
 
-    if (battleActions->isFinished())
+        if (battleActions->isFinished())
+        {
+            if (battleActions->selectedAction() == BattleActions::MOVES)
+            {
+                state = MOVES;
+            }
+            else if (battleActions->selectedAction() == BattleActions::RUN)
+            {
+                state = RUN;
+            }
+            battleActions->reset();
+        }
+    }
+    else if (state == MOVES)
     {
-        // TODO
+        moveSelection->update(inputs);
+        if (moveSelection->shouldQuit())
+        {
+            state = MENU;
+        }
+        else if (moveSelection->selectedIndex())
+        {
+            // TODO
+        }
     }
 }
 
 void BattleScene::draw(Fps const* fps, RenderSizes rs)
 {
-    battleSpeech->draw(fps, rs);
-    battleActions->draw(fps, rs);
+    battleBackground->draw(fps, rs);
+
+    if (state == MENU)
+    {
+        battleSpeech->draw(fps, rs);
+        if (battleSpeech->mayClose())
+        {
+            battleActions->draw(fps, rs);
+        }
+    }
+    else if (state == MOVES)
+    {
+        moveSelection->draw(fps, rs);
+    }
 }
 
 bool BattleScene::popScene() const
 {
-    return false;
+    return state == RUN;
 }
 
 std::unique_ptr<Scene> BattleScene::nextScene()
