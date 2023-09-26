@@ -50,10 +50,10 @@ void TextSpeech::update(Inputs const* inputs)
 
 void TextSpeech::draw(Fps const* /*fps*/, RenderSizes rs)
 {
-    int borderSize     = 14;
-    int dstBorderSizeY = borderSize * rs.wh / rs.ah;
+    int borderSize     = TextSpeech::TextBoxBorderSize;
+    int dstBorderSizeX = borderSize * rs.ww / rs.aw;
 
-    int height    = 2 * TextBoxSize;
+    int height    = 2 * TextSpeech::TextBoxHeight;
     int dstHeight = height * rs.wh / rs.ah;
 
     SDL_Rect rect;
@@ -66,9 +66,11 @@ void TextSpeech::draw(Fps const* /*fps*/, RenderSizes rs)
     int fontSize         = RenderUtils::TextSize;
     int textBoxHeight    = 2 /* lines */ * RenderUtils::TextSize;
     int dstTextBoxHeight = textBoxHeight * rs.wh / rs.ah;
-    int padding          = (height - textBoxHeight) / 2;
-    int dstPaddingX      = (height - textBoxHeight) / 2 * rs.ww / rs.aw;
+    int paddingX         = RenderUtils::TextPadding;
+    int dstPaddingX      = paddingX * rs.ww / rs.aw;
     int dstPaddingY      = (dstHeight - dstTextBoxHeight) / 2;
+
+    int textAdjustY = -2 * rs.wh / rs.ah;
 
     if (currentAnimation < animations.size())
         RenderUtils::drawGreyTextWithIntroWrapped(renderer,
@@ -77,9 +79,9 @@ void TextSpeech::draw(Fps const* /*fps*/, RenderSizes rs)
                                                   {3, 86, 252, 255},
                                                   {79, 199, 255, 255},
                                                   fontSize,
-                                                  rect.x + dstPaddingX,
-                                                  rect.y + dstPaddingY * 2 - dstBorderSizeY * 2,
-                                                  rs.aw - padding * 2);
+                                                  rect.x + dstPaddingX + dstBorderSizeX,
+                                                  rect.y + dstPaddingY + textAdjustY,
+                                                  rs.aw - (paddingX + borderSize) * 2);
 }
 
 bool TextSpeech::shouldClose() const

@@ -3,6 +3,7 @@
 
 #include "fps.h"
 #include "inputs.h"
+#include "textspeech.h"
 
 #include <SDL_image.h>
 #include <string>
@@ -11,6 +12,13 @@
 class BattleActions
 {
 public:
+    static constexpr int NElements    = 2;
+    static constexpr int TextWidth    = 60;
+    static constexpr int ArrowSize    = 16;
+    static constexpr int TextPaddingX = 10;
+    static constexpr int TextBoxWidth =
+        TextSpeech::TextBoxBorderSize * 2 + (ArrowSize + TextWidth) * NElements + TextPaddingX * (NElements + 1);
+
     enum Type
     {
         FIGHT,

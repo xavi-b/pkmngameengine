@@ -5,11 +5,11 @@
 
 BattleScene::BattleScene(SDL_Renderer* renderer) : Scene(renderer)
 {
-    quitSpeech = std::make_unique<TextSpeech>(renderer);
+    battleSpeech = std::make_unique<BattleSpeech>(renderer);
     std::vector<std::string> texts;
-    texts.push_back(lc::translate("Quit ?"));
-    quitSpeech->setTexts(texts);
-    quitSpeech->init();
+    texts.push_back(lc::translate("What should AAAAAAAAAAAA do ?"));
+    battleSpeech->setTexts(texts);
+    battleSpeech->init();
     battleActions = std::make_unique<BattleActions>(renderer);
     battleActions->init();
 }
@@ -24,13 +24,13 @@ void BattleScene::init()
 
 void BattleScene::update(Inputs const* inputs)
 {
-    if (quitSpeech->mayClose())
+    if (battleSpeech->mayClose())
     {
         battleActions->update(inputs);
     }
     else
     {
-        quitSpeech->update(inputs);
+        battleSpeech->update(inputs);
     }
 
     if (battleActions->isFinished())
@@ -41,7 +41,7 @@ void BattleScene::update(Inputs const* inputs)
 
 void BattleScene::draw(Fps const* fps, RenderSizes rs)
 {
-    quitSpeech->draw(fps, rs);
+    battleSpeech->draw(fps, rs);
     battleActions->draw(fps, rs);
 }
 

@@ -9,7 +9,8 @@
 class TextSpeech
 {
 public:
-    static constexpr int TextBoxSize = 48;
+    static constexpr int TextBoxHeight     = 48;
+    static constexpr int TextBoxBorderSize = 14;
 
     TextSpeech(SDL_Renderer* renderer);
     ~TextSpeech();

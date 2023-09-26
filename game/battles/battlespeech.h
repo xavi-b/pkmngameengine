@@ -3,6 +3,7 @@
 
 #include "animations/textanimation.h"
 #include "inputs.h"
+#include "textspeech.h"
 
 #include <SDL_image.h>
 

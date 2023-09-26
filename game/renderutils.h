@@ -16,7 +16,8 @@ struct RenderSizes
 class RenderUtils
 {
 public:
-    constexpr static int TextSize = 24;
+    constexpr static int TextSize     = 24;
+    static constexpr int TextPadding = 10;
 
     TTF_Font* font;
 

@@ -11,6 +11,9 @@
 class TextQuestion
 {
 public:
+    static constexpr int ArrowSize    = 16;
+    static constexpr int TextPaddingX = 10;
+
     enum Position
     {
         Right,
