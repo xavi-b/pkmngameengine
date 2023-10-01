@@ -16,8 +16,8 @@ public:
 
     enum Position
     {
-        Right,
-        Left
+        RIGHT,
+        LEFT
     };
 
     TextQuestion(SDL_Renderer* renderer);
@@ -25,7 +25,7 @@ public:
 
     void init();
     void update(Inputs const* inputs);
-    void draw(Fps const* fps, RenderSizes rs, Position pos = Right);
+    void draw(Fps const* fps, RenderSizes rs, Position pos = RIGHT);
 
     bool isFinished() const;
     void reset();

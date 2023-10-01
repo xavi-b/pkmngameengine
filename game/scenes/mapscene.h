@@ -3,6 +3,7 @@
 
 #include "battlescene.h"
 #include "map.h"
+#include "menu.h"
 #include "pkmn.h"
 #include "scene.h"
 #include "utils.h"
@@ -38,7 +39,7 @@ public:
     virtual void update(Inputs const* inputs) override;
     virtual void draw(Fps const* fps, RenderSizes rs) override;
 
-    virtual void initPlayerPosition(int x, int y, Direction direction);
+    virtual void initPlayerPosition(int x, int y, Direction direction = NONE);
 
     virtual bool manageEncounters();
 
@@ -46,6 +47,8 @@ public:
     virtual void popReset() override;
 
     virtual std::unique_ptr<Scene> nextScene() override;
+
+    std::pair<size_t, size_t> currentPlayerPosition() const;
 
 protected:
     static constexpr int TilePixelSize     = 32;
@@ -70,6 +73,9 @@ protected:
     Speed previousSpeed = WALK;
 
     Pkmn::PkmnPtr encounteredPkmn;
+
+    bool                  openMenu = false;
+    std::unique_ptr<Menu> menu;
 };
 
 #endif // MAP_H

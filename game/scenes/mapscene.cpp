@@ -15,12 +15,15 @@ MapScene::MapScene(SDL_Renderer* renderer, std::string const& mapPath) : Scene(r
     auto mapPtr = js::value_to<std::unique_ptr<Map>>(js::parse(buffer.str()));
     map.swap(mapPtr);
 
-    if (Game::instance()->data.player.gender == 0)
+    if (Game::instance()->data.player.gender == Player::BOY)
         playerSurface = IMG_Load("resources/Graphics/Characters/boy_run.png");
     else
         playerSurface = IMG_Load("resources/Graphics/Characters/girl_run.png");
 
     playerTexture = SDL_CreateTextureFromSurface(renderer, playerSurface);
+
+    menu = std::make_unique<Menu>(renderer);
+    menu->init();
 }
 
 MapScene::~MapScene()
@@ -39,11 +42,35 @@ MapScene::~MapScene()
 
 void MapScene::update(Inputs const* inputs)
 {
-    previousSpeed = speed;
+    if (openMenu)
+    {
+        menu->update(inputs);
 
-    speed = WALK;
-    if (inputs->B)
-        speed = RUN;
+        if (menu->isFinished())
+        {
+            if (menu->isSelected())
+            {
+                if (menu->selection() == Menu::QUIT)
+                {
+                    Game::instance()->quit();
+                }
+                else if (menu->selection() == Menu::SAVE)
+                {
+                    Game::instance()->save();
+                }
+            }
+            else
+            {
+                openMenu = false;
+            }
+
+            menu->reset();
+        }
+
+        return;
+    }
+
+    previousSpeed = speed;
 
     accumulatedTicks = (accumulatedTicks + 1) % speed;
 
@@ -61,6 +88,19 @@ void MapScene::update(Inputs const* inputs)
 
     if (encounter)
         return;
+
+    if (inputs->B)
+        speed = RUN;
+    else
+        speed = WALK;
+
+    if (inputs->start)
+    {
+        openMenu = true;
+        return;
+    }
+    else
+        openMenu = false;
 
     if (inputs->up)
     {
@@ -334,6 +374,9 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
             SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         }
     }
+
+    if (openMenu)
+        menu->draw(fps, rs);
 }
 
 void MapScene::initPlayerPosition(int x, int y, Direction direction)
@@ -363,7 +406,7 @@ bool MapScene::manageEncounters()
             if (it != encounterMethods.end())
             {
                 auto const& encounterMethod = *it;
-                size_t      pkmnEncounter   = randint(0, 99);
+                size_t      pkmnEncounter   = Utils::randint(0, 99);
 
                 if (Game::instance()->isDebug())
                     std::cout << "PkmnEncounter: " << pkmnEncounter << "/" << encounterMethod.getDensity() << std::endl;
@@ -393,7 +436,8 @@ bool MapScene::manageEncounters()
 
                     PkmnDef::PkmnDefPtr pkmnDef = Game::instance()->data.pkmnDefFor(e.getPkmnId());
                     if (pkmnDef)
-                        encounteredPkmn = std::make_shared<Pkmn>(pkmnDef, randint(e.getLevelMin(), e.getLevelMax()));
+                        encounteredPkmn =
+                            std::make_shared<Pkmn>(pkmnDef, Utils::randint(e.getLevelMin(), e.getLevelMax()));
                     return true;
                 }
             }
@@ -421,4 +465,9 @@ std::unique_ptr<Scene> MapScene::nextScene()
         return scene;
     }
     return nullptr;
+}
+
+std::pair<size_t, size_t> MapScene::currentPlayerPosition() const
+{
+    return {playerX, playerY};
 }

@@ -2,7 +2,6 @@
 #define PLAYER_H
 
 #include "entity.h"
-#include "item.h"
 #include "pkmn.h"
 
 #include <array>
@@ -12,14 +11,22 @@
 class Player : public Entity
 {
 public:
+    enum Gender
+    {
+        BOY,
+        GIRL
+    };
+
+    friend void   tag_invoke(js::value_from_tag, js::value& jv, Player const& o);
+    friend Player tag_invoke(js::value_to_tag<Player>, js::value const& jv);
+
     Player();
 
-    int gender = 0;
+    Gender gender = BOY;
 
     std::string name;
 
-    std::vector<std::unique_ptr<Item>> items;
-    std::array<Pkmn::PkmnPtr, 6>       pkmns;
+    std::array<Pkmn::PkmnPtr, 6> pkmns;
 };
 
 #endif // PLAYER_H

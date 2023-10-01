@@ -78,7 +78,7 @@ void IntroScene::update(Inputs const* inputs)
         break;
     case GenderQuestion: {
         genderQuestion->update(inputs);
-        int gender = genderQuestion->selectedIndex();
+        Player::Gender gender = static_cast<Player::Gender>(genderQuestion->selectedIndex());
         if (genderQuestion->isFinished())
         {
             Game::instance()->data.player.gender = gender;
@@ -125,7 +125,7 @@ void IntroScene::draw(Fps const* fps, RenderSizes rs)
         break;
     case GenderQuestion:
         genderSpeech->draw(fps, rs);
-        genderQuestion->draw(fps, rs, TextQuestion::Right);
+        genderQuestion->draw(fps, rs, TextQuestion::RIGHT);
         break;
     case OutroSpeech:
         outroSpeech->draw(fps, rs);

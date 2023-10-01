@@ -82,7 +82,8 @@ void Keyboard::update(Inputs const* inputs)
     }
     else if (inputs->B)
     {
-        textOut.erase(textOut.size() - 1, 1);
+        if (textOut.size() > 0)
+            textOut.erase(textOut.size() - 1, 1);
     }
     else if (inputs->start)
     {

@@ -46,7 +46,7 @@ void LeaveScene::update(Inputs const* inputs)
 void LeaveScene::draw(Fps const* fps, RenderSizes rs)
 {
     quitSpeech->draw(fps, rs);
-    quitQuestion->draw(fps, rs, TextQuestion::Right);
+    quitQuestion->draw(fps, rs, TextQuestion::RIGHT);
 }
 
 bool LeaveScene::popScene() const

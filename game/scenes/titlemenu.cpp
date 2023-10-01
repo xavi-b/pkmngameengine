@@ -172,13 +172,14 @@ std::unique_ptr<Scene> TitleMenu::nextScene()
         return std::make_unique<IntroScene>(renderer);
     }
     if (goToTitleScene)
+    {
+        goToTitleScene = false;
         return std::make_unique<TitleScene>(renderer);
-    // TODO
+    }
     if (goToGame)
     {
-        auto scene = std::make_unique<Town1Scene>(renderer);
-        scene->initPlayerPosition(8, 12, MapScene::NONE);
-        return scene;
+        goToGame = false;
+        return Game::instance()->load();
     }
     return nullptr;
 }

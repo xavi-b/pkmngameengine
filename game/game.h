@@ -14,6 +14,9 @@
 #include <string>
 #include <vector>
 
+class MapScene;
+class MapSceneFactory;
+
 class Game
 {
 public:
@@ -22,10 +25,12 @@ public:
 
     static Game* instance();
 
-    int  exec();
-    void quit();
-    void printDebug();
-    bool isDebug();
+    int                       exec();
+    void                      quit();
+    void                      save();
+    std::unique_ptr<MapScene> load();
+    void                      printDebug();
+    bool                      isDebug();
 
     GameData data;
 
@@ -41,6 +46,7 @@ private:
     SDL_Renderer* renderer;
 
     std::list<std::unique_ptr<Scene>> scenes;
+    std::unique_ptr<MapSceneFactory>  mapSceneFactory;
 
     bool debug   = false;
     bool running = true;

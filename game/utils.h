@@ -17,6 +17,15 @@ namespace lc = boost::locale;
 
 std::ostream& operator<<(std::ostream& o, SDL_Rect r);
 
+namespace Utils
+{
+
 size_t randint(size_t min, size_t max);
+
+std::string dataDir();
+
+std::string configDir();
+
+} // namespace Utils
 
 #endif // DEFINES_H

@@ -1,4 +1,4 @@
-#include "textquestion.h"
+#include "menu.h"
 
 #include "renderutils.h"
 #include "textspeech.h"
@@ -6,7 +6,20 @@
 #include <SDL_ttf.h>
 #include <iostream>
 
-TextQuestion::TextQuestion(SDL_Renderer* renderer) : renderer(renderer)
+std::string Menu::SelectionToString(Selection e)
+{
+    switch (e)
+    {
+    case SAVE:
+        return "SAVE";
+    case QUIT:
+        return "QUIT";
+    default:
+        return "???";
+    }
+}
+
+Menu::Menu(SDL_Renderer* renderer) : renderer(renderer)
 {
     bgSurface        = IMG_Load("resources/Graphics/Windowskins/choice 1.png");
     bgTexture        = SDL_CreateTextureFromSurface(renderer, bgSurface);
@@ -14,7 +27,7 @@ TextQuestion::TextQuestion(SDL_Renderer* renderer) : renderer(renderer)
     selectionTexture = SDL_CreateTextureFromSurface(renderer, selectionSurface);
 }
 
-TextQuestion::~TextQuestion()
+Menu::~Menu()
 {
     SDL_DestroyTexture(bgTexture);
     SDL_FreeSurface(bgSurface);
@@ -22,30 +35,36 @@ TextQuestion::~TextQuestion()
     SDL_FreeSurface(selectionSurface);
 }
 
-void TextQuestion::init()
+void Menu::init()
 {
     reset();
 }
 
-void TextQuestion::update(Inputs const* inputs)
+void Menu::update(Inputs const* inputs)
 {
     if (inputs->A)
     {
         selected = true;
+        finished = true;
+    }
+    else if (inputs->B || inputs->start)
+    {
+        selected = false;
+        finished = true;
     }
     else if (inputs->up)
     {
-        if (texts.size() > 0)
-            currentIndex = (currentIndex - 1 + texts.size()) % texts.size();
+        if (SelectionCount > 0)
+            currentSelection = static_cast<Selection>((currentSelection - 1 + SelectionCount) % SelectionCount);
     }
     else if (inputs->down)
     {
-        if (texts.size() > 0)
-            currentIndex = (currentIndex + 1) % texts.size();
+        if (SelectionCount > 0)
+            currentSelection = static_cast<Selection>((currentSelection + 1) % SelectionCount);
     }
 }
 
-void TextQuestion::draw(Fps const* /*fps*/, RenderSizes rs, Position pos)
+void Menu::draw(Fps const* /*fps*/, RenderSizes rs)
 {
     int borderSize     = TextSpeech::TextBoxBorderSize;
     int dstBorderSizeX = borderSize * rs.ww / rs.aw;
@@ -53,6 +72,10 @@ void TextQuestion::draw(Fps const* /*fps*/, RenderSizes rs, Position pos)
 
     int fontSize      = RenderUtils::TextSize;
     int dstTextHeight = fontSize * rs.wh / rs.ah;
+
+    std::vector<std::string> texts;
+    for (size_t i = 0; i < SelectionCount; ++i)
+        texts.push_back(SelectionToString(static_cast<Selection>(i)));
 
     int maxW = 0;
     for (auto const& text : texts)
@@ -64,30 +87,28 @@ void TextQuestion::draw(Fps const* /*fps*/, RenderSizes rs, Position pos)
             maxW = w;
     }
 
-    size_t nElements = texts.size();
+    size_t nElements = SelectionCount;
 
     int padding     = RenderUtils::TextPadding;
     int dstPaddingX = padding * rs.ww / rs.aw;
     int dstPaddingY = padding * rs.wh / rs.ah;
 
-    int selectionSurfaceWidth     = TextQuestion::ArrowSize;
+    int selectionSurfaceWidth     = Menu::ArrowSize;
     int dstSelectionSurfaceWidth  = selectionSurfaceWidth * rs.ww / rs.aw;
     int selectionSurfaceHeight    = selectionSurface->h;
     int dstSelectionSurfaceHeight = selectionSurfaceHeight * rs.wh / rs.ah;
-    int selectionTotalWidth       = TextQuestion::ArrowSize + maxW;
+    int selectionTotalWidth       = Menu::ArrowSize + maxW;
     int dstSelectionTotalWidth    = selectionTotalWidth * rs.ww / rs.aw;
 
     int height    = TextSpeech::TextBoxBorderSize * 2 + fontSize * nElements + TextPaddingX * (nElements + 1);
     int dstHeight = height * rs.wh / rs.ah;
     int dstWidth  = dstSelectionTotalWidth + dstPaddingX * 2 + dstBorderSizeX * 2;
 
-    int dstSpeechHeight = (2 * (TextSpeech::TextBoxHeight * rs.wh / rs.ah));
-
     SDL_Rect rect;
     rect.w = dstWidth;
-    rect.x = pos == LEFT ? 0 : rs.ww - rect.w;
+    rect.x = rs.ww - rect.w;
     rect.h = dstHeight;
-    rect.y = rs.wh - rect.h - dstSpeechHeight;
+    rect.y = 0;
     RenderUtils::drawBorderImage(renderer, rs, bgSurface, bgTexture, rect, borderSize, borderSize);
 
     int textAdjustX = 2 * rs.ww / rs.aw;
@@ -103,7 +124,7 @@ void TextQuestion::draw(Fps const* /*fps*/, RenderSizes rs, Position pos)
                                   rect.x + dstBorderSizeX + dstPaddingX + dstSelectionSurfaceWidth + textAdjustX,
                                   rect.y + dstBorderSizeY + dstPaddingY + i * (dstTextHeight + dstPaddingY)
                                       + textAdjustY);
-        if (i == currentIndex)
+        if (i == currentSelection)
         {
             SDL_Rect selRect;
             selRect.x = rect.x + dstBorderSizeX + dstPaddingX;
@@ -117,23 +138,24 @@ void TextQuestion::draw(Fps const* /*fps*/, RenderSizes rs, Position pos)
     }
 }
 
-bool TextQuestion::isFinished() const
+bool Menu::isFinished() const
+{
+    return finished;
+}
+
+bool Menu::isSelected() const
 {
     return selected;
 }
 
-void TextQuestion::reset()
+void Menu::reset()
 {
-    currentIndex = 0;
-    selected     = false;
+    currentSelection = static_cast<Selection>(0);
+    selected         = false;
+    finished         = false;
 }
 
-void TextQuestion::setTexts(std::vector<std::string> const& texts)
+Menu::Selection Menu::selection() const
 {
-    this->texts = texts;
-}
-
-int TextQuestion::selectedIndex() const
-{
-    return currentIndex;
+    return currentSelection;
 }

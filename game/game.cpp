@@ -2,7 +2,10 @@
 
 #include "renderutils.h"
 #include "scenes/leavescene.h"
+#include "scenes/mapscene.h"
+#include "scenes/mapscenefactory.h"
 #include "scenes/titlescene.h"
+#include "settings.h"
 
 #include <algorithm>
 #include <boost/program_options.hpp>
@@ -61,7 +64,8 @@ Game::Game(int argc, char* argv[])
                               480,
                               SDL_WINDOW_RESIZABLE);
 
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    renderer        = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    mapSceneFactory = std::make_unique<MapSceneFactory>(renderer);
 
     scenes.emplace_back(std::make_unique<TitleScene>(renderer));
     scenes.back()->init();
@@ -155,6 +159,73 @@ int Game::exec()
 void Game::quit()
 {
     running = false;
+}
+
+void Game::save()
+{
+    MapScene* currentMapScene = nullptr;
+    for (auto it = scenes.rbegin(); it != scenes.rend(); ++it)
+    {
+        auto mapScene = dynamic_cast<MapScene*>(it->get());
+        if (mapScene)
+        {
+            currentMapScene = mapScene;
+            break;
+        }
+    }
+
+    if (currentMapScene)
+    {
+        js::object json;
+        json["mapName"]     = currentMapScene->name();
+        auto playerPosition = currentMapScene->currentPlayerPosition();
+        json["playerX"]     = playerPosition.first;
+        json["playerY"]     = playerPosition.second;
+        json["player"]      = js::value_from<Player const&>(data.player);
+
+        std::string dataPath = Utils::dataDir();
+        fs::create_directories(dataPath);
+        dataPath = dataPath.append("data.json");
+        std::ofstream file(dataPath);
+        file << js::serialize(json);
+        file.close();
+
+        Settings::instance()->setSavedGame(true);
+    }
+}
+
+std::unique_ptr<MapScene> Game::load()
+{
+    if (Settings::instance()->savedGame())
+    {
+        std::string dataPath = Utils::dataDir();
+        fs::create_directories(dataPath);
+        dataPath = dataPath.append("data.json");
+        std::ifstream     file(dataPath);
+        std::stringstream buffer;
+        buffer << file.rdbuf();
+
+        try
+        {
+            js::value  json = js::parse(buffer);
+            js::object obj  = json.as_object();
+
+            data.player              = js::value_to<Player>(obj.at("player"));
+            size_t      playerX      = js::value_to<size_t>(obj.at("playerX"));
+            size_t      playerY      = js::value_to<size_t>(obj.at("playerY"));
+            std::string mapSceneName = js::value_to<std::string>(obj.at("mapName"));
+            auto        mapScene     = mapSceneFactory->fromName(mapSceneName);
+            mapScene->initPlayerPosition(playerX, playerY);
+
+            return mapScene;
+        }
+        catch (...)
+        {
+            return nullptr;
+        }
+    }
+
+    return nullptr;
 }
 
 void Game::printDebug()
