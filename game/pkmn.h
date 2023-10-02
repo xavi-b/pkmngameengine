@@ -1,14 +1,11 @@
 #ifndef PKMN_H
 #define PKMN_H
 
+#include "move.h"
 #include "pkmndef.h"
 
 #include <array>
 #include <vector>
-
-struct Move
-{
-};
 
 class Pkmn
 {
@@ -21,10 +18,11 @@ public:
     Pkmn(PkmnDef::PkmnDefPtr definition, size_t level);
 
 private:
-    std::array<Move, 4> moves;
-    PkmnDef::PkmnDefPtr definition;
-    size_t              level = 0;
-    std::string         nickName;
+    std::array<Move::MovePtr, 4> moves;
+    PkmnDef::PkmnDefPtr          definition;
+    size_t                       level = 0;
+    size_t                       hp    = 0;
+    std::string                  nickName;
 };
 
 #endif // PKMN_H

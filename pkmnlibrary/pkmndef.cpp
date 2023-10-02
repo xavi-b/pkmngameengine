@@ -39,19 +39,14 @@ std::string PkmnDef::getId() const
     return id;
 }
 
-std::string PkmnDef::getName() const
-{
-    return name;
-}
-
-std::vector<std::string> PkmnDef::getTypes() const
-{
-    return types;
-}
-
 void PkmnDef::setId(std::string const& newId)
 {
     id = newId;
+}
+
+std::string PkmnDef::getName() const
+{
+    return name;
 }
 
 void PkmnDef::setName(std::string const& newName)
@@ -59,9 +54,24 @@ void PkmnDef::setName(std::string const& newName)
     name = newName;
 }
 
+std::vector<std::string> PkmnDef::getTypes() const
+{
+    return types;
+}
+
 void PkmnDef::setTypes(std::vector<std::string> const& newTypes)
 {
     types = newTypes;
+}
+
+std::map<int, std::string> PkmnDef::getMovesToLearn() const
+{
+    return movesToLearn;
+}
+
+void PkmnDef::setMovesToLearn(std::map<int, std::string> const& newMovesToLearn)
+{
+    movesToLearn = newMovesToLearn;
 }
 
 void tag_invoke(js::value_from_tag, js::value& jv, PkmnDef::PkmnDefPtr const& o)
@@ -71,10 +81,17 @@ void tag_invoke(js::value_from_tag, js::value& jv, PkmnDef::PkmnDefPtr const& o)
         js::array jsTypes;
         for (auto const& e : o->types)
             jsTypes.push_back(js::value(e));
+        js::array jsMovesToLearn;
+        for (auto const& e : o->movesToLearn)
+            jsMovesToLearn.push_back(js::value{
+                {"level", e.first },
+                {"move",  e.second}
+            });
         jv = {
-            {"id",    o->id  },
-            {"name",  o->name},
-            {"types", jsTypes}
+            {"id",           o->id         },
+            {"name",         o->name       },
+            {"types",        jsTypes       },
+            {"movesToLearn", jsMovesToLearn}
         };
     }
     else
@@ -99,6 +116,11 @@ PkmnDef::PkmnDefPtr tag_invoke(js::value_to_tag<PkmnDef::PkmnDefPtr>, js::value 
         pkmn->name = js::value_to<std::string>(obj.at("name"));
         for (auto& value : obj.at("types").as_array())
             pkmn->types.push_back(js::value_to<std::string>(value));
+        for (auto& value : obj.at("moves").as_array())
+        {
+            js::object const& obj                                     = value.as_object();
+            pkmn->movesToLearn[js::value_to<size_t>(obj.at("level"))] = js::value_to<std::string>(obj.at("move"));
+        }
         return pkmn;
     }
 }
