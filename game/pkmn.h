@@ -10,6 +10,17 @@
 class Pkmn
 {
 public:
+    enum StatusCondition
+    {
+        NONE,
+        BURN,
+        FREEZE,
+        PARALYSIS,
+        POISON,
+        BADLY_POISON,
+        SLEEP
+    };
+
     using PkmnPtr = std::shared_ptr<Pkmn>;
 
     friend void    tag_invoke(js::value_from_tag, js::value& jv, PkmnPtr const& o);
@@ -17,12 +28,23 @@ public:
 
     Pkmn(PkmnDef::PkmnDefPtr definition, size_t level);
 
+    std::map<PkmnDef::Stat, size_t> getStats();
+
+    std::map<PkmnDef::Stat, size_t> const& getIVs() const;
+    void                                   setIVs(std::map<PkmnDef::Stat, size_t> const& newIVs);
+
+    std::map<PkmnDef::Stat, size_t> const& getEVs() const;
+    void                                   setEVs(std::map<PkmnDef::Stat, size_t> const& newEVs);
+
 private:
-    std::array<Move::MovePtr, 4> moves;
-    PkmnDef::PkmnDefPtr          definition;
-    size_t                       level = 0;
-    size_t                       hp    = 0;
-    std::string                  nickName;
+    std::array<Move::MovePtr, 4>    moves;
+    PkmnDef::PkmnDefPtr             definition;
+    size_t                          level = 0;
+    size_t                          hp    = 0;
+    std::string                     nickName;
+    std::map<PkmnDef::Stat, size_t> IVs;
+    std::map<PkmnDef::Stat, size_t> EVs;
+    StatusCondition                 statusCondition = NONE;
 };
 
 #endif // PKMN_H
