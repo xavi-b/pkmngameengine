@@ -81,6 +81,8 @@ private:
     std::map<PkmnDef::Stat, size_t> baseStats;
     std::map<PkmnDef::Stat, size_t> EVsToLearn;
     GrowthRate                      growthRate = GrowthRate::MEDIUM_SLOW;
+    size_t                          baseExp    = 0;
+    size_t                          catchRate  = 0;
 };
 
 #endif // PKMNDEF_H

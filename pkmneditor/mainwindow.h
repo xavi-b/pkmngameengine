@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "editors/movesview.h"
 #include "editors/pkmnsview.h"
 #include "editors/typesview.h"
 
@@ -29,13 +30,17 @@ private:
     pt::ptree readPropertyTree(QString const& dirName, QString const& fileName);
 
     QStackedWidget* stackedWidget;
-    TypesView*      typesView;
-    PkmnsView*      pkmnsView;
 
     QString openedFileName;
 
-    std::vector<Type::TypePtr>       types;
+    TypesView*                 typesView;
+    std::vector<Type::TypePtr> types;
+
+    PkmnsView*                       pkmnsView;
     std::vector<PkmnDef::PkmnDefPtr> pkmns;
+
+    MovesView*                       movesView;
+    std::vector<MoveDef::MoveDefPtr> moves;
 };
 
 #endif // MAINWINDOW_H

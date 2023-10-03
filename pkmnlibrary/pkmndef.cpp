@@ -86,6 +86,8 @@ PkmnDef::PkmnDefPtr PkmnDef::fromPropertyTree(std::string const& id, pt::ptree c
     pkmn->id         = id;
     pkmn->name       = pt.get<std::string>("Name");
     pkmn->growthRate = GrowthRateFromString(pt.get<std::string>("GrowthRate"));
+    pkmn->baseExp    = pt.get<size_t>("BaseExp");
+    pkmn->catchRate  = pt.get<size_t>("CatchRate");
 
     std::string token;
     char        delimiter = ',';
@@ -113,7 +115,7 @@ PkmnDef::PkmnDefPtr PkmnDef::fromPropertyTree(std::string const& id, pt::ptree c
         ++i;
     }
 
-    std::string        strEVsToLearn = pt.get<std::string>("Moves", "");
+    std::string        strEVsToLearn = pt.get<std::string>("EVs", "");
     std::istringstream tokenStreamEVsToLearn(strEVsToLearn);
     while (std::getline(tokenStreamEVsToLearn, token, delimiter))
     {
@@ -221,7 +223,9 @@ void tag_invoke(js::value_from_tag, js::value& jv, PkmnDef::PkmnDefPtr const& o)
             {"growthRate",   o->growthRate },
             {"types",        jsTypes       },
             {"movesToLearn", jsMovesToLearn},
-            {"stats",        jsBaseStats   }
+            {"stats",        jsBaseStats   },
+            {"baseExp",      o->baseExp    },
+            {"catchRate",    o->catchRate  }
         };
     }
     else
@@ -258,6 +262,8 @@ PkmnDef::PkmnDefPtr tag_invoke(js::value_to_tag<PkmnDef::PkmnDefPtr>, js::value 
             pkmn->baseStats[static_cast<PkmnDef::Stat>(js::value_to<size_t>(obj.at("id")))] =
                 js::value_to<size_t>(obj.at("value"));
         }
+        pkmn->baseExp   = js::value_to<size_t>(obj.at("baseExp"));
+        pkmn->catchRate = js::value_to<size_t>(obj.at("catchRate"));
         return pkmn;
     }
 }

@@ -18,11 +18,13 @@ public:
     {
         PHYSICAL,
         SPECIAL,
-        STATUS
+        STATUS,
+        __SIZE
     };
 
-    static std::string CategoryToString(Category e);
-    static Category    CategoryFromString(std::string e);
+    static constexpr size_t CategoryCount = Category::__SIZE;
+    static std::string      CategoryToString(Category e);
+    static Category         CategoryFromString(std::string e);
 
     using MoveDefPtr = std::shared_ptr<MoveDef>;
 

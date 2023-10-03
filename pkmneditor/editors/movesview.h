@@ -1,8 +1,8 @@
-#ifndef TYPESVIEW_H
-#define TYPESVIEW_H
+#ifndef MOVESVIEW_H
+#define MOVESVIEW_H
 
 #include "../objectlistmodel.h"
-#include "typewidget.h"
+#include "movewidget.h"
 
 #include <QInputDialog>
 #include <QListView>
@@ -12,14 +12,15 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
-class TypesView : public QWidget
+class MovesView : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit TypesView(QWidget* parent = nullptr);
+    explicit MovesView(QWidget* parent = nullptr);
 
-    void setTypes(std::vector<Type::TypePtr> const& newTypes);
+    void setMoves(std::vector<MoveDef::MoveDefPtr> const& newMoves);
+    void setAvailableTypes(std::vector<Type::TypePtr> const& types);
 
 signals:
     void back();
@@ -29,7 +30,7 @@ private:
     ObjectListModel*       model;
 
     QListView*  listView;
-    TypeWidget* typeWidget;
+    MoveWidget* moveWidget;
 };
 
-#endif // TYPESVIEW_H
+#endif // MOVESVIEW_H

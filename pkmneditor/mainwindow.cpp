@@ -8,6 +8,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
 
     typesView = new TypesView;
     pkmnsView = new PkmnsView;
+    movesView = new MovesView;
 
     QWidget*     w          = new QWidget;
     QVBoxLayout* vLayout    = new QVBoxLayout;
@@ -25,6 +26,10 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
     gridLayout->addWidget(button2, 0, 1);
     QPushButton* button3 = new QPushButton(tr("Moves"));
     button3->setFixedSize(200, 150);
+    connect(button3, &QPushButton::clicked, this, [=]() {
+        movesView->setAvailableTypes(types);
+        stackedWidget->setCurrentWidget(movesView);
+    });
     gridLayout->addWidget(button3, 0, 2);
     QPushButton* button4 = new QPushButton(tr("Items"));
     button4->setFixedSize(200, 150);
@@ -51,6 +56,10 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
         stackedWidget->setCurrentIndex(0);
     });
     stackedWidget->addWidget(pkmnsView);
+    connect(movesView, &MovesView::back, this, [=]() {
+        stackedWidget->setCurrentIndex(0);
+    });
+    stackedWidget->addWidget(movesView);
 
     setCentralWidget(stackedWidget);
 }
@@ -80,6 +89,9 @@ void MainWindow::createMenus()
             // Pkmns
             pkmns = PkmnDef::vectorFromPropertyTree(readPropertyTree(dirName, "pokemon.txt"));
             pkmnsView->setPkmns(pkmns);
+            // Moves
+            moves = MoveDef::vectorFromPropertyTree(readPropertyTree(dirName, "moves.txt"));
+            movesView->setMoves(moves);
 
             stackedWidget->setCurrentIndex(0);
             QSettings().setValue("lastDir", dirName);
@@ -114,6 +126,9 @@ void MainWindow::createMenus()
             // Pkmns
             pkmns = js::value_to<std::vector<PkmnDef::PkmnDefPtr>>(json.as_object()["pkmns"]);
             pkmnsView->setPkmns(pkmns);
+            // Moves
+            moves = js::value_to<std::vector<MoveDef::MoveDefPtr>>(json.as_object()["moves"]);
+            movesView->setMoves(moves);
 
             stackedWidget->setCurrentIndex(0);
             QSettings().setValue("lastDir", QFileInfo(fileName).dir().path());
@@ -178,6 +193,8 @@ QString MainWindow::saveFile(bool saveAs)
         json["types"] = js::value_from(types);
         // Pkmns
         json["pkmns"] = js::value_from(pkmns);
+        // Moves
+        json["moves"] = js::value_from(moves);
 
         file.write(js::serialize(json).c_str());
     }

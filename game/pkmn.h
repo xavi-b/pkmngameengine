@@ -40,6 +40,7 @@ private:
     std::array<Move::MovePtr, 4>    moves;
     PkmnDef::PkmnDefPtr             definition;
     size_t                          level = 0;
+    size_t                          exp   = 0;
     size_t                          hp    = 0;
     std::string                     nickName;
     std::map<PkmnDef::Stat, size_t> IVs;
