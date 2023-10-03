@@ -281,7 +281,7 @@ PkmnDef::PkmnDefPtr tag_invoke(js::value_to_tag<PkmnDef::PkmnDefPtr>, js::value 
         pkmn->growthRate = static_cast<PkmnDef::GrowthRate>(js::value_to<int>(obj.at("growthRate")));
         for (auto& value : obj.at("types").as_array())
             pkmn->types.push_back(js::value_to<std::string>(value));
-        for (auto& value : obj.at("moves").as_array())
+        for (auto& value : obj.at("movesToLearn").as_array())
         {
             js::object const& obj   = value.as_object();
             size_t            level = js::value_to<size_t>(obj.at("level"));

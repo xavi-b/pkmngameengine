@@ -25,7 +25,7 @@ public:
 
     virtual std::string name() override;
 
-private:
+protected:
     enum State
     {
         MENU,

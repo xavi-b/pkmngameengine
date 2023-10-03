@@ -461,7 +461,8 @@ std::unique_ptr<Scene> MapScene::nextScene()
 {
     if (encounteredPkmn)
     {
-        auto scene = std::make_unique<BattleScene>(renderer);
+        auto scene = std::make_unique<EncounterScene>(renderer);
+        scene->setEncounteredPkmn(encounteredPkmn);
         return scene;
     }
     return nullptr;

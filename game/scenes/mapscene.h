@@ -1,11 +1,11 @@
 #ifndef MAPSCENE_H
 #define MAPSCENE_H
 
-#include "battlescene.h"
 #include "map.h"
 #include "menu.h"
 #include "pkmn.h"
 #include "scene.h"
+#include "scenes/encounterscene.h"
 #include "utils.h"
 
 #include <SDL_image.h>

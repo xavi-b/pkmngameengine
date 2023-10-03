@@ -90,6 +90,10 @@ void IntroScene::update(Inputs const* inputs)
             outroSpeech->setTexts(texts);
             outroSpeech->init();
             outroSpeech->update(inputs);
+            // TODO temp
+            PkmnDef::PkmnDefPtr definition = Game::instance()->data.pkmns.front();
+            auto                pkmn       = std::make_shared<Pkmn>(definition, 5);
+            Game::instance()->data.player.pkmns.at(0).swap(pkmn);
             state = OutroSpeech;
         }
         break;
