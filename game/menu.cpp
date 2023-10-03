@@ -14,9 +14,10 @@ std::string Menu::SelectionToString(Selection e)
         return "SAVE";
     case QUIT:
         return "QUIT";
-    default:
-        return "???";
+    case __SIZE:
+        return "__SIZE";
     }
+    return "???";
 }
 
 Menu::Menu(SDL_Renderer* renderer) : renderer(renderer)

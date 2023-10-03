@@ -6,6 +6,27 @@ Move::Move(MoveDef::MoveDefPtr definition) : definition(definition)
 {
 }
 
+size_t Move::getCurrentPP() const
+{
+    return currentPP;
+}
+
+void Move::setCurrentPP(size_t newCurrentPP)
+{
+    currentPP = newCurrentPP;
+}
+
+void Move::decreasePP()
+{
+    if (currentPP > 0)
+        --currentPP;
+}
+
+MoveDef::MoveDefPtr Move::getDefinition() const
+{
+    return definition;
+}
+
 void tag_invoke(js::value_from_tag, js::value& jv, Move::MovePtr const& o)
 {
     if (o)

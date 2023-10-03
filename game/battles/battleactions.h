@@ -23,7 +23,7 @@ public:
     {
         MOVES,
         BAG,
-        PKNMS,
+        PKMNS,
         RUN,
         __SIZE
     };

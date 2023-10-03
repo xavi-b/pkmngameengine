@@ -18,9 +18,10 @@ std::string PkmnDef::StatToString(Stat e)
         return "SPECIAL_DEFENSE";
     case SPEED:
         return "SPEED";
-    default:
-        return "???";
+    case __SIZE_STAT:
+        return "__SIZE_STAT";
     }
+    return "???";
 }
 
 PkmnDef::Stat PkmnDef::StatFromString(std::string const& e)
@@ -55,9 +56,10 @@ std::string PkmnDef::GrowthRateToString(GrowthRate e)
         return "SLOW";
     case FLUCTUATING:
         return "FLUCTUATING";
-    default:
-        return "???";
+    case __SIZE_GROWTH_RATE:
+        return "__SIZE_GROWTH_RATE";
     }
+    return "???";
 }
 
 PkmnDef::GrowthRate PkmnDef::GrowthRateFromString(std::string const& e)

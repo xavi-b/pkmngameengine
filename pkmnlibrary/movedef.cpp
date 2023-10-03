@@ -12,9 +12,10 @@ std::string MoveDef::CategoryToString(Category e)
         return "SPECIAL";
     case STATUS:
         return "STATUS";
-    default:
-        return "???";
+    case __SIZE:
+        return "__SIZE";
     }
+    return "???";
 }
 
 MoveDef::Category MoveDef::CategoryFromString(std::string e)
@@ -44,6 +45,8 @@ MoveDef::MoveDefPtr MoveDef::fromPropertyTree(std::string const& id, pt::ptree c
         pkmn->power = pt.get<size_t>("Power");
     pkmn->totalPP  = pt.get<size_t>("TotalPP");
     pkmn->category = CategoryFromString(pt.get<std::string>("Category"));
+    if (pt.count("Priority"))
+        pkmn->power = pt.get<int>("Priority");
 
     return pkmn;
 }
@@ -129,6 +132,16 @@ void MoveDef::setCategory(Category newCategory)
     category = newCategory;
 }
 
+int MoveDef::getPriority() const
+{
+    return priority;
+}
+
+void MoveDef::setPriority(int newPriority)
+{
+    priority = newPriority;
+}
+
 void tag_invoke(js::value_from_tag, js::value& jv, MoveDef::MoveDefPtr const& o)
 {
     if (o && !o->id.empty())
@@ -140,7 +153,8 @@ void tag_invoke(js::value_from_tag, js::value& jv, MoveDef::MoveDefPtr const& o)
             {"accuracy", o->accuracy},
             {"power",    o->power   },
             {"totalPP",  o->totalPP },
-            {"category", o->category}
+            {"category", o->category},
+            {"priority", o->priority}
         };
     }
     else
@@ -168,6 +182,7 @@ MoveDef::MoveDefPtr tag_invoke(js::value_to_tag<MoveDef::MoveDefPtr>, js::value 
         pkmn->power    = js::value_to<size_t>(obj.at("power"));
         pkmn->totalPP  = js::value_to<size_t>(obj.at("totalPP"));
         pkmn->category = static_cast<MoveDef::Category>(js::value_to<int>(obj.at("category")));
+        pkmn->priority = js::value_to<size_t>(obj.at("priority"));
         return pkmn;
     }
 }

@@ -40,6 +40,118 @@ void Pkmn::setEVs(std::map<PkmnDef::Stat, size_t> const& newEVs)
     EVs = newEVs;
 }
 
+std::array<Move::MovePtr, 4> const& Pkmn::getMoves() const
+{
+    return moves;
+}
+
+std::array<Move::MovePtr, 4>& Pkmn::getMoves()
+{
+    return moves;
+}
+
+void Pkmn::setMoves(std::array<Move::MovePtr, 4> const& newMoves)
+{
+    moves = newMoves;
+}
+
+size_t Pkmn::getLevel() const
+{
+    return level;
+}
+
+void Pkmn::incrementLevel()
+{
+    ++level;
+}
+
+Pkmn::StatusCondition Pkmn::getStatusCondition() const
+{
+    return statusCondition;
+}
+
+PkmnDef::PkmnDefPtr Pkmn::getDefinition() const
+{
+    return definition;
+}
+
+size_t Pkmn::getHP() const
+{
+    return hp;
+}
+
+bool Pkmn::isKO() const
+{
+    return hp == 0;
+}
+
+void Pkmn::setHP(size_t newHp)
+{
+    hp = newHp;
+}
+
+void Pkmn::decreaseHP(size_t n)
+{
+    if (n > hp)
+        hp = 0;
+    else
+        hp = hp - n;
+}
+
+void Pkmn::resetHP()
+{
+    hp = getStats()[PkmnDef::HP];
+}
+
+size_t Pkmn::expToNextLevel()
+{
+    // https://bulbapedia.bulbagarden.net/wiki/Experience#Relation_to_level
+    switch (definition->getGrowthRate())
+    {
+    case PkmnDef::ERRATIC:
+        if (level < 50)
+            return level * level * level * (100 - level) / 50;
+        else if (level < 68)
+            return level * level * level * (150 - level) / 100;
+        else if (level < 98)
+            return level * level * level * (1911 - 10 * level) / 3 / 500;
+        else
+            return level * level * level * (160 - level) / 100;
+    case PkmnDef::FAST:
+        return 4 * level * level * level / 5;
+    case PkmnDef::MEDIUM_FAST:
+        return level * level * level;
+    case PkmnDef::MEDIUM_SLOW:
+        return 6 * level * level * level / 5 - 15 * level * level + 100 * level - 140;
+    case PkmnDef::SLOW:
+        return 5 * level * level * level / 4;
+    case PkmnDef::FLUCTUATING:
+        if (level < 15)
+            return level * level * level * (((level + 1) / 3)) + 24 / 50;
+        else if (level < 36)
+            return level * level * level * (level + 14) / 50;
+        else
+            return level * level * level * (level / 2 + 32) / 50;
+    case PkmnDef::__SIZE_GROWTH_RATE:
+        return 1;
+    }
+}
+
+size_t Pkmn::getExp() const
+{
+    return exp;
+}
+
+void Pkmn::setExp(size_t newExp)
+{
+    exp = newExp;
+}
+
+void Pkmn::increaseExp(size_t newExp)
+{
+    exp += newExp;
+}
+
 void tag_invoke(js::value_from_tag, js::value& jv, Pkmn::PkmnPtr const& o)
 {
     if (o)

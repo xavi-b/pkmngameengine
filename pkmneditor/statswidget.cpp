@@ -59,7 +59,8 @@ QString StatsWidget::StatToLabel(PkmnDef::Stat e)
         return "Sp. Def";
     case PkmnDef::SPEED:
         return "Speed";
-    default:
-        return "???";
+    case PkmnDef::__SIZE_STAT:
+        return "__SIZE_STAT";
     }
+    return "???";
 }

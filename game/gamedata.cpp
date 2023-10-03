@@ -4,6 +4,16 @@ GameData::GameData()
 {
 }
 
+Type::TypePtr GameData::typeFor(std::string const& id)
+{
+    auto it = std::find_if(types.begin(), types.end(), [=](Type::TypePtr const& e) {
+        return e->getId() == id;
+    });
+    if (it != types.end())
+        return *it;
+    return nullptr;
+}
+
 PkmnDef::PkmnDefPtr GameData::pkmnDefFor(std::string const& id)
 {
     auto it = std::find_if(pkmns.begin(), pkmns.end(), [=](PkmnDef::PkmnDefPtr const& e) {

@@ -16,6 +16,12 @@ public:
 
     Move(MoveDef::MoveDefPtr definition);
 
+    size_t getCurrentPP() const;
+    void   setCurrentPP(size_t newCurrentPP);
+    void   decreasePP();
+
+    MoveDef::MoveDefPtr getDefinition() const;
+
 private:
     MoveDef::MoveDefPtr definition;
     size_t              currentPP = 0;

@@ -32,9 +32,10 @@ std::string EncounterMethod::TypeToString(Type e)
         return "BUG_CONTEST";
     case POKE_RADAR:
         return "POKE_RADAR";
-    default:
-        return "???";
+    case __SIZE:
+        return "__SIZE";
     }
+    return "???";
 }
 
 EncounterMethod::EncounterMethod(Type type) : type(type)

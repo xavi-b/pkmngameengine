@@ -26,7 +26,7 @@ public:
     void update(Inputs const* inputs);
     void draw(Fps const* fps, RenderSizes rs);
 
-    bool isFinished() const;
+    bool isSelected() const;
     void reset();
 
     int selectedIndex() const;

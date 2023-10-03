@@ -57,6 +57,9 @@ public:
     Category getCategory() const;
     void     setCategory(Category newCategory);
 
+    int  getPriority() const;
+    void setPriority(int newPriority);
+
 private:
     std::string id;
     std::string name;
@@ -65,6 +68,7 @@ private:
     size_t      power    = 0;
     size_t      totalPP  = 0;
     Category    category = PHYSICAL;
+    int         priority = 0;
 };
 
 #endif // MOVEDEF_H

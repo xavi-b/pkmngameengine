@@ -138,7 +138,7 @@ void MoveSelection::draw(Fps const* /*fps*/, RenderSizes rs)
     RenderUtils::drawBorderImage(renderer, rs, bgSurface, bgTexture, rect, borderSize, borderSize);
 }
 
-bool MoveSelection::isFinished() const
+bool MoveSelection::isSelected() const
 {
     return selected;
 }

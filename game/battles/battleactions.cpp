@@ -15,13 +15,14 @@ std::string BattleActions::TypeToString(Type e)
         return "FIGHT";
     case BAG:
         return "BAG";
-    case PKNMS:
-        return "PKNMS";
+    case PKMNS:
+        return "PKMNS";
     case RUN:
         return "RUN";
-    default:
-        return "???";
+    case __SIZE:
+        return "__SIZE";
     }
+    return "???";
 }
 
 BattleActions::BattleActions(SDL_Renderer* renderer) : renderer(renderer)

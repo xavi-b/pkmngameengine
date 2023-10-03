@@ -13,6 +13,7 @@ class GameData
 public:
     GameData();
 
+    Type::TypePtr       typeFor(std::string const& id);
     PkmnDef::PkmnDefPtr pkmnDefFor(std::string const& id);
     MoveDef::MoveDefPtr moveDefFor(std::string const& id);
 

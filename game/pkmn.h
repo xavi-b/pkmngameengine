@@ -36,6 +36,28 @@ public:
     std::map<PkmnDef::Stat, size_t> const& getEVs() const;
     void                                   setEVs(std::map<PkmnDef::Stat, size_t> const& newEVs);
 
+    std::array<Move::MovePtr, 4> const& getMoves() const;
+    std::array<Move::MovePtr, 4>&       getMoves();
+    void                                setMoves(std::array<Move::MovePtr, 4> const& newMoves);
+
+    size_t getLevel() const;
+    void   incrementLevel();
+
+    StatusCondition getStatusCondition() const;
+
+    PkmnDef::PkmnDefPtr getDefinition() const;
+
+    size_t getHP() const;
+    bool   isKO() const;
+    void   setHP(size_t newHp);
+    void   decreaseHP(size_t n);
+    void   resetHP();
+
+    size_t expToNextLevel();
+    size_t getExp() const;
+    void   setExp(size_t newExp);
+    void   increaseExp(size_t newExp);
+
 private:
     std::array<Move::MovePtr, 4>    moves;
     PkmnDef::PkmnDefPtr             definition;

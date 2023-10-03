@@ -40,9 +40,10 @@ std::string SpecialTileTypeToString(SpecialTileType e)
         return "BOULDER";
     case CASCADE:
         return "CASCADE";
-    default:
-        return "???";
+    case __SIZE:
+        return "__SIZE";
     }
+    return "???";
 }
 
 void tag_invoke(js::value_from_tag, js::value& jv, std::unique_ptr<SpecialTileLayer> const& o)

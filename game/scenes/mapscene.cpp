@@ -462,7 +462,9 @@ std::unique_ptr<Scene> MapScene::nextScene()
     if (encounteredPkmn)
     {
         auto scene = std::make_unique<EncounterScene>(renderer);
-        scene->setEncounteredPkmn(encounteredPkmn);
+        scene->setEncounterPkmn(encounteredPkmn);
+        // TODO first pkmn not KO
+        scene->setPlayerPkmn(Game::instance()->data.player.pkmns.front());
         return scene;
     }
     return nullptr;
