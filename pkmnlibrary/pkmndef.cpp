@@ -101,9 +101,9 @@ PkmnDef::PkmnDefPtr PkmnDef::fromPropertyTree(std::string const& id, pt::ptree c
     std::istringstream tokenStreamMovesToLearn(strMovesToLearn);
     while (std::getline(tokenStreamMovesToLearn, token, delimiter))
     {
-        int level = std::stoi(token);
+        size_t level = std::stoi(token);
         if (std::getline(tokenStreamMovesToLearn, token, delimiter))
-            pkmn->movesToLearn[level] = token;
+            pkmn->movesToLearn.push_back({level, token});
     }
 
     std::string        strBaseStats = pt.get<std::string>("BaseStats", "");
@@ -168,12 +168,12 @@ void PkmnDef::setTypes(std::vector<std::string> const& newTypes)
     types = newTypes;
 }
 
-std::map<int, std::string> const& PkmnDef::getMovesToLearn() const
+std::vector<PkmnDef::MoveToLearn> const& PkmnDef::getMovesToLearn() const
 {
     return movesToLearn;
 }
 
-void PkmnDef::setMovesToLearn(std::map<int, std::string> const& newMovesToLearn)
+void PkmnDef::setMovesToLearn(std::vector<MoveToLearn> const& newMovesToLearn)
 {
     movesToLearn = newMovesToLearn;
 }
@@ -198,6 +198,36 @@ void PkmnDef::setEVsToLearn(std::map<PkmnDef::Stat, size_t> const& newEVsToLearn
     EVsToLearn = newEVsToLearn;
 }
 
+PkmnDef::GrowthRate PkmnDef::getGrowthRate() const
+{
+    return growthRate;
+}
+
+void PkmnDef::setGrowthRate(GrowthRate newGrowthRate)
+{
+    growthRate = newGrowthRate;
+}
+
+size_t PkmnDef::getBaseExp() const
+{
+    return baseExp;
+}
+
+void PkmnDef::setBaseExp(size_t newBaseExp)
+{
+    baseExp = newBaseExp;
+}
+
+size_t PkmnDef::getCatchRate() const
+{
+    return catchRate;
+}
+
+void PkmnDef::setCatchRate(size_t newCatchRate)
+{
+    catchRate = newCatchRate;
+}
+
 void tag_invoke(js::value_from_tag, js::value& jv, PkmnDef::PkmnDefPtr const& o)
 {
     if (o && !o->id.empty())
@@ -208,8 +238,8 @@ void tag_invoke(js::value_from_tag, js::value& jv, PkmnDef::PkmnDefPtr const& o)
         js::array jsMovesToLearn;
         for (auto const& e : o->movesToLearn)
             jsMovesToLearn.push_back(js::value{
-                {"level", e.first },
-                {"move",  e.second}
+                {"level", e.level},
+                {"move",  e.id   }
             });
         js::array jsBaseStats;
         for (auto const& e : o->baseStats)
@@ -253,8 +283,10 @@ PkmnDef::PkmnDefPtr tag_invoke(js::value_to_tag<PkmnDef::PkmnDefPtr>, js::value 
             pkmn->types.push_back(js::value_to<std::string>(value));
         for (auto& value : obj.at("moves").as_array())
         {
-            js::object const& obj                                     = value.as_object();
-            pkmn->movesToLearn[js::value_to<size_t>(obj.at("level"))] = js::value_to<std::string>(obj.at("move"));
+            js::object const& obj   = value.as_object();
+            size_t            level = js::value_to<size_t>(obj.at("level"));
+            std::string       id    = js::value_to<std::string>(obj.at("move"));
+            pkmn->movesToLearn.push_back({level, id});
         }
         for (auto& value : obj.at("stats").as_array())
         {

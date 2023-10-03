@@ -45,6 +45,12 @@ public:
     static std::string      GrowthRateToString(GrowthRate e);
     static GrowthRate       GrowthRateFromString(std::string const& e);
 
+    struct MoveToLearn
+    {
+        size_t      level = 0;
+        std::string id;
+    };
+
     using PkmnDefPtr = std::shared_ptr<PkmnDef>;
 
     PkmnDef();
@@ -64,8 +70,8 @@ public:
     std::vector<std::string> const& getTypes() const;
     void                            setTypes(std::vector<std::string> const& newTypes);
 
-    std::map<int, std::string> const& getMovesToLearn() const;
-    void                              setMovesToLearn(std::map<int, std::string> const& newMovesToLearn);
+    std::vector<MoveToLearn> const& getMovesToLearn() const;
+    void                            setMovesToLearn(std::vector<MoveToLearn> const& newMovesToLearn);
 
     std::map<PkmnDef::Stat, size_t> const& getBaseStats() const;
     void                                   setBaseStats(std::map<PkmnDef::Stat, size_t> const& newBaseStats);
@@ -73,11 +79,20 @@ public:
     std::map<PkmnDef::Stat, size_t> const& getEVsToLearn() const;
     void                                   setEVsToLearn(std::map<PkmnDef::Stat, size_t> const& newEVsToLearn);
 
+    GrowthRate getGrowthRate() const;
+    void       setGrowthRate(GrowthRate newGrowthRate);
+
+    size_t getBaseExp() const;
+    void   setBaseExp(size_t newBaseExp);
+
+    size_t getCatchRate() const;
+    void   setCatchRate(size_t newCatchRate);
+
 private:
     std::string                     id;
     std::string                     name;
     std::vector<std::string>        types;
-    std::map<int, std::string>      movesToLearn;
+    std::vector<MoveToLearn>        movesToLearn;
     std::map<PkmnDef::Stat, size_t> baseStats;
     std::map<PkmnDef::Stat, size_t> EVsToLearn;
     GrowthRate                      growthRate = GrowthRate::MEDIUM_SLOW;

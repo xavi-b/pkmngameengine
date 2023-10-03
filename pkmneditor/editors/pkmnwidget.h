@@ -1,12 +1,16 @@
 #ifndef PKMNWIDGET_H
 #define PKMNWIDGET_H
 
+#include "../movestolearnwidget.h"
+#include "../statswidget.h"
 #include "pkmndef.h"
 
+#include <QComboBox>
 #include <QDir>
 #include <QFormLayout>
 #include <QLabel>
 #include <QLineEdit>
+#include <QSpinBox>
 #include <QWidget>
 
 class PkmnWidget : public QWidget
@@ -26,9 +30,15 @@ signals:
 private:
     PkmnDef::PkmnDefPtr pkmn;
 
-    QLineEdit* idLineEdit;
-    QLineEdit* nameLineEdit;
-    QLabel*    sprite;
+    QLineEdit*          idLineEdit;
+    QLineEdit*          nameLineEdit;
+    QLabel*             sprite;
+    QComboBox*          growthRateComboBox;
+    QSpinBox*           baseExpSpinBox;
+    QSpinBox*           catchRateSpinBox;
+    StatsWidget*        baseStatsWidget;
+    StatsWidget*        EVsToLearnWidget;
+    MovesToLearnWidget* movesToLearnWidget;
 
     QString spritesDirectory;
 };

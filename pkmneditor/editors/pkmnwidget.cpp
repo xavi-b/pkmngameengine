@@ -20,6 +20,48 @@ PkmnWidget::PkmnWidget(QWidget* parent) : QWidget(parent)
     sprite = new QLabel;
     formLayout->addRow(tr("Sprite"), sprite);
 
+    baseStatsWidget = new StatsWidget;
+    connect(baseStatsWidget, &StatsWidget::statsChanged, this, [=]() {
+        pkmn->setBaseStats(baseStatsWidget->getStats());
+    });
+    formLayout->addRow(tr("Base Stats"), baseStatsWidget);
+
+    EVsToLearnWidget = new StatsWidget;
+    connect(EVsToLearnWidget, &StatsWidget::statsChanged, this, [=]() {
+        pkmn->setEVsToLearn(EVsToLearnWidget->getStats());
+    });
+    formLayout->addRow(tr("EVs to learn"), EVsToLearnWidget);
+
+    growthRateComboBox = new QComboBox;
+    for (size_t i = 0; i < PkmnDef::GrowthRateCount; ++i)
+        growthRateComboBox->addItem(PkmnDef::GrowthRateToString(static_cast<PkmnDef::GrowthRate>(i)).c_str());
+    connect(growthRateComboBox, &QComboBox::currentIndexChanged, this, [=](int index) {
+        pkmn->setGrowthRate(static_cast<PkmnDef::GrowthRate>(index));
+    });
+    formLayout->addRow(tr("Growth Rate"), growthRateComboBox);
+
+    baseExpSpinBox = new QSpinBox;
+    baseExpSpinBox->setMinimum(0);
+    baseExpSpinBox->setMaximum(500);
+    connect(baseExpSpinBox, &QSpinBox::valueChanged, this, [=](int value) {
+        pkmn->setBaseExp(value);
+    });
+    formLayout->addRow(tr("Base EXP"), baseExpSpinBox);
+
+    catchRateSpinBox = new QSpinBox;
+    catchRateSpinBox->setMinimum(0);
+    catchRateSpinBox->setMaximum(100);
+    connect(catchRateSpinBox, &QSpinBox::valueChanged, this, [=](int value) {
+        pkmn->setCatchRate(value);
+    });
+    formLayout->addRow(tr("Catch Rate"), catchRateSpinBox);
+
+    movesToLearnWidget = new MovesToLearnWidget;
+    connect(movesToLearnWidget, &MovesToLearnWidget::movesToLearnChanged, this, [=]() {
+        pkmn->setMovesToLearn(movesToLearnWidget->getMovesToLearn());
+    });
+    formLayout->addRow(tr("Moves to learn"), movesToLearnWidget);
+
     layout->addLayout(formLayout);
 
     setLayout(layout);
@@ -31,6 +73,12 @@ void PkmnWidget::setPkmn(PkmnDef::PkmnDefPtr const& newPkmn)
     idLineEdit->setText(newPkmn->getId().c_str());
     nameLineEdit->setText(newPkmn->getName().c_str());
     sprite->setPixmap(QPixmap(QDir(spritesDirectory).absoluteFilePath(QString("Front/%1").arg(pkmn->getId().c_str()))));
+    baseExpSpinBox->setValue(newPkmn->getBaseExp());
+    catchRateSpinBox->setValue(newPkmn->getCatchRate());
+    growthRateComboBox->setCurrentIndex(newPkmn->getGrowthRate());
+    baseStatsWidget->setStats(newPkmn->getBaseStats());
+    EVsToLearnWidget->setStats(newPkmn->getEVsToLearn());
+    movesToLearnWidget->setMovesToLearn(newPkmn->getMovesToLearn());
 }
 
 void PkmnWidget::setSpritesDirectory(QString const& dirName)
