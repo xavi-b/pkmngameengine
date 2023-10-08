@@ -1,6 +1,7 @@
 #ifndef PKMNWIDGET_H
 #define PKMNWIDGET_H
 
+#include "../evolutionswidget.h"
 #include "../movestolearnwidget.h"
 #include "../statswidget.h"
 #include "pkmndef.h"
@@ -40,6 +41,7 @@ private:
     StatsWidget*        baseStatsWidget;
     StatsWidget*        EVsToLearnWidget;
     MovesToLearnWidget* movesToLearnWidget;
+    EvolutionsWidget*   evolutionsWidget;
 
     QString spritesDirectory;
 };

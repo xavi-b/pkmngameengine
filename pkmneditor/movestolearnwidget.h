@@ -24,7 +24,7 @@ signals:
     void movesToLearnChanged();
 
 private:
-    MovesToLearnModel* movesToLearnModel;
+    MovesToLearnModel* model;
 };
 
 #endif // MOVESTOLEARNWIDGET_H

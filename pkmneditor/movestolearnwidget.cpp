@@ -2,30 +2,30 @@
 
 MovesToLearnWidget::MovesToLearnWidget(QWidget* parent) : QWidget(parent)
 {
-    movesToLearnModel                 = new MovesToLearnModel;
+    model                             = new MovesToLearnModel;
     SortMovesToLearnModel* proxyModel = new SortMovesToLearnModel;
     proxyModel->sort(0, Qt::DescendingOrder);
-    proxyModel->setSourceModel(movesToLearnModel);
+    proxyModel->setSourceModel(model);
 
     QVBoxLayout* vLayout = new QVBoxLayout;
     vLayout->setContentsMargins(0, 0, 0, 0);
 
-    QListView* encountersListView = new QListView;
-    encountersListView->setModel(proxyModel);
-    vLayout->addWidget(encountersListView, 1);
+    QListView* listView = new QListView;
+    listView->setModel(proxyModel);
+    vLayout->addWidget(listView, 1);
     QPushButton* addButton = new QPushButton(tr("Add"));
     connect(addButton, &QPushButton::clicked, this, [=]() {
         MoveToLearnDialog d(this);
         if (d.exec() == QDialog::Accepted)
         {
-            movesToLearnModel->addMoveToLearn(d.getMoveToLearn());
+            model->addMoveToLearn(d.getMoveToLearn());
             emit movesToLearnChanged();
         }
     });
     vLayout->addWidget(addButton);
     QPushButton* removeButton = new QPushButton(tr("Remove"));
     connect(removeButton, &QPushButton::clicked, this, [=]() {
-        QModelIndex const& encountersIndex = encountersListView->selectionModel()->currentIndex();
+        QModelIndex const& encountersIndex = listView->selectionModel()->currentIndex();
         if (encountersIndex.isValid())
         {
             proxyModel->removeRow(encountersIndex.row());
@@ -38,10 +38,10 @@ MovesToLearnWidget::MovesToLearnWidget(QWidget* parent) : QWidget(parent)
 
 std::vector<PkmnDef::MoveToLearn> MovesToLearnWidget::getMovesToLearn()
 {
-    return movesToLearnModel->getMovesToLearn();
+    return model->getMovesToLearn();
 }
 
 void MovesToLearnWidget::setMovesToLearn(std::vector<PkmnDef::MoveToLearn> newMovesToLearn)
 {
-    movesToLearnModel->setMovesToLearn(newMovesToLearn);
+    model->setMovesToLearn(newMovesToLearn);
 }

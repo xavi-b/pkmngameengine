@@ -70,6 +70,12 @@ PkmnWidget::PkmnWidget(QWidget* parent) : QWidget(parent)
     });
     formLayout->addRow(tr("Moves to learn"), movesToLearnWidget);
 
+    evolutionsWidget = new EvolutionsWidget;
+    connect(evolutionsWidget, &EvolutionsWidget::evolutionsChanged, this, [=]() {
+        pkmn->setEvolutions(evolutionsWidget->getEvolutions());
+    });
+    formLayout->addRow(tr("Evolutions"), evolutionsWidget);
+
     layout->addLayout(formLayout);
 
     setLayout(layout);
@@ -88,6 +94,7 @@ void PkmnWidget::setPkmn(PkmnDef::PkmnDefPtr const& newPkmn)
     baseStatsWidget->setStats(newPkmn->getBaseStats());
     EVsToLearnWidget->setStats(newPkmn->getEVsToLearn());
     movesToLearnWidget->setMovesToLearn(newPkmn->getMovesToLearn());
+    evolutionsWidget->setEvolutions(newPkmn->getEvolutions());
 }
 
 void PkmnWidget::setSpritesDirectory(QString const& dirName)
