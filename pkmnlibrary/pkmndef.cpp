@@ -215,19 +215,22 @@ PkmnDef::PkmnDefPtr PkmnDef::fromPropertyTree(std::string const& id, pt::ptree c
             pkmn->EVsToLearn[stat] = std::stoi(token);
     }
 
-    std::string        strEvolutions = pt.get<std::string>("Evolutions", "");
-    std::istringstream tokenStreamEvolutions(strEvolutions);
-    while (std::getline(tokenStreamEVsToLearn, token, delimiter))
+    if (pt.count("Evolutions"))
     {
-        EvolutionType type = __SIZE_EVOLUTIONS;
-        Evolution     evolution;
-        evolution.pkmnId = token;
-        if (std::getline(tokenStreamEVsToLearn, token, delimiter))
-            type = EvolutionTypeFromString(token);
-        if (std::getline(tokenStreamEVsToLearn, token, delimiter))
-            evolution.data = std::stoi(token);
-        if (type != __SIZE_EVOLUTIONS)
-            pkmn->evolutions.emplace(type, evolution);
+        std::string        strEvolutions = pt.get<std::string>("Evolutions", "");
+        std::istringstream tokenStreamEvolutions(strEvolutions);
+        while (std::getline(tokenStreamEvolutions, token, delimiter))
+        {
+            EvolutionType type = __SIZE_EVOLUTIONS;
+            Evolution     evolution;
+            evolution.pkmnId = token;
+            if (std::getline(tokenStreamEvolutions, token, delimiter))
+                type = EvolutionTypeFromString(token);
+            if (std::getline(tokenStreamEvolutions, token, delimiter))
+                evolution.data = token;
+            if (type != __SIZE_EVOLUTIONS)
+                pkmn->evolutions.emplace(type, evolution);
+        }
     }
 
     return pkmn;

@@ -17,9 +17,12 @@ public:
     std::pair<PkmnDef::EvolutionType, PkmnDef::Evolution> getEvolution() const;
 
 private:
-    QLineEdit* pkmnIdLineEdit;
-    QComboBox* typeComboBox;
-    QLineEdit* dataLineEdit;
+    void onTypeChanged();
+
+    QLineEdit*     pkmnIdLineEdit;
+    QComboBox*     typeComboBox;
+    QLineEdit*     dataLineEdit;
+    QIntValidator* intValidator;
 };
 
 #endif // EVOLUTIONDIALOG_H

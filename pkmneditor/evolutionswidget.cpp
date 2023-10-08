@@ -11,6 +11,7 @@ EvolutionsWidget::EvolutionsWidget(QWidget* parent) : QWidget(parent)
     vLayout->setContentsMargins(0, 0, 0, 0);
 
     QTableView* tableView = new QTableView;
+    tableView->horizontalHeader()->hide();
     tableView->setModel(proxyModel);
     vLayout->addWidget(tableView, 1);
     QPushButton* addButton = new QPushButton(tr("Add"));

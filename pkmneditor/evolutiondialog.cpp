@@ -4,7 +4,7 @@
 
 EvolutionDialog::EvolutionDialog(QWidget* parent) : QDialog(parent)
 {
-    QIntValidator* intValidator = new QIntValidator(this);
+    intValidator = new QIntValidator(this);
     intValidator->setRange(0, 100);
 
     QFormLayout* formLayout = new QFormLayout;
@@ -18,15 +18,7 @@ EvolutionDialog::EvolutionDialog(QWidget* parent) : QDialog(parent)
         typeComboBox->addItem(PkmnDef::EvolutionTypeToString(static_cast<PkmnDef::EvolutionType>(i)).c_str(),
                               QVariant::fromValue(i));
     }
-    connect(typeComboBox, &QComboBox::currentIndexChanged, this, [=]() {
-        static QList<PkmnDef::EvolutionType> levelTypes =
-            QList<PkmnDef::EvolutionType>::fromReadOnlyData(EvolutionsModel::LevelTypes);
-        auto type = static_cast<PkmnDef::EvolutionType>(typeComboBox->currentData().toUInt());
-        if (levelTypes.contains(type))
-            dataLineEdit->setValidator(intValidator);
-        else
-            dataLineEdit->setValidator(nullptr);
-    });
+    connect(typeComboBox, &QComboBox::currentIndexChanged, this, &EvolutionDialog::onTypeChanged);
     dataLineEdit = new QLineEdit;
     formLayout->addRow(tr("Data"), dataLineEdit);
     QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
@@ -35,6 +27,8 @@ EvolutionDialog::EvolutionDialog(QWidget* parent) : QDialog(parent)
     formLayout->addWidget(buttonBox);
 
     setLayout(formLayout);
+
+    onTypeChanged();
 }
 
 std::pair<PkmnDef::EvolutionType, PkmnDef::Evolution> EvolutionDialog::getEvolution() const
@@ -44,4 +38,15 @@ std::pair<PkmnDef::EvolutionType, PkmnDef::Evolution> EvolutionDialog::getEvolut
     e.data    = dataLineEdit->text().toStdString();
     auto type = static_cast<PkmnDef::EvolutionType>(typeComboBox->currentData().toUInt());
     return {type, e};
+}
+
+void EvolutionDialog::onTypeChanged()
+{
+    static QList<PkmnDef::EvolutionType> levelTypes =
+        QList<PkmnDef::EvolutionType>::fromReadOnlyData(EvolutionsModel::LevelTypes);
+    auto type = static_cast<PkmnDef::EvolutionType>(typeComboBox->currentData().toUInt());
+    if (levelTypes.contains(type))
+        dataLineEdit->setValidator(intValidator);
+    else
+        dataLineEdit->setValidator(nullptr);
 }

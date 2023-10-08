@@ -6,6 +6,7 @@
 #include "pkmndef.h"
 
 #include <QHBoxLayout>
+#include <QHeaderView>
 #include <QPushButton>
 #include <QTableView>
 #include <QWidget>

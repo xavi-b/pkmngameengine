@@ -15,7 +15,7 @@ protected:
     bool lessThan(QModelIndex const& source_left, QModelIndex const& source_right) const override;
 };
 
-class EvolutionsModel : public QAbstractListModel
+class EvolutionsModel : public QAbstractTableModel
 {
 public:
     static constexpr PkmnDef::EvolutionType LevelTypes[]{PkmnDef::AttackGreater,
@@ -31,6 +31,7 @@ public:
 
     explicit EvolutionsModel(QObject* parent = nullptr);
 
+    virtual int      columnCount(QModelIndex const& parent) const override;
     virtual int      rowCount(QModelIndex const& parent) const override;
     virtual QVariant data(QModelIndex const& index, int role = Qt::DisplayRole) const override;
     virtual bool     removeRows(int row, int count, QModelIndex const& parent = QModelIndex()) override;

@@ -40,8 +40,14 @@ bool SortEvolutionsModel::lessThan(QModelIndex const& source_left, QModelIndex c
     return false;
 }
 
-EvolutionsModel::EvolutionsModel(QObject* parent) : QAbstractListModel(parent)
+EvolutionsModel::EvolutionsModel(QObject* parent) : QAbstractTableModel(parent)
 {
+}
+
+int EvolutionsModel::columnCount(QModelIndex const& parent) const
+{
+    Q_UNUSED(parent)
+    return 3;
 }
 
 int EvolutionsModel::rowCount(QModelIndex const& parent) const
@@ -62,21 +68,21 @@ QVariant EvolutionsModel::data(QModelIndex const& index, int role) const
         switch (index.column())
         {
         case 0:
-            return QVariant::fromValue(e.second.pkmnId.c_str());
+            return QString(e.second.pkmnId.c_str());
         case 1:
-            return QVariant::fromValue(PkmnDef::EvolutionTypeToString(e.first).c_str());
+            return QString(PkmnDef::EvolutionTypeToString(e.first).c_str());
         case 2:
-            return QVariant::fromValue(e.second.data);
+            return QString(e.second.data.c_str());
         default:
             return QVariant();
         }
     }
     if (role == Qt::UserRole)
-        return QVariant::fromValue(e.second.pkmnId);
+        return QString(e.second.pkmnId.c_str());
     if (role == Qt::UserRole + 1)
-        return QVariant::fromValue(PkmnDef::EvolutionTypeToString(e.first).c_str());
+        return QString(PkmnDef::EvolutionTypeToString(e.first).c_str());
     if (role == Qt::UserRole + 2)
-        return QVariant::fromValue(e.second.data);
+        return QString(e.second.data.c_str());
 
     return {};
 }
