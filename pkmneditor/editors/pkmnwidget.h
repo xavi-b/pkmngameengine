@@ -36,6 +36,7 @@ private:
     QComboBox*          growthRateComboBox;
     QSpinBox*           baseExpSpinBox;
     QSpinBox*           catchRateSpinBox;
+    QSpinBox*           happinessSpinBox;
     StatsWidget*        baseStatsWidget;
     StatsWidget*        EVsToLearnWidget;
     MovesToLearnWidget* movesToLearnWidget;

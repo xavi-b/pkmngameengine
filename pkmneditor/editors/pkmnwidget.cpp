@@ -56,6 +56,14 @@ PkmnWidget::PkmnWidget(QWidget* parent) : QWidget(parent)
     });
     formLayout->addRow(tr("Catch Rate"), catchRateSpinBox);
 
+    happinessSpinBox = new QSpinBox;
+    happinessSpinBox->setMinimum(0);
+    happinessSpinBox->setMaximum(255);
+    connect(happinessSpinBox, &QSpinBox::valueChanged, this, [=](int value) {
+        pkmn->setHappiness(value);
+    });
+    formLayout->addRow(tr("Base Happiness"), happinessSpinBox);
+
     movesToLearnWidget = new MovesToLearnWidget;
     connect(movesToLearnWidget, &MovesToLearnWidget::movesToLearnChanged, this, [=]() {
         pkmn->setMovesToLearn(movesToLearnWidget->getMovesToLearn());
@@ -75,6 +83,7 @@ void PkmnWidget::setPkmn(PkmnDef::PkmnDefPtr const& newPkmn)
     sprite->setPixmap(QPixmap(QDir(spritesDirectory).absoluteFilePath(QString("Front/%1").arg(pkmn->getId().c_str()))));
     baseExpSpinBox->setValue(newPkmn->getBaseExp());
     catchRateSpinBox->setValue(newPkmn->getCatchRate());
+    happinessSpinBox->setValue(newPkmn->getHappiness());
     growthRateComboBox->setCurrentIndex(newPkmn->getGrowthRate());
     baseStatsWidget->setStats(newPkmn->getBaseStats());
     EVsToLearnWidget->setStats(newPkmn->getEVsToLearn());

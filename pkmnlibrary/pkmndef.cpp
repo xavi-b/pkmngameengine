@@ -146,6 +146,8 @@ PkmnDef::EvolutionType PkmnDef::EvolutionTypeFromString(std::string const& e)
         return HasMove;
     if (e == "Item")
         return Item;
+    if (e == "Level")
+        return Level;
     if (e == "LevelMale")
         return LevelMale;
     if (e == "LevelFemale")
@@ -161,7 +163,7 @@ PkmnDef::EvolutionType PkmnDef::EvolutionTypeFromString(std::string const& e)
     if (e == "TradeSpecies")
         return TradeSpecies;
     else
-        return Level;
+        return __SIZE_EVOLUTIONS;
 }
 
 PkmnDef::PkmnDef()
@@ -176,6 +178,7 @@ PkmnDef::PkmnDefPtr PkmnDef::fromPropertyTree(std::string const& id, pt::ptree c
     pkmn->growthRate = GrowthRateFromString(pt.get<std::string>("GrowthRate"));
     pkmn->baseExp    = pt.get<size_t>("BaseExp");
     pkmn->catchRate  = pt.get<size_t>("CatchRate");
+    pkmn->happiness  = pt.get<size_t>("Happiness");
 
     std::string token;
     char        delimiter = ',';
@@ -196,7 +199,7 @@ PkmnDef::PkmnDefPtr PkmnDef::fromPropertyTree(std::string const& id, pt::ptree c
 
     std::string        strBaseStats = pt.get<std::string>("BaseStats", "");
     std::istringstream tokenStreamBaseStats(strBaseStats);
-    int                i = 0;
+    size_t             i = 0;
     while (std::getline(tokenStreamBaseStats, token, delimiter))
     {
         pkmn->baseStats[static_cast<Stat>(i)] = std::stoi(token);
@@ -210,6 +213,21 @@ PkmnDef::PkmnDefPtr PkmnDef::fromPropertyTree(std::string const& id, pt::ptree c
         Stat stat = StatFromString(token);
         if (std::getline(tokenStreamEVsToLearn, token, delimiter))
             pkmn->EVsToLearn[stat] = std::stoi(token);
+    }
+
+    std::string        strEvolutions = pt.get<std::string>("Evolutions", "");
+    std::istringstream tokenStreamEvolutions(strEvolutions);
+    while (std::getline(tokenStreamEVsToLearn, token, delimiter))
+    {
+        EvolutionType type = __SIZE_EVOLUTIONS;
+        Evolution     evolution;
+        evolution.pkmnId = token;
+        if (std::getline(tokenStreamEVsToLearn, token, delimiter))
+            type = EvolutionTypeFromString(token);
+        if (std::getline(tokenStreamEVsToLearn, token, delimiter))
+            evolution.data = std::stoi(token);
+        if (type != __SIZE_EVOLUTIONS)
+            pkmn->evolutions.emplace(type, evolution);
     }
 
     return pkmn;
@@ -355,6 +373,13 @@ void tag_invoke(js::value_from_tag, js::value& jv, PkmnDef::PkmnDefPtr const& o)
                 {"id",    e.first },
                 {"value", e.second}
             });
+        js::array jsEvolutions;
+        for (auto const& e : o->evolutions)
+            jsEvolutions.push_back(js::value{
+                {"type",  e.first        },
+                {"data",  e.second.pkmnId},
+                {"value", e.second.data  }
+            });
         jv = {
             {"id",           o->id         },
             {"name",         o->name       },
@@ -364,7 +389,8 @@ void tag_invoke(js::value_from_tag, js::value& jv, PkmnDef::PkmnDefPtr const& o)
             {"stats",        jsBaseStats   },
             {"baseExp",      o->baseExp    },
             {"catchRate",    o->catchRate  },
-            {"happiness",    o->happiness  }
+            {"happiness",    o->happiness  },
+            {"evolutions",   jsEvolutions  }
         };
     }
     else
@@ -387,7 +413,7 @@ PkmnDef::PkmnDefPtr tag_invoke(js::value_to_tag<PkmnDef::PkmnDefPtr>, js::value 
         auto pkmn        = std::make_shared<PkmnDef>();
         pkmn->id         = id;
         pkmn->name       = js::value_to<std::string>(obj.at("name"));
-        pkmn->growthRate = static_cast<PkmnDef::GrowthRate>(js::value_to<int>(obj.at("growthRate")));
+        pkmn->growthRate = static_cast<PkmnDef::GrowthRate>(js::value_to<size_t>(obj.at("growthRate")));
         for (auto& value : obj.at("types").as_array())
             pkmn->types.push_back(js::value_to<std::string>(value));
         for (auto& value : obj.at("movesToLearn").as_array())
@@ -406,6 +432,16 @@ PkmnDef::PkmnDefPtr tag_invoke(js::value_to_tag<PkmnDef::PkmnDefPtr>, js::value 
         pkmn->baseExp   = js::value_to<size_t>(obj.at("baseExp"));
         pkmn->catchRate = js::value_to<size_t>(obj.at("catchRate"));
         pkmn->happiness = js::value_to<unsigned char>(obj.at("happiness"));
+        for (auto& value : obj.at("evolutions").as_array())
+        {
+            js::object const& obj = value.as_object();
+
+            PkmnDef::EvolutionType type = static_cast<PkmnDef::EvolutionType>(js::value_to<size_t>(obj.at("type")));
+            PkmnDef::Evolution     evolution;
+            evolution.pkmnId = js::value_to<std::string>(obj.at("pkmnId"));
+            evolution.data   = js::value_to<std::string>(obj.at("data"));
+            pkmn->evolutions.emplace(type, evolution);
+        }
         return pkmn;
     }
 }
