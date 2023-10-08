@@ -88,6 +88,9 @@ public:
     size_t getCatchRate() const;
     void   setCatchRate(size_t newCatchRate);
 
+    unsigned char getHappiness() const;
+    void setHappiness(unsigned char newHappiness);
+
 private:
     std::string                     id;
     std::string                     name;
@@ -98,6 +101,7 @@ private:
     GrowthRate                      growthRate = GrowthRate::MEDIUM_SLOW;
     size_t                          baseExp    = 0;
     size_t                          catchRate  = 0;
+    unsigned char                   happiness  = 0;
 };
 
 #endif // PKMNDEF_H

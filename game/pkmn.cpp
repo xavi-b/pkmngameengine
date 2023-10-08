@@ -4,6 +4,7 @@
 
 Pkmn::Pkmn(PkmnDef::PkmnDefPtr definition, size_t level) : definition(definition), level(level)
 {
+    happiness = definition->getHappiness();
 }
 
 std::map<PkmnDef::Stat, size_t> Pkmn::getStats()
@@ -63,6 +64,12 @@ size_t Pkmn::getLevel() const
 void Pkmn::incrementLevel()
 {
     ++level;
+    if (happiness <= 99)
+        happiness += 5;
+    else if (happiness <= 199)
+        happiness += 3;
+    else
+        happiness += 2;
 }
 
 Pkmn::StatusCondition Pkmn::getStatusCondition() const
@@ -152,6 +159,16 @@ void Pkmn::increaseExp(size_t newExp)
     exp += newExp;
 }
 
+unsigned char Pkmn::getHappiness() const
+{
+    return happiness;
+}
+
+void Pkmn::setHappiness(unsigned char newHappiness)
+{
+    happiness = newHappiness;
+}
+
 void tag_invoke(js::value_from_tag, js::value& jv, Pkmn::PkmnPtr const& o)
 {
     if (o)
@@ -177,7 +194,8 @@ void tag_invoke(js::value_from_tag, js::value& jv, Pkmn::PkmnPtr const& o)
             {"definition", o->definition->getId()},
             {"IVs", jsIVs},
             {"EVs", jsEVs},
-            {"statusCondition", o->statusCondition}
+            {"statusCondition", o->statusCondition},
+            {"happiness", o->happiness}
         };
     }
     else
@@ -200,6 +218,7 @@ Pkmn::PkmnPtr tag_invoke(js::value_to_tag<Pkmn::PkmnPtr>, js::value const& jv)
     pkmn->nickName        = js::value_to<std::string>(obj.at("nickName"));
     pkmn->moves           = js::value_to<std::array<Move::MovePtr, 4>>(obj.at("moves"));
     pkmn->statusCondition = static_cast<Pkmn::StatusCondition>(js::value_to<int>(obj.at("statusCondition")));
+    pkmn->happiness       = js::value_to<unsigned char>(obj.at("happiness"));
     for (auto& value : obj.at("IVs").as_array())
     {
         js::object const& obj                                                  = value.as_object();

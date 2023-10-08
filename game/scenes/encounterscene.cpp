@@ -158,7 +158,7 @@ void EncounterScene::update_P_MOVES(Inputs const* /*inputs*/)
                     {
                         playerPkmn->incrementLevel();
                         // TODO
-                        // evolution (change playerPkmn)
+                        // evolution (change playerPkmn definition + can be cancelled)
                         // new move
                         expFromBattle -= exp;
                     }

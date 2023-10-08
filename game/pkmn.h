@@ -58,6 +58,9 @@ public:
     void   setExp(size_t newExp);
     void   increaseExp(size_t newExp);
 
+    unsigned char getHappiness() const;
+    void setHappiness(unsigned char newHappiness);
+
 private:
     std::array<Move::MovePtr, 4>    moves;
     PkmnDef::PkmnDefPtr             definition;
@@ -68,6 +71,7 @@ private:
     std::map<PkmnDef::Stat, size_t> IVs;
     std::map<PkmnDef::Stat, size_t> EVs;
     StatusCondition                 statusCondition = NONE;
+    unsigned char                   happiness       = 0;
 };
 
 #endif // PKMN_H

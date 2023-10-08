@@ -230,6 +230,16 @@ void PkmnDef::setCatchRate(size_t newCatchRate)
     catchRate = newCatchRate;
 }
 
+unsigned char PkmnDef::getHappiness() const
+{
+    return happiness;
+}
+
+void PkmnDef::setHappiness(unsigned char newHappiness)
+{
+    happiness = newHappiness;
+}
+
 void tag_invoke(js::value_from_tag, js::value& jv, PkmnDef::PkmnDefPtr const& o)
 {
     if (o && !o->id.empty())
@@ -257,7 +267,8 @@ void tag_invoke(js::value_from_tag, js::value& jv, PkmnDef::PkmnDefPtr const& o)
             {"movesToLearn", jsMovesToLearn},
             {"stats",        jsBaseStats   },
             {"baseExp",      o->baseExp    },
-            {"catchRate",    o->catchRate  }
+            {"catchRate",    o->catchRate  },
+            {"happiness",    o->happiness  }
         };
     }
     else
@@ -298,6 +309,7 @@ PkmnDef::PkmnDefPtr tag_invoke(js::value_to_tag<PkmnDef::PkmnDefPtr>, js::value 
         }
         pkmn->baseExp   = js::value_to<size_t>(obj.at("baseExp"));
         pkmn->catchRate = js::value_to<size_t>(obj.at("catchRate"));
+        pkmn->happiness = js::value_to<unsigned char>(obj.at("happiness"));
         return pkmn;
     }
 }
