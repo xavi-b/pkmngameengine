@@ -78,6 +78,92 @@ PkmnDef::GrowthRate PkmnDef::GrowthRateFromString(std::string const& e)
         return FLUCTUATING;
 }
 
+std::string PkmnDef::EvolutionTypeToString(EvolutionType e)
+{
+    switch (e)
+    {
+    case AttackGreater:
+        return "AttackGreater";
+    case DefenseGreater:
+        return "DefenseGreater";
+    case AtkDefEqual:
+        return "AtkDefEqual";
+    case DayHoldItem:
+        return "DayHoldItem";
+    case Happiness:
+        return "Happiness";
+    case HappinessDay:
+        return "HappinessDay";
+    case HappinessNight:
+        return "HappinessNight";
+    case HasInParty:
+        return "HasInParty";
+    case HasMove:
+        return "HasMove";
+    case Item:
+        return "Item";
+    case Level:
+        return "Level";
+    case LevelMale:
+        return "LevelMale";
+    case LevelFemale:
+        return "LevelFemale";
+    case NightHoldItem:
+        return "NightHoldItem";
+    case HasEmptySlotInParty:
+        return "HasEmptySlotInParty";
+    case Trade:
+        return "Trade";
+    case TradeItem:
+        return "TradeItem";
+    case TradeSpecies:
+        return "TradeSpecies";
+    case __SIZE_EVOLUTIONS:
+        return "__SIZE_EVOLUTIONS";
+    }
+    return "???";
+}
+
+PkmnDef::EvolutionType PkmnDef::EvolutionTypeFromString(std::string const& e)
+{
+    if (e == "AttackGreater")
+        return AttackGreater;
+    if (e == "DefenseGreater")
+        return DefenseGreater;
+    if (e == "AtkDefEqual")
+        return AtkDefEqual;
+    if (e == "DayHoldItem")
+        return DayHoldItem;
+    if (e == "Happiness")
+        return Happiness;
+    if (e == "HappinessDay")
+        return HappinessDay;
+    if (e == "HappinessNight")
+        return HappinessNight;
+    if (e == "HasInParty")
+        return HasInParty;
+    if (e == "HasMove")
+        return HasMove;
+    if (e == "Item")
+        return Item;
+    if (e == "LevelMale")
+        return LevelMale;
+    if (e == "LevelFemale")
+        return LevelFemale;
+    if (e == "NightHoldItem")
+        return NightHoldItem;
+    if (e == "HasEmptySlotInParty")
+        return HasEmptySlotInParty;
+    if (e == "Trade")
+        return Trade;
+    if (e == "TradeItem")
+        return TradeItem;
+    if (e == "TradeSpecies")
+        return TradeSpecies;
+    else
+        return Level;
+}
+
 PkmnDef::PkmnDef()
 {
 }
@@ -238,6 +324,16 @@ unsigned char PkmnDef::getHappiness() const
 void PkmnDef::setHappiness(unsigned char newHappiness)
 {
     happiness = newHappiness;
+}
+
+std::multimap<PkmnDef::EvolutionType, PkmnDef::Evolution> const& PkmnDef::getEvolutions() const
+{
+    return evolutions;
+}
+
+void PkmnDef::setEvolutions(std::multimap<EvolutionType, Evolution> const& newEvolutions)
+{
+    evolutions = newEvolutions;
 }
 
 void tag_invoke(js::value_from_tag, js::value& jv, PkmnDef::PkmnDefPtr const& o)

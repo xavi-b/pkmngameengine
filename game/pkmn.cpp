@@ -1,10 +1,12 @@
 #include "pkmn.h"
 
 #include "game.h"
+#include "utils.h"
 
 Pkmn::Pkmn(PkmnDef::PkmnDefPtr definition, size_t level) : definition(definition), level(level)
 {
     happiness = definition->getHappiness();
+    male      = Utils::randint(0, 1); // TODO
 }
 
 std::map<PkmnDef::Stat, size_t> Pkmn::getStats()
@@ -82,6 +84,11 @@ PkmnDef::PkmnDefPtr Pkmn::getDefinition() const
     return definition;
 }
 
+void Pkmn::setDefinition(PkmnDef::PkmnDefPtr const& newDefinition)
+{
+    definition = newDefinition;
+}
+
 size_t Pkmn::getHP() const
 {
     return hp;
@@ -142,6 +149,8 @@ size_t Pkmn::expToNextLevel()
     case PkmnDef::__SIZE_GROWTH_RATE:
         return 1;
     }
+
+    return 1;
 }
 
 size_t Pkmn::getExp() const
@@ -167,6 +176,16 @@ unsigned char Pkmn::getHappiness() const
 void Pkmn::setHappiness(unsigned char newHappiness)
 {
     happiness = newHappiness;
+}
+
+bool Pkmn::getMale() const
+{
+    return male;
+}
+
+void Pkmn::setMale(bool newMale)
+{
+    male = newMale;
 }
 
 void tag_invoke(js::value_from_tag, js::value& jv, Pkmn::PkmnPtr const& o)

@@ -45,6 +45,42 @@ public:
     static std::string      GrowthRateToString(GrowthRate e);
     static GrowthRate       GrowthRateFromString(std::string const& e);
 
+    enum EvolutionType
+    {
+        AttackGreater,
+        DefenseGreater,
+        AtkDefEqual,
+        DayHoldItem,
+        Happiness,
+        HappinessDay,
+        HappinessNight,
+        HasInParty,
+        HasMove,
+        Item,
+        Level,
+        LevelMale,
+        LevelFemale,
+        NightHoldItem,
+        HasEmptySlotInParty,
+        Trade,
+        TradeItem,
+        TradeSpecies,
+        __SIZE_EVOLUTIONS
+    };
+
+    // Silcoon,
+    // Cascoon,
+
+    static constexpr size_t EvolutionTypeCount = EvolutionType::__SIZE_EVOLUTIONS;
+    static std::string      EvolutionTypeToString(EvolutionType e);
+    static EvolutionType    EvolutionTypeFromString(std::string const& e);
+
+    struct Evolution
+    {
+        std::string pkmnId;
+        std::string data;
+    };
+
     struct MoveToLearn
     {
         size_t      level = 0;
@@ -89,19 +125,23 @@ public:
     void   setCatchRate(size_t newCatchRate);
 
     unsigned char getHappiness() const;
-    void setHappiness(unsigned char newHappiness);
+    void          setHappiness(unsigned char newHappiness);
+
+    std::multimap<EvolutionType, Evolution> const& getEvolutions() const;
+    void setEvolutions(std::multimap<EvolutionType, Evolution> const& newEvolutions);
 
 private:
-    std::string                     id;
-    std::string                     name;
-    std::vector<std::string>        types;
-    std::vector<MoveToLearn>        movesToLearn;
-    std::map<PkmnDef::Stat, size_t> baseStats;
-    std::map<PkmnDef::Stat, size_t> EVsToLearn;
-    GrowthRate                      growthRate = GrowthRate::MEDIUM_SLOW;
-    size_t                          baseExp    = 0;
-    size_t                          catchRate  = 0;
-    unsigned char                   happiness  = 0;
+    std::string                             id;
+    std::string                             name;
+    std::vector<std::string>                types;
+    std::vector<MoveToLearn>                movesToLearn;
+    std::map<PkmnDef::Stat, size_t>         baseStats;
+    std::map<PkmnDef::Stat, size_t>         EVsToLearn;
+    GrowthRate                              growthRate = GrowthRate::MEDIUM_SLOW;
+    size_t                                  baseExp    = 0;
+    size_t                                  catchRate  = 0;
+    unsigned char                           happiness  = 0;
+    std::multimap<EvolutionType, Evolution> evolutions;
 };
 
 #endif // PKMNDEF_H

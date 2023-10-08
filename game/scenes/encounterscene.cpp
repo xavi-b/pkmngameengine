@@ -157,9 +157,25 @@ void EncounterScene::update_P_MOVES(Inputs const* /*inputs*/)
                     if (expFromBattle > exp)
                     {
                         playerPkmn->incrementLevel();
+                        std::string evolutionId = canEvolve(playerPkmn);
+                        if (!evolutionId.empty())
+                        {
+                            PkmnDef::PkmnDefPtr evolutionDef = Game::instance()->data.pkmnDefFor(evolutionId);
+                            if (evolutionDef)
+                            {
+                                // TODO
+                                // evolution (scene + can be cancelled)
+                                bool success = true;
+                                if (success)
+                                {
+                                    playerPkmn->setDefinition(evolutionDef);
+                                }
+                            }
+                        }
+
                         // TODO
-                        // evolution (change playerPkmn definition + can be cancelled)
                         // new move
+
                         expFromBattle -= exp;
                     }
                     else

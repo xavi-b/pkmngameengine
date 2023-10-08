@@ -242,3 +242,127 @@ size_t BattleScene::computeDamage(Pkmn::PkmnPtr const& pkmn, Move::MovePtr const
     damage *= stockpile * critical * doubledmg * charge * hh * stab * typeEffectiveness * random;
     return damage;
 }
+
+std::string BattleScene::canEvolve(Pkmn::PkmnPtr const& pkmn)
+{
+    auto stats = pkmn->getStats();
+
+    std::vector<std::string> possibleEvolutions;
+
+    auto evos = pkmn->getDefinition()->getEvolutions();
+    for (auto const& e : evos)
+    {
+        switch (e.first)
+        {
+        case PkmnDef::AttackGreater:
+            if (pkmn->getLevel() == size_t(std::stoi(e.second.data)))
+            {
+                if (stats[PkmnDef::ATTACK] > stats[PkmnDef::DEFENSE])
+                    possibleEvolutions.push_back(e.second.pkmnId);
+            }
+            break;
+        case PkmnDef::DefenseGreater:
+            if (pkmn->getLevel() == size_t(std::stoi(e.second.data)))
+            {
+                if (stats[PkmnDef::ATTACK] < stats[PkmnDef::DEFENSE])
+                    possibleEvolutions.push_back(e.second.pkmnId);
+            }
+            break;
+        case PkmnDef::AtkDefEqual:
+            if (pkmn->getLevel() == size_t(std::stoi(e.second.data)))
+            {
+                if (stats[PkmnDef::ATTACK] == stats[PkmnDef::DEFENSE])
+                    possibleEvolutions.push_back(e.second.pkmnId);
+            }
+            break;
+        case PkmnDef::Happiness:
+            if (pkmn->getLevel() == size_t(std::stoi(e.second.data)))
+            {
+                if (pkmn->getHappiness() >= Pkmn::HighFriendship)
+                    possibleEvolutions.push_back(e.second.pkmnId);
+            }
+            break;
+        case PkmnDef::HasInParty:
+            if (pkmn->getLevel() == size_t(std::stoi(e.second.data)))
+            {
+                bool hasInParty = false;
+                for (auto const& pkmn : Game::instance()->data.player.pkmns)
+                {
+                    if (pkmn && pkmn->getDefinition()->getId() == e.second.data)
+                    {
+                        hasInParty = true;
+                        break;
+                    }
+                }
+                if (hasInParty)
+                    possibleEvolutions.push_back(e.second.pkmnId);
+            }
+            break;
+        case PkmnDef::HasMove:
+            if (pkmn->getLevel() == size_t(std::stoi(e.second.data)))
+            {
+                bool hasMove = false;
+                for (auto const& move : pkmn->getMoves())
+                {
+                    if (move->getDefinition()->getId() == e.second.data)
+                    {
+                        hasMove = true;
+                        break;
+                    }
+                }
+                if (hasMove)
+                    possibleEvolutions.push_back(e.second.pkmnId);
+            }
+            break;
+        case PkmnDef::Level:
+            if (pkmn->getLevel() == size_t(std::stoi(e.second.data)))
+                possibleEvolutions.push_back(e.second.pkmnId);
+            break;
+        case PkmnDef::LevelMale:
+            if (pkmn->getLevel() == size_t(std::stoi(e.second.data)))
+            {
+                if (pkmn->getMale())
+                    possibleEvolutions.push_back(e.second.pkmnId);
+            }
+            break;
+        case PkmnDef::LevelFemale:
+            if (pkmn->getLevel() == size_t(std::stoi(e.second.data)))
+            {
+                if (!pkmn->getMale())
+                    possibleEvolutions.push_back(e.second.pkmnId);
+            }
+            break;
+        case PkmnDef::HasEmptySlotInParty:
+            // TODO do only if evolution is not cancelled ?
+            if (pkmn->getLevel() == size_t(std::stoi(e.second.data)))
+            {
+                size_t i = 0;
+                for (auto const& pkmn : Game::instance()->data.player.pkmns)
+                {
+                    if (!pkmn)
+                        break;
+                    ++i;
+                }
+                if (i < Game::instance()->data.player.pkmns.size())
+                {
+                    PkmnDef::PkmnDefPtr newPkmnDef = Game::instance()->data.pkmnDefFor(e.second.pkmnId);
+                    if (newPkmnDef)
+                    {
+                        Pkmn::PkmnPtr newPkmn = std::make_shared<Pkmn>(newPkmnDef, size_t(std::stoi(e.second.data)));
+                        Game::instance()->data.player.pkmns.at(i).swap(newPkmn);
+                    }
+                }
+            }
+        default:
+            break;
+        }
+    }
+
+    if (possibleEvolutions.size())
+    {
+        size_t index = Utils::randint(0, possibleEvolutions.size() - 1);
+        return possibleEvolutions[index];
+    }
+
+    return {};
+}

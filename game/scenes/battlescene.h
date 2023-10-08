@@ -29,6 +29,7 @@ public:
     virtual std::string name() override;
 
     virtual size_t computeDamage(Pkmn::PkmnPtr const& pkmn, Move::MovePtr const& move) const;
+    std::string    canEvolve(Pkmn::PkmnPtr const& pkmn);
 
     virtual void update_START(Inputs const* inputs)        = 0;
     virtual void draw_START(Fps const* ps, RenderSizes rs) = 0;

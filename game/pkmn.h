@@ -21,6 +21,8 @@ public:
         SLEEP
     };
 
+    static constexpr unsigned char HighFriendship = 160;
+
     using PkmnPtr = std::shared_ptr<Pkmn>;
 
     friend void    tag_invoke(js::value_from_tag, js::value& jv, PkmnPtr const& o);
@@ -46,6 +48,7 @@ public:
     StatusCondition getStatusCondition() const;
 
     PkmnDef::PkmnDefPtr getDefinition() const;
+    void                setDefinition(PkmnDef::PkmnDefPtr const& newDefinition);
 
     size_t getHP() const;
     bool   isKO() const;
@@ -59,7 +62,10 @@ public:
     void   increaseExp(size_t newExp);
 
     unsigned char getHappiness() const;
-    void setHappiness(unsigned char newHappiness);
+    void          setHappiness(unsigned char newHappiness);
+
+    bool getMale() const;
+    void setMale(bool newMale);
 
 private:
     std::array<Move::MovePtr, 4>    moves;
@@ -72,6 +78,7 @@ private:
     std::map<PkmnDef::Stat, size_t> EVs;
     StatusCondition                 statusCondition = NONE;
     unsigned char                   happiness       = 0;
+    bool                            male            = true;
 };
 
 #endif // PKMN_H
