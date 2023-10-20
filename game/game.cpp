@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <boost/program_options.hpp>
+#include <SDL_mixer.h>
 #include <iostream>
 
 Game* Game::sInstance = nullptr;

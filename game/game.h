@@ -6,7 +6,6 @@
 #include "scene.h"
 
 #include <SDL.h>
-#include <SDL_mixer.h>
 #include <SDL_ttf.h>
 #include <boost/locale.hpp>
 #include <list>
