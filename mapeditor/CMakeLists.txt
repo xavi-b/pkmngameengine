@@ -39,6 +39,7 @@ target_link_libraries(${MODULE_NAME} PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 
 # maplibrary
 target_link_libraries(${MODULE_NAME} PRIVATE maplibrary)
+target_include_directories(${MODULE_NAME} PUBLIC ${CMAKE_BINARY_DIR})
 
 set_target_properties(${MODULE_NAME} PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER ${MODULE_NAME}.${DOMAIN}

@@ -2,10 +2,11 @@ cmake_minimum_required(VERSION 3.20)
 
 cmake_path(GET CMAKE_CURRENT_SOURCE_DIR FILENAME PROJECT_NAME)
 string(REPLACE " " "_" PROJECT_NAME ${PROJECT_NAME})
-set(VERSION 0.1)
+set(VERSION 0.1.0)
 set(VENDOR "xavi-b")
 set(DOMAIN "xavi-b.fr")
 project(${PROJECT_NAME} VERSION ${VERSION} LANGUAGES CXX)
+configure_file(version.h.in version.h @ONLY)
 
 # C++
 set(CMAKE_CXX_STANDARD              17)

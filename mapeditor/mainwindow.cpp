@@ -9,6 +9,7 @@
 #include <QTreeView>
 #include <iostream>
 
+#include "version.h"
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
 {
     setWindowTitle("Map Editor");
@@ -17,9 +18,11 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
 
     QWidget*     w = new QWidget;
     QHBoxLayout* l = new QHBoxLayout;
-
+#ifdef NDEBUG // not in debug
     QString root = QDir::currentPath() + "/resources/Graphics";
-
+#else
+    QString root(pkmng::resources_path);
+#endif
     QFileSystemModel* model = new QFileSystemModel;
     model->setRootPath(root);
     QTreeView* treeView = new QTreeView;

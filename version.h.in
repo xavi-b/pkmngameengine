@@ -1,0 +1,18 @@
+#ifndef VERSION_H
+#define VERSION_H
+
+// clang-format off
+namespace pkmng
+{
+constexpr int major{@PROJECT_VERSION_MAJOR@};
+constexpr int minor{@PROJECT_VERSION_MINOR@};
+constexpr int patch{@PROJECT_VERSION_PATCH@};
+
+constexpr char const* version{"@PROJECT_VERSION@"};
+
+constexpr auto & resources_path{"@CMAKE_CURRENT_SOURCE_DIR@/resources/Graphics"};
+}
+// clang-format on
+
+
+#endif //VERSION_H
