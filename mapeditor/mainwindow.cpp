@@ -132,10 +132,35 @@ void MainWindow::createMenus()
         if (QString fileName = saveFile(true); !fileName.isEmpty())
             openedFileName = fileName;
     });
+    auto quitAct = new QAction(tr("&Quit"));
+    quitAct->setShortcut(QKeySequence::Quit);
+    connect(quitAct, &QAction::triggered, this, [this](){
+        close();
+    });
+
     fileMenu->addAction(newAct);
     fileMenu->addAction(openAct);
     fileMenu->addAction(saveAct);
     fileMenu->addAction(saveAsAct);
+    fileMenu->addSeparator();
+    fileMenu->addAction(quitAct);
+
+}
+
+void MainWindow::closeEvent(QCloseEvent* event)
+{
+    if(isWindowModified()){
+        saveFile();
+    }
+
+    if(QMessageBox::StandardButton::Cancel == QMessageBox::question(this, tr("Quit Application"), tr("Would you really want to close the application ?"), QMessageBox::StandardButton::Apply | QMessageBox::StandardButton::Cancel))
+    {
+        event->ignore();
+    }
+    else
+    {
+        event->accept();
+    }
 }
 
 QString MainWindow::saveFile(bool saveAs)
