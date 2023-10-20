@@ -1,5 +1,7 @@
 #include "mainwindow.h"
 
+#include "version.h"
+
 #include <QFileDialog>
 #include <QFileSystemModel>
 #include <QHBoxLayout>
@@ -132,10 +134,75 @@ void MainWindow::createMenus()
         if (QString fileName = saveFile(true); !fileName.isEmpty())
             openedFileName = fileName;
     });
+    auto quitAct = new QAction(tr("&Quit"));
+    quitAct->setShortcut(QKeySequence::Quit);
+    connect(quitAct, &QAction::triggered, this, [this]() {
+        close();
+    });
+
+    auto exportAsImageAct = new QAction(tr("&Image"));
+    connect(exportAsImageAct, &QAction::triggered, this, [this]() {
+        static QStringList imgExt{"png", "jpg"};
+
+        QStringList filters;
+        std::transform(std::begin(imgExt), std::end(imgExt), std::back_inserter(filters), [](const QString& b) {
+            return QString("%1 Image (*.%2);").arg(b.toUpper(), b);
+        });
+
+        QFileDialog fileDlg(this, tr("Export as Image"), QSettings().value("lastDir").toString());
+        fileDlg.setAcceptMode(QFileDialog::AcceptSave);
+        fileDlg.setNameFilters(filters);
+
+        if (QDialog::Accepted == fileDlg.exec())
+        {
+            auto files          = fileDlg.selectedFiles();
+            auto selectedFilter = fileDlg.selectedNameFilter();
+
+            auto idx = filters.indexOf(selectedFilter);
+
+            if (files.size() > 1 || files.isEmpty())
+                return;
+
+            auto pattern  = QString(".%1").arg(imgExt[idx]);
+            auto fileName = files[0];
+
+            if (!fileName.endsWith(pattern))
+                fileName += pattern;
+
+            auto pix = mapEditor->getMapperViewer()->grabInternalImage();
+
+            if (!pix.save(fileName))
+                QMessageBox::warning(this, tr("Image Error!"), tr("Image cannot be saved at %1").arg(fileName));
+        }
+    });
+
     fileMenu->addAction(newAct);
     fileMenu->addAction(openAct);
     fileMenu->addAction(saveAct);
     fileMenu->addAction(saveAsAct);
+    fileMenu->addSeparator();
+    auto exportMenu = fileMenu->addMenu(tr("&Export"));
+    exportMenu->addAction(exportAsImageAct);
+    fileMenu->addSeparator();
+    fileMenu->addAction(quitAct);
+}
+
+void MainWindow::closeEvent(QCloseEvent* event)
+{
+    if (isWindowModified())
+    {
+        saveFile();
+    }
+
+    if (QMessageBox::StandardButton::No
+        == QMessageBox::question(this, tr("Quit Application"), tr("Would you really want to close the application ?")))
+    {
+        event->ignore();
+    }
+    else
+    {
+        event->accept();
+    }
 }
 
 QString MainWindow::saveFile(bool saveAs)

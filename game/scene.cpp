@@ -24,7 +24,6 @@ bool Scene::pushScene() const
 
 void Scene::popReset()
 {
-
 }
 
 std::unique_ptr<Scene> Scene::nextScene()

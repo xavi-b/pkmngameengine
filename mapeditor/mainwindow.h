@@ -19,6 +19,8 @@ protected:
     virtual void keyPressEvent(QKeyEvent* event) override;
     virtual void keyReleaseEvent(QKeyEvent* event) override;
 
+    void closeEvent(QCloseEvent* event) override;
+
 private:
     void    createMenus();
     QString saveFile(bool saveAs = false);

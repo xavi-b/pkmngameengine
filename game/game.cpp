@@ -7,6 +7,7 @@
 #include "scenes/titlescene.h"
 #include "settings.h"
 
+#include <SDL_mixer.h>
 #include <algorithm>
 #include <boost/program_options.hpp>
 #include <iostream>

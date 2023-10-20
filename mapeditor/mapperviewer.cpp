@@ -22,6 +22,14 @@ void MapperViewer::adjustScrollBar(QScrollBar* scrollBar, double factor)
     scrollBar->setValue(int(factor * scrollBar->value() + ((factor - 1) * scrollBar->pageStep() / 2)));
 }
 
+QPixmap MapperViewer::grabInternalImage() const
+{
+    mapperWidget->setGridVisible(false);
+    auto pix = mapperWidget->grab();
+    mapperWidget->setGridVisible(true);
+    return pix;
+}
+
 MapperWidget* MapperViewer::contentWidget() const
 {
     return mapperWidget;
