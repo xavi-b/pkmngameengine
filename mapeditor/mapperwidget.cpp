@@ -194,7 +194,7 @@ void MapperWidget::mouseMoveEvent(QMouseEvent* event)
 
         if (pressed)
         {
-            mouseReleaseEvent(event);
+            mouseReleaseEvent(event);//Really bad!!!!!!!!!
             pressed = true;
         }
         else
@@ -212,87 +212,90 @@ void MapperWidget::mouseReleaseEvent(QMouseEvent* event)
     float scaleFactor = 1.0 * width() / tileSizeInPixels().width();
     int   selSize     = TilePixelSize * scaleFactor;
 
-    if (event->pos().x() < selSize * int(map->getNCol()) && event->pos().y() < selSize * int(map->getNRow()))
+    if (event->pos().x() >= selSize * int(map->getNCol())
+        || event->pos().y() >= selSize * int(map->getNRow())
+        || event->pos().x() < 0
+        || event->pos().y() < 0) // invalid events
+        return;
+
+    int posX = event->pos().x();
+    int posY = event->pos().y();
+    int col  = posX / selSize;
+    int row  = posY / selSize;
+
+    auto& level = map->getLevels()[workingLevelIndex];
+
+    if (layerType == EVENTS)
     {
-        int posX = event->pos().x();
-        int posY = event->pos().y();
-        int col  = posX / selSize;
-        int row  = posY / selSize;
+        auto& layer = level->getEventLayer();
 
-        auto& level = map->getLevels()[workingLevelIndex];
-
-        if (layerType == EVENTS)
+        if (event->button() == Qt::RightButton || event->buttons() & Qt::RightButton)
         {
-            auto& layer = level->getEventLayer();
-
-            if (event->button() == Qt::RightButton)
-            {
-                (*layer.get())(col, row).reset(nullptr);
-            }
-            else
-            {
-                auto& previousEvent = (*layer.get())(col, row);
-
-                QString id = QInputDialog::getText(this,
-                                                   "Event ID",
-                                                   QString(),
-                                                   QLineEdit::Normal,
-                                                   previousEvent ? previousEvent->getId().c_str() : QString());
-
-                auto event = std::make_unique<Event>(id.toStdString());
-                (*layer.get())(col, row).swap(event);
-            }
-        }
-        else if (layerType == SPECIAL_TILE)
-        {
-            auto& layer = level->getSpecialTileLayer();
-
-            if (event->button() == Qt::RightButton)
-            {
-                (*layer.get())(col, row).reset(nullptr);
-            }
-            else
-            {
-                auto type = std::make_unique<SpecialTileType>(specialTileType);
-                (*layer.get())(col, row).swap(type);
-            }
+            (*layer.get())(col, row).reset(nullptr);
         }
         else
         {
-            auto& layer = level->getTileLayers()[workingLayerIndex];
+            auto& previousEvent = (*layer.get())(col, row);
 
-            if (event->button() == Qt::RightButton)
-            {
-                (*layer.get())(col, row).reset(nullptr);
-            }
-            else
-            {
-                QRect rect = data.second;
+            QString id = QInputDialog::getText(this,
+                                               "Event ID",
+                                               QString(),
+                                               QLineEdit::Normal,
+                                               previousEvent ? previousEvent->getId().c_str() : QString());
 
-                for (size_t i = 0; i < size_t(rect.width()); ++i)
+            auto event = std::make_unique<Event>(id.toStdString());
+            (*layer.get())(col, row).swap(event);
+        }
+    }
+    else if (layerType == SPECIAL_TILE)
+    {
+        auto& layer = level->getSpecialTileLayer();
+
+        if (event->button() == Qt::RightButton  || event->buttons() & Qt::RightButton)
+        {
+            (*layer.get())(col, row).reset(nullptr);
+        }
+        else
+        {
+            auto type = std::make_unique<SpecialTileType>(specialTileType);
+            (*layer.get())(col, row).swap(type);
+        }
+    }
+    else
+    {
+        auto& layer = level->getTileLayers()[workingLayerIndex];
+
+        if (event->button() == Qt::RightButton || event->buttons() & Qt::RightButton)
+        {
+            (*layer.get())(col, row).reset(nullptr);
+        }
+        else
+        {
+            QRect rect = data.second;
+
+            for (size_t i = 0; i < size_t(rect.width()); ++i)
+            {
+                if (col + i >= map->getNCol())
+                    continue;
+
+                for (size_t j = 0; j < size_t(rect.height()); ++j)
                 {
-                    if (col + i >= map->getNCol())
+                    if (row + j >= map->getNRow())
                         continue;
 
-                    for (size_t j = 0; j < size_t(rect.height()); ++j)
+                    if (!data.first.isEmpty())
                     {
-                        if (row + j >= map->getNRow())
-                            continue;
-
-                        if (!data.first.isEmpty())
-                        {
-                            std::string spritePath = data.first.toStdString();
-                            auto        tile       = std::make_unique<Tile>(spritePath, rect.x() + i, rect.y() + j);
-                            (*layer.get())(col + i, row + j).swap(tile);
-                        }
+                        std::string spritePath = data.first.toStdString();
+                        auto        tile       = std::make_unique<Tile>(spritePath, rect.x() + i, rect.y() + j);
+                        (*layer.get())(col + i, row + j).swap(tile);
                     }
                 }
             }
         }
-
-        event->accept();
-        update();
     }
+
+    event->accept();
+    update();
 }
 
 void MapperWidget::resizeEvent(QResizeEvent* event)
