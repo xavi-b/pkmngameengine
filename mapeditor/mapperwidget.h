@@ -13,7 +13,7 @@
 class MapperWidget : public QWidget
 {
     Q_OBJECT
-
+    Q_PROPERTY(bool gridVisible READ isGridVisible WRITE setGridVisible NOTIFY gridVisibleChanged FINAL)
 public:
     enum LayerType
     {
@@ -55,6 +55,9 @@ public:
     void setMapWidth(size_t v);
     void setMapHeight(size_t v);
 
+    bool isGridVisible() const;
+    void setGridVisible(bool newGridVisible);
+
 signals:
     void workingLayerIndexChanged(int index);
     void workingLevelIndexChanged(int index);
@@ -66,6 +69,8 @@ signals:
     void levelRemoved(int index);
 
     void reset();
+
+    void gridVisibleChanged();
 
 protected:
     virtual void mousePressEvent(QMouseEvent* event) override;
@@ -94,6 +99,7 @@ private:
     bool                 belowLevelsOpacity = false;
     LayerType            layerType          = TILES;
     SpecialTileType      specialTileType    = SpecialTileType::GRASS;
+    bool                 gridVisible        = true;
 };
 
 #endif // MAPPERWIDGET_H

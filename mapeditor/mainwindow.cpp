@@ -138,10 +138,50 @@ void MainWindow::createMenus()
         close();
     });
 
+    auto exportAsImageAct = new QAction(tr("&Image"));
+    connect(exportAsImageAct, &QAction::triggered, this, [this](){
+        static QStringList imgExt{"png","jpg"};
+
+        QStringList filters;
+        std::transform(std::begin(imgExt), std::end(imgExt), std::back_inserter(filters), [](const QString& b) {
+            return QString("%1 Image (*.%2);").arg(b.toUpper(),b);
+        });
+
+        QFileDialog fileDlg(this, tr("Export as Image"), QSettings().value("lastDir").toString());
+        fileDlg.setAcceptMode(QFileDialog::AcceptSave);
+        fileDlg.setNameFilters(filters);
+
+        if(QDialog::Accepted == fileDlg.exec())
+        {
+            auto files = fileDlg.selectedFiles();
+            auto selectedFilter = fileDlg.selectedNameFilter();
+
+            auto idx = filters.indexOf(selectedFilter);
+
+            if(files.size() > 1 || files.isEmpty())
+                return;
+
+            auto pattern = QString(".%1").arg(imgExt[idx]);
+            auto fileName = files[0];
+
+            if(!fileName.endsWith(pattern))
+                fileName += pattern;
+
+            auto pix = mapEditor->getMapperViewer()->grabInternalImage();
+
+            if(!pix.save(fileName))
+                QMessageBox::warning(this, tr("Image Error!"), tr("Image cannot be saved at %1").arg(fileName));
+        }
+
+    });
+
     fileMenu->addAction(newAct);
     fileMenu->addAction(openAct);
     fileMenu->addAction(saveAct);
     fileMenu->addAction(saveAsAct);
+    fileMenu->addSeparator();
+    auto exportMenu = fileMenu->addMenu(tr("&Export"));
+    exportMenu->addAction(exportAsImageAct);
     fileMenu->addSeparator();
     fileMenu->addAction(quitAct);
 

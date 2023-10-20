@@ -6,6 +6,10 @@ MapperWidget::MapperWidget(QWidget* parent) : QWidget(parent)
     setMouseTracking(true);
 
     map = std::make_unique<Map>(5, 5);
+
+    connect(this, &MapperWidget::gridVisibleChanged, this, [this](){
+        update();
+    });
 }
 
 void MapperWidget::setSelectionPixmap(QPair<QString, QRect> const& data)
@@ -347,7 +351,8 @@ void MapperWidget::paintEvent(QPaintEvent* event)
                         painter.drawPixmap(QRect(origin, rect.size() * scaleFactor), pixmaps[path], rect);
                     }
                     painter.setOpacity(1.0);
-                    painter.drawRect(QRect(origin, QSize(selSize - 1, selSize - 1)));
+                    if(isGridVisible())
+                        painter.drawRect(QRect(origin, QSize(selSize - 1, selSize - 1)));
                 }
             }
         }
@@ -410,4 +415,17 @@ void MapperWidget::leaveEvent(QEvent* event)
     Q_UNUSED(event)
     showSelectionPixmap = false;
     update();
+}
+
+bool MapperWidget::isGridVisible() const
+{
+    return gridVisible;
+}
+
+void MapperWidget::setGridVisible(bool newGridVisible)
+{
+    if (gridVisible == newGridVisible)
+        return;
+    gridVisible = newGridVisible;
+    emit gridVisibleChanged();
 }

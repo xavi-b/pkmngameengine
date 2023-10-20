@@ -20,6 +20,8 @@ public:
 
     MapperWidget* contentWidget() const;
 
+    QPixmap grabInternalImage() const;
+
 signals:
     void entered();
 
