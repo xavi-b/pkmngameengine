@@ -19,10 +19,10 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
 
     QWidget*     w = new QWidget;
     QHBoxLayout* l = new QHBoxLayout;
-#ifdef NDEBUG // not in debug
-    QString root = QDir::currentPath() + "/resources/Graphics";
-#else
+#ifdef QT_DEBUG
     QString root(pkmng::resources_path);
+#else
+    QString root = QDir::currentPath() + "/resources/Graphics";
 #endif
     QFileSystemModel* model = new QFileSystemModel;
     model->setRootPath(root);
