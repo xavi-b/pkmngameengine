@@ -10,6 +10,7 @@
 #include <iostream>
 
 #include "version.h"
+
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
 {
     setWindowTitle("Map Editor");
