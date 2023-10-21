@@ -39,6 +39,8 @@ target_link_libraries(${MODULE_NAME} PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 
 # maplibrary
 target_link_libraries(${MODULE_NAME} PRIVATE maplibrary)
+
+# Binary directory (version.h)
 target_include_directories(${MODULE_NAME} PUBLIC ${CMAKE_BINARY_DIR})
 
 set_target_properties(${MODULE_NAME} PROPERTIES
