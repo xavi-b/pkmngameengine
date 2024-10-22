@@ -31,6 +31,8 @@ std::string BattleScene::StateToString(State e)
         return "O_ITEMS";
     case OPPONENT_MOVES:
         return "O_MOVES";
+    case OPPONENT_RUN:
+        return "O_RUN";
     case END:
         return "END";
     }
@@ -105,6 +107,10 @@ void BattleScene::update(Inputs const* inputs)
         update_O_MOVES(inputs);
         break;
     }
+    case OPPONENT_RUN: {
+        update_O_RUN(inputs);
+        break;
+    }
     case END:
     case BAG:
     case PKMNS:
@@ -142,6 +148,9 @@ void BattleScene::draw(Fps const* fps, RenderSizes rs)
         break;
     case OPPONENT_MOVES:
         draw_O_MOVES(fps, rs);
+        break;
+    case OPPONENT_RUN:
+        draw_O_RUN(fps, rs);
         break;
     case END:
     case BAG:

@@ -58,6 +58,9 @@ public:
     virtual void update_O_MOVES(Inputs const* inputs)        = 0;
     virtual void draw_O_MOVES(Fps const* ps, RenderSizes rs) = 0;
 
+    virtual void update_O_RUN(Inputs const* inputs)        = 0;
+    virtual void draw_O_RUN(Fps const* ps, RenderSizes rs) = 0;
+
 protected:
     enum State
     {
@@ -72,6 +75,7 @@ protected:
         OPPONENT_PKMNS,
         OPPONENT_ITEMS,
         OPPONENT_MOVES,
+        OPPONENT_RUN,
         END
     };
 

@@ -46,6 +46,9 @@ public:
     virtual void update_O_MOVES(Inputs const* inputs) override;
     virtual void draw_O_MOVES(Fps const* ps, RenderSizes rs) override;
 
+    virtual void update_O_RUN(Inputs const* inputs) override;
+    virtual void draw_O_RUN(Fps const* ps, RenderSizes rs) override;
+
 private:
     Pkmn::PkmnPtr encounterPkmn;
     Pkmn::PkmnPtr playerPkmn;

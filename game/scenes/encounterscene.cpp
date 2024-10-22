@@ -265,10 +265,12 @@ void EncounterScene::update_O_PKMNS(Inputs const* /*inputs*/)
 
 void EncounterScene::draw_O_PKMNS(Fps const* /*fps*/, RenderSizes /*rs*/)
 {
+    // Should never reach
 }
 
 void EncounterScene::update_O_ITEMS(Inputs const* /*inputs*/)
 {
+    // Attached berry
 }
 
 void EncounterScene::draw_O_ITEMS(Fps const* /*fps*/, RenderSizes /*rs*/)
@@ -304,5 +306,13 @@ void EncounterScene::update_O_MOVES(Inputs const* /*inputs*/)
 }
 
 void EncounterScene::draw_O_MOVES(Fps const* /*fps*/, RenderSizes /*rs*/)
+{
+}
+
+void EncounterScene::update_O_RUN(Inputs const* /*inputs*/)
+{
+}
+
+void EncounterScene::draw_O_RUN(Fps const* /*fps*/, RenderSizes /*rs*/)
 {
 }
