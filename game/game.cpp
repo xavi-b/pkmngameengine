@@ -148,6 +148,8 @@ int Game::exec()
         RenderSizes rs = {w, h, aw, ah};
         scenes.back()->draw(fps.get(), rs);
 
+        fps->update();
+
         if (debug)
             fps->draw(rs);
 

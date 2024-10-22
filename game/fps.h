@@ -21,6 +21,7 @@ struct Fps
     size_t value      = 0;
     bool   tick       = false;
 
+    void update();
     void draw(RenderSizes rs);
 
     float tickPercentage() const;

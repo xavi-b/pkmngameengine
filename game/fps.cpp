@@ -12,7 +12,7 @@ Fps::~Fps()
 {
 }
 
-void Fps::draw(RenderSizes rs)
+void Fps::update()
 {
     accumulate++;
 
@@ -32,7 +32,10 @@ void Fps::draw(RenderSizes rs)
     }
 
     previous = SDL_GetTicks();
+}
 
+void Fps::draw(RenderSizes rs)
+{
     auto fpsStr = "FPS: " + std::to_string(value);
     RenderUtils::drawWhiteText(renderer, rs, fpsStr, 24, 0, 0);
 }
