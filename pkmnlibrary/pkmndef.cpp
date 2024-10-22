@@ -379,9 +379,9 @@ void tag_invoke(js::value_from_tag, js::value& jv, PkmnDef::PkmnDefPtr const& o)
         js::array jsEvolutions;
         for (auto const& e : o->evolutions)
             jsEvolutions.push_back(js::value{
-                {"type",  e.first        },
-                {"data",  e.second.pkmnId},
-                {"value", e.second.data  }
+                {"type",   e.first        },
+                {"pkmnId", e.second.pkmnId},
+                {"data",   e.second.data  }
             });
         jv = {
             {"id",           o->id         },
