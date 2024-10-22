@@ -17,19 +17,19 @@ std::string BattleScene::StateToString(State e)
         return "BAG";
     case PKMNS:
         return "PKMNS";
-    case P_MOVES:
+    case PLAYER_MOVES:
         return "P_MOVES";
-    case P_ITEMS:
+    case PLAYER_ITEMS:
         return "P_ITEMS";
-    case P_PKMNS:
+    case PLAYER_PKMNS:
         return "P_PKMNS";
-    case P_RUN:
+    case PLAYER_RUN:
         return "P_RUN";
-    case O_PKMNS:
+    case OPPONENT_PKMNS:
         return "O_PKMNS";
-    case O_ITEMS:
+    case OPPONENT_ITEMS:
         return "O_ITEMS";
-    case O_MOVES:
+    case OPPONENT_MOVES:
         return "O_MOVES";
     case END:
         return "END";
@@ -77,31 +77,31 @@ void BattleScene::update(Inputs const* inputs)
         update_ACTIONS(inputs);
         break;
     }
-    case P_MOVES: {
+    case PLAYER_MOVES: {
         update_P_MOVES(inputs);
         break;
     }
-    case P_ITEMS: {
+    case PLAYER_ITEMS: {
         update_P_ITEMS(inputs);
         break;
     }
-    case P_PKMNS: {
+    case PLAYER_PKMNS: {
         update_P_PKMNS(inputs);
         break;
     }
-    case P_RUN: {
+    case PLAYER_RUN: {
         update_P_RUN(inputs);
         break;
     }
-    case O_PKMNS: {
+    case OPPONENT_PKMNS: {
         update_O_PKMNS(inputs);
         break;
     }
-    case O_ITEMS: {
+    case OPPONENT_ITEMS: {
         update_O_ITEMS(inputs);
         break;
     }
-    case O_MOVES: {
+    case OPPONENT_MOVES: {
         update_O_MOVES(inputs);
         break;
     }
@@ -122,25 +122,25 @@ void BattleScene::draw(Fps const* fps, RenderSizes rs)
     case ACTIONS:
         draw_ACTIONS(fps, rs);
         break;
-    case P_MOVES:
+    case PLAYER_MOVES:
         draw_P_MOVES(fps, rs);
         break;
-    case P_ITEMS:
+    case PLAYER_ITEMS:
         draw_P_ITEMS(fps, rs);
         break;
-    case P_PKMNS:
+    case PLAYER_PKMNS:
         draw_P_PKMNS(fps, rs);
         break;
-    case P_RUN:
+    case PLAYER_RUN:
         draw_P_RUN(fps, rs);
         break;
-    case O_PKMNS:
+    case OPPONENT_PKMNS:
         draw_O_PKMNS(fps, rs);
         break;
-    case O_ITEMS:
+    case OPPONENT_ITEMS:
         draw_O_ITEMS(fps, rs);
         break;
-    case O_MOVES:
+    case OPPONENT_MOVES:
         draw_O_MOVES(fps, rs);
         break;
     case END:
@@ -166,14 +166,14 @@ void BattleScene::popReset()
     {
     case BAG: {
         // If selected
-        state = P_ITEMS;
+        state = PLAYER_ITEMS;
         // If not selected
         state = ACTIONS;
         break;
     }
     case PKMNS: {
         // If selected
-        state = P_PKMNS;
+        state = PLAYER_PKMNS;
         // If not selected
         state = ACTIONS;
         break;

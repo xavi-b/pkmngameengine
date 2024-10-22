@@ -65,13 +65,13 @@ protected:
         ACTIONS,
         BAG,
         PKMNS,
-        P_MOVES,
-        P_ITEMS,
-        P_PKMNS,
-        P_RUN,
-        O_PKMNS,
-        O_ITEMS,
-        O_MOVES,
+        PLAYER_MOVES,
+        PLAYER_ITEMS,
+        PLAYER_PKMNS,
+        PLAYER_RUN,
+        OPPONENT_PKMNS,
+        OPPONENT_ITEMS,
+        OPPONENT_MOVES,
         END
     };
 

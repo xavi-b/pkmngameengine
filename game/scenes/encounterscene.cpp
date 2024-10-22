@@ -97,9 +97,9 @@ void EncounterScene::update_ACTIONS(Inputs const* inputs)
                     }
 
                     if (playerFirst)
-                        state = P_MOVES;
+                        state = PLAYER_MOVES;
                     else
-                        state = O_MOVES;
+                        state = OPPONENT_MOVES;
                 }
             }
             break;
@@ -111,7 +111,7 @@ void EncounterScene::update_ACTIONS(Inputs const* inputs)
             state = PKMNS;
             break;
         case BattleActions::RUN:
-            state = P_RUN;
+            state = PLAYER_RUN;
             break;
         default:
             break;
@@ -191,7 +191,7 @@ void EncounterScene::update_P_MOVES(Inputs const* /*inputs*/)
         if (playerFirst)
             state = ACTIONS;
         else
-            state = P_MOVES;
+            state = PLAYER_MOVES;
     }
 }
 
@@ -207,7 +207,7 @@ void EncounterScene::update_P_ITEMS(Inputs const* /*inputs*/)
     // If pkball
     //    Capture computation
     //    Pkdex scene/animation
-    state = O_MOVES;
+    state = OPPONENT_MOVES;
 }
 
 void EncounterScene::draw_P_ITEMS(Fps const* /*fps*/, RenderSizes /*rs*/)
@@ -218,7 +218,7 @@ void EncounterScene::update_P_PKMNS(Inputs const* /*inputs*/)
 {
     // Pkmn animation
     // Pkmn text
-    state = O_MOVES;
+    state = OPPONENT_MOVES;
 }
 
 void EncounterScene::draw_P_PKMNS(Fps const* /*fps*/, RenderSizes /*rs*/)
@@ -290,7 +290,7 @@ void EncounterScene::update_O_MOVES(Inputs const* /*inputs*/)
         if (playerFirst)
             state = ACTIONS;
         else
-            state = P_MOVES;
+            state = PLAYER_MOVES;
     }
 }
 
