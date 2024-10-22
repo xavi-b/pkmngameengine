@@ -228,12 +228,21 @@ void EncounterScene::draw_P_PKMNS(Fps const* /*fps*/, RenderSizes /*rs*/)
 void EncounterScene::update_P_RUN(Inputs const* /*inputs*/)
 {
     ++runAttemps;
-    // https://bulbapedia.bulbagarden.net/wiki/Escape#Generation_III_and_IV
-    size_t playerSpeed = playerPkmn->getStats()[PkmnDef::SPEED];
-    size_t wildSpeed   = encounterPkmn->getStats()[PkmnDef::SPEED];
-    size_t odds        = ((playerSpeed * 128 / wildSpeed) + 30 * runAttemps) % 256;
-    size_t random      = Utils::randint(0, 255);
-    bool   run         = random < odds;
+    bool   run       = true;
+    size_t wildSpeed = encounterPkmn->getStats()[PkmnDef::SPEED];
+
+    if (wildSpeed > 0)
+    {
+        // https://bulbapedia.bulbagarden.net/wiki/Escape#Generation_III_and_IV
+        size_t playerSpeed = playerPkmn->getStats()[PkmnDef::SPEED];
+        size_t odds        = ((playerSpeed * 128 / wildSpeed) + 30 * runAttemps) % 256;
+        size_t random      = Utils::randint(0, 255);
+        run                = random < odds;
+    }
+
+    if (Game::instance()->isDebug())
+        std::cout << __PRETTY_FUNCTION__ << " run: " << run << std::endl;
+
     if (run)
     {
         // Succesful run text
