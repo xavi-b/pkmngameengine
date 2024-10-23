@@ -106,7 +106,7 @@ void IntroScene::update(Inputs const* inputs)
         }
         break;
     case Leave:
-        // TODO save game
+        Game::instance()->save();
         break;
     }
 }
