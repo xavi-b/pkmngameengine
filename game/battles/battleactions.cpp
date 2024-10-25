@@ -51,6 +51,8 @@ void BattleActions::update(Inputs const* inputs)
     if (inputs->A)
     {
         selected = true;
+        if (Game::instance()->isDebug())
+            std::cout << "BattleActions selected: " << currentIndex << std::endl;
     }
     else if (inputs->right)
     {

@@ -13,6 +13,8 @@ std::string BattleScene::StateToString(State e)
         return "START";
     case ACTIONS:
         return "ACTIONS";
+    case MOVES:
+        return "MOVES";
     case BAG:
         return "BAG";
     case PKMNS:
@@ -43,11 +45,7 @@ BattleScene::BattleScene(SDL_Renderer* renderer) : Scene(renderer)
 {
     battleBackground = std::make_unique<BattleBackground>(renderer);
     battleSpeech     = std::make_unique<BattleSpeech>(renderer);
-    std::vector<std::string> texts;
-    texts.push_back(lc::translate("What should AAAAAAAAAAAA do ?"));
-    battleSpeech->setTexts(texts);
-    battleSpeech->init();
-    battleActions = std::make_unique<BattleActions>(renderer);
+    battleActions    = std::make_unique<BattleActions>(renderer);
     battleActions->init();
     moveSelection = std::make_unique<MoveSelection>(renderer);
     moveSelection->init();
@@ -59,7 +57,7 @@ BattleScene::~BattleScene()
 
 void BattleScene::init()
 {
-    state = ACTIONS;
+    state = START;
 }
 
 void BattleScene::update(Inputs const* inputs)
@@ -77,6 +75,10 @@ void BattleScene::update(Inputs const* inputs)
     }
     case ACTIONS: {
         update_ACTIONS(inputs);
+        break;
+    }
+    case MOVES: {
+        update_MOVES(inputs);
         break;
     }
     case PLAYER_MOVES: {
@@ -111,7 +113,10 @@ void BattleScene::update(Inputs const* inputs)
         update_O_RUN(inputs);
         break;
     }
-    case END:
+    case END: {
+        update_END(inputs);
+        break;
+    }
     case BAG:
     case PKMNS:
         break;
@@ -127,6 +132,9 @@ void BattleScene::draw(Fps const* fps, RenderSizes rs)
         break;
     case ACTIONS:
         draw_ACTIONS(fps, rs);
+        break;
+    case MOVES:
+        draw_MOVES(fps, rs);
         break;
     case PLAYER_MOVES:
         draw_P_MOVES(fps, rs);
@@ -153,6 +161,7 @@ void BattleScene::draw(Fps const* fps, RenderSizes rs)
         draw_O_RUN(fps, rs);
         break;
     case END:
+        draw_END(fps, rs);
     case BAG:
     case PKMNS:
         break;

@@ -5,10 +5,32 @@
 
 EncounterScene::EncounterScene(SDL_Renderer* renderer) : BattleScene(renderer)
 {
+    pkmnEncounterSpeech = std::make_unique<TextSpeech>(renderer);
+    firstPkmnSpeech     = std::make_unique<TextSpeech>(renderer);
 }
 
 EncounterScene::~EncounterScene()
 {
+}
+
+void EncounterScene::init()
+{
+    BattleScene::init();
+
+    boost::format whatShouldDoText =
+        boost::format(lc::translate("What should %1% do ?")) % Game::instance()->data.player.name;
+    battleSpeech->setTexts({whatShouldDoText.str()});
+    battleSpeech->init();
+
+    boost::format pkmnEncounterText = boost::format(lc::translate("A wild %1% appears !"))
+                                    % (encounterPkmn ? encounterPkmn->getDefinition()->getName() : "#ERROR");
+    pkmnEncounterSpeech->setTexts({pkmnEncounterText.str()});
+    pkmnEncounterSpeech->init();
+
+    boost::format firstPkmnText =
+        boost::format(lc::translate("%1% go !")) % (playerPkmn ? playerPkmn->getDefinition()->getName() : "#ERROR");
+    firstPkmnSpeech->setTexts({firstPkmnText.str()});
+    firstPkmnSpeech->init();
 }
 
 void EncounterScene::draw(Fps const* fps, RenderSizes rs)
@@ -33,75 +55,112 @@ void EncounterScene::setPlayerPkmn(Pkmn::PkmnPtr const& newPlayerPkmn)
     playerPkmn = newPlayerPkmn;
 }
 
+void EncounterScene::chooseOpponentAction()
+{
+    // TODO: randomize with weights ?
+    // TODO: special cases like Latias/Latios
+    opponentAction = BattleActions::Type::MOVES;
+
+    switch (opponentAction)
+    {
+    case BattleActions::BAG:
+        state = OPPONENT_ITEMS;
+        break;
+    case BattleActions::PKMNS:
+        state = OPPONENT_PKMNS;
+        break;
+    case BattleActions::RUN:
+        state = OPPONENT_RUN;
+        break;
+    case BattleActions::MOVES:
+    default: {
+        auto const& moves              = encounterPkmn->getMoves();
+        auto const  nonNullMovesResult = std::find(moves.begin(), moves.end(), nullptr);
+        int const   nonNullMovesCount  = std::distance(moves.begin(), nonNullMovesResult);
+        size_t      randomMove         = Utils::randint(0, nonNullMovesCount - 1);
+        encounterMove                  = moves.at(randomMove);
+        break;
+    }
+    }
+}
+
 void EncounterScene::update_START(Inputs const* inputs)
 {
-    // Open animation
-    // Open text
-    // Pkmn animation
-    // Pkmn text
+    // TODO: Open animation
+
+    if (pkmnEncounterSpeech)
+    {
+        pkmnEncounterSpeech->update(inputs);
+        if (pkmnEncounterSpeech->mayClose() && (inputs->A || inputs->start))
+        {
+            pkmnEncounterSpeech.release();
+        }
+        else
+        {
+            return;
+        }
+    }
+
+    // TODO: Pkmn animation
+
+    if (firstPkmnSpeech)
+    {
+        firstPkmnSpeech->update(inputs);
+        if (firstPkmnSpeech->mayClose() && (inputs->A || inputs->start))
+        {
+            firstPkmnSpeech.release();
+        }
+        else
+        {
+            return;
+        }
+    }
+
+    // TODO: Weather animation
+    // TODO: Weather text
+
     battleSpeech->update(inputs);
     if (battleSpeech->mayClose())
+    {
+        battleActions->reset();
         state = ACTIONS;
+    }
 }
 
 void EncounterScene::draw_START(Fps const* fps, RenderSizes rs)
 {
+    // TODO: Open animation
+
+    if (pkmnEncounterSpeech)
+    {
+        pkmnEncounterSpeech->draw(fps, rs);
+        return;
+    }
+
+    // TODO: Pkmn animation
+
+    if (firstPkmnSpeech)
+    {
+        firstPkmnSpeech->draw(fps, rs);
+        return;
+    }
+
+    // TODO: Weather animation
+    // TODO: Weather text
+
     battleSpeech->draw(fps, rs);
 }
 
 void EncounterScene::update_ACTIONS(Inputs const* inputs)
 {
-    battleActions->update(inputs);
-
     if (battleActions->isFinished())
     {
         switch (battleActions->selectedAction())
         {
         case BattleActions::MOVES: {
-            moveSelection->update(inputs);
-            if (moveSelection->shouldQuit())
-            {
-                state = ACTIONS;
-            }
-            else if (moveSelection->isSelected())
-            {
-                playerMove = playerPkmn->getMoves().at(moveSelection->selectedIndex());
-                if (playerMove && playerMove->getCurrentPP() > 0)
-                {
-                    moveSelection->reset();
-
-                    auto const&                tempMoves = encounterPkmn->getMoves();
-                    std::vector<Move::MovePtr> moves;
-                    std::copy_if(tempMoves.cbegin(), tempMoves.cend(), moves.begin(), [=](auto const& e) {
-                        return e && e->getCurrentPP() > 0;
-                    });
-                    size_t randomMove = Utils::randint(0, moves.size() - 1);
-                    encounterMove     = moves.at(randomMove);
-
-                    if (!encounterMove)
-                        playerFirst = true;
-                    else if (playerMove->getDefinition()->getPriority() > encounterMove->getDefinition()->getPriority())
-                        playerFirst = true;
-                    else if (playerMove->getDefinition()->getPriority() < encounterMove->getDefinition()->getPriority())
-                        playerFirst = false;
-                    else
-                    {
-                        size_t playerSpeed    = playerPkmn->getStats()[PkmnDef::SPEED];
-                        size_t encounterSpeed = encounterPkmn->getStats()[PkmnDef::SPEED];
-                        if (playerSpeed > encounterSpeed)
-                            playerFirst = true;
-                        else if (playerSpeed > encounterSpeed)
-                            playerFirst = false;
-                        else
-                            playerFirst = Utils::randint(0, 1);
-                    }
-
-                    if (playerFirst)
-                        state = PLAYER_MOVES;
-                    else
-                        state = OPPONENT_MOVES;
-                }
-            }
+            moveSelection->reset();
+            moveSelection->setPkmn(playerPkmn);
+            state = MOVES;
             break;
         }
         case BattleActions::BAG:
@@ -116,98 +175,211 @@ void EncounterScene::update_ACTIONS(Inputs const* inputs)
         default:
             break;
         }
-        battleActions->reset();
+    }
+    else
+    {
+        battleActions->update(inputs);
     }
 }
 
 void EncounterScene::draw_ACTIONS(Fps const* fps, RenderSizes rs)
 {
+    battleSpeech->draw(fps, rs);
     battleActions->draw(fps, rs);
+}
+
+void EncounterScene::update_MOVES(Inputs const* inputs)
+{
+    if (moveSelection->shouldQuit())
+    {
+        battleActions->reset();
+        state = ACTIONS;
+    }
+    else if (moveSelection->isSelected())
+    {
+        playerMove = playerPkmn->getMoves().at(moveSelection->selectedIndex());
+        if (playerMove && playerMove->getCurrentPP() > 0)
+        {
+            chooseOpponentAction();
+
+            if (opponentAction == BattleActions::Type::MOVES)
+            {
+                if (!encounterMove)
+                    playerFirst = true;
+                else if (playerMove->getDefinition()->getPriority() > encounterMove->getDefinition()->getPriority())
+                    playerFirst = true;
+                else if (playerMove->getDefinition()->getPriority() < encounterMove->getDefinition()->getPriority())
+                    playerFirst = false;
+                else
+                {
+                    size_t playerSpeed    = playerPkmn->getStats()[PkmnDef::SPEED];
+                    size_t encounterSpeed = encounterPkmn->getStats()[PkmnDef::SPEED];
+                    if (playerSpeed > encounterSpeed)
+                        playerFirst = true;
+                    else if (playerSpeed > encounterSpeed)
+                        playerFirst = false;
+                    else
+                        playerFirst = Utils::randint(0, 1);
+                }
+            }
+            else
+            {
+                playerFirst = false;
+            }
+
+            if (playerFirst)
+            {
+                state = PLAYER_MOVES;
+            }
+            else
+            {
+                switch (opponentAction)
+                {
+                case BattleActions::BAG:
+                    state = OPPONENT_ITEMS;
+                    break;
+                case BattleActions::PKMNS:
+                    state = OPPONENT_PKMNS;
+                    break;
+                case BattleActions::RUN:
+                    state = OPPONENT_RUN;
+                    break;
+                case BattleActions::MOVES:
+                default:
+                    state = OPPONENT_MOVES;
+                    break;
+                }
+            }
+        }
+        else
+        {
+            // TODO: no PP left text
+            moveSelection->reset();
+        }
+    }
+    else
+    {
+        moveSelection->update(inputs);
+    }
+}
+
+void EncounterScene::draw_MOVES(Fps const* fps, RenderSizes rs)
+{
+    moveSelection->draw(fps, rs);
 }
 
 void EncounterScene::update_P_MOVES(Inputs const* /*inputs*/)
 {
-    if (playerMove && playerMove->getCurrentPP() > 0)
+    playerMove->decreasePP();
+    // Move animation
+    auto category = playerMove->getDefinition()->getCategory();
+    if (category != MoveDef::STATUS)
     {
-        playerMove->decreasePP();
-        // Move animation
-        auto category = playerMove->getDefinition()->getCategory();
-        if (category != MoveDef::STATUS)
-        {
-            // Damage computation
-            // Damage animation
-            encounterPkmn->decreaseHP(computeDamage(playerPkmn, playerMove));
+        // Damage computation
+        // Damage animation
+        encounterPkmn->decreaseHP(computeDamage(playerPkmn, playerMove));
 
-            if (encounterPkmn->isKO())
+        if (encounterPkmn->isKO())
+        {
+            // https://bulbapedia.bulbagarden.net/wiki/Experience#Experience_gain_in_battle
+            float  a = 1.5;
+            size_t b = encounterPkmn->getDefinition()->getBaseExp();
+            // TODO
+            float  e = 1.5;
+            size_t L = encounterPkmn->getLevel();
+            // TODO
+            float s = 1.0;
+            // TODO
+            float  t             = 1.0;
+            size_t expFromBattle = b * L / 7 * 1 / s * e * a * t;
+            while (expFromBattle > 0)
             {
-                // https://bulbapedia.bulbagarden.net/wiki/Experience#Experience_gain_in_battle
-                float  a = 1.5;
-                size_t b = encounterPkmn->getDefinition()->getBaseExp();
-                // TODO
-                float  e = 1.5;
-                size_t L = encounterPkmn->getLevel();
-                // TODO
-                float s = 1.0;
-                // TODO
-                float  t             = 1.0;
-                size_t expFromBattle = b * L / 7 * 1 / s * e * a * t;
-                while (expFromBattle > 0)
+                size_t exp = playerPkmn->expToNextLevel();
+                if (expFromBattle > exp)
                 {
-                    size_t exp = playerPkmn->expToNextLevel();
-                    if (expFromBattle > exp)
+                    playerPkmn->incrementLevel();
+                    std::string evolutionId = canEvolve(playerPkmn);
+                    if (!evolutionId.empty())
                     {
-                        playerPkmn->incrementLevel();
-                        std::string evolutionId = canEvolve(playerPkmn);
-                        if (!evolutionId.empty())
+                        PkmnDef::PkmnDefPtr evolutionDef = Game::instance()->data.pkmnDefFor(evolutionId);
+                        if (evolutionDef)
                         {
-                            PkmnDef::PkmnDefPtr evolutionDef = Game::instance()->data.pkmnDefFor(evolutionId);
-                            if (evolutionDef)
+                            // TODO
+                            // evolution (scene + can be cancelled)
+                            bool success = true;
+                            if (success)
                             {
-                                // TODO
-                                // evolution (scene + can be cancelled)
-                                bool success = true;
-                                if (success)
-                                {
-                                    playerPkmn->setDefinition(evolutionDef);
-                                }
+                                playerPkmn->setDefinition(evolutionDef);
                             }
                         }
-
-                        // TODO
-                        // new move
-
-                        expFromBattle -= exp;
                     }
-                    else
-                    {
-                        playerPkmn->increaseExp(exp);
-                    }
+
+                    // TODO
+                    // new move
+
+                    expFromBattle -= exp;
                 }
-                state = END;
-                return;
+                else
+                {
+                    playerPkmn->increaseExp(exp);
+                }
             }
-        }
 
-        if (playerFirst)
-            state = ACTIONS;
-        else
-            state = PLAYER_MOVES;
+            // TODO: Successful recap + xp
+            state = END;
+            return;
+        }
+    }
+
+    if (playerFirst)
+    {
+        state = OPPONENT_MOVES;
+    }
+    else
+    {
+        battleActions->reset();
+        state = ACTIONS;
     }
 }
 
-void EncounterScene::draw_P_MOVES(Fps const* fps, RenderSizes rs)
+void EncounterScene::draw_P_MOVES(Fps const* /*fps*/, RenderSizes /*rs*/)
 {
-    moveSelection->draw(fps, rs);
 }
 
 void EncounterScene::update_P_ITEMS(Inputs const* /*inputs*/)
 {
     // Open BagScene
-    // Item computation
-    // If pkball
-    //    Capture computation
-    //    Pkdex scene/animation
-    state = OPPONENT_MOVES;
+
+    bool selected = true;
+    if (selected)
+    {
+        // Item computation
+        // Item animation
+        // If pkball
+        //    Capture computation
+        //    Pkdex scene/animation
+
+        chooseOpponentAction();
+
+        playerFirst = true;
+
+        switch (opponentAction)
+        {
+        case BattleActions::BAG:
+            state = OPPONENT_ITEMS;
+            break;
+        case BattleActions::PKMNS:
+            state = OPPONENT_PKMNS;
+            break;
+        case BattleActions::RUN:
+            state = OPPONENT_RUN;
+            break;
+        case BattleActions::MOVES:
+        default:
+            state = OPPONENT_MOVES;
+            break;
+        }
+    }
 }
 
 void EncounterScene::draw_P_ITEMS(Fps const* /*fps*/, RenderSizes /*rs*/)
@@ -216,9 +388,36 @@ void EncounterScene::draw_P_ITEMS(Fps const* /*fps*/, RenderSizes /*rs*/)
 
 void EncounterScene::update_P_PKMNS(Inputs const* /*inputs*/)
 {
-    // Pkmn animation
-    // Pkmn text
-    state = OPPONENT_MOVES;
+    // Open pkmn selection scene
+
+    bool selected = true;
+    if (selected)
+    {
+        // Pkmn computation
+        // Pkmn animation
+        // Pkmn text
+
+        chooseOpponentAction();
+
+        playerFirst = true;
+
+        switch (opponentAction)
+        {
+        case BattleActions::BAG:
+            state = OPPONENT_ITEMS;
+            break;
+        case BattleActions::PKMNS:
+            state = OPPONENT_PKMNS;
+            break;
+        case BattleActions::RUN:
+            state = OPPONENT_RUN;
+            break;
+        case BattleActions::MOVES:
+        default:
+            state = OPPONENT_MOVES;
+            break;
+        }
+    }
 }
 
 void EncounterScene::draw_P_PKMNS(Fps const* /*fps*/, RenderSizes /*rs*/)
@@ -245,22 +444,44 @@ void EncounterScene::update_P_RUN(Inputs const* /*inputs*/)
 
     if (run)
     {
-        // Succesful run text
+        // TODO: Successful run text
         state = END;
     }
     else
     {
-        // Failed run text
-        state = ACTIONS;
+        // TODO: Failed run text
+
+        chooseOpponentAction();
+
+        playerFirst = true;
+
+        switch (opponentAction)
+        {
+        case BattleActions::BAG:
+            state = OPPONENT_ITEMS;
+            break;
+        case BattleActions::PKMNS:
+            state = OPPONENT_PKMNS;
+            break;
+        case BattleActions::RUN:
+            state = OPPONENT_RUN;
+            break;
+        case BattleActions::MOVES:
+        default:
+            state = OPPONENT_MOVES;
+            break;
+        }
     }
 }
 
 void EncounterScene::draw_P_RUN(Fps const* /*fps*/, RenderSizes /*rs*/)
 {
+    // TODO: "fade out" animation
 }
 
 void EncounterScene::update_O_PKMNS(Inputs const* /*inputs*/)
 {
+    // Should never reach
 }
 
 void EncounterScene::draw_O_PKMNS(Fps const* /*fps*/, RenderSizes /*rs*/)
@@ -271,6 +492,11 @@ void EncounterScene::draw_O_PKMNS(Fps const* /*fps*/, RenderSizes /*rs*/)
 void EncounterScene::update_O_ITEMS(Inputs const* /*inputs*/)
 {
     // Attached berry
+    // Item computation
+    // Item animation
+
+    battleActions->reset();
+    state = ACTIONS;
 }
 
 void EncounterScene::draw_O_ITEMS(Fps const* /*fps*/, RenderSizes /*rs*/)
@@ -279,30 +505,30 @@ void EncounterScene::draw_O_ITEMS(Fps const* /*fps*/, RenderSizes /*rs*/)
 
 void EncounterScene::update_O_MOVES(Inputs const* /*inputs*/)
 {
-    if (encounterMove && encounterMove->getCurrentPP() > 0)
+    encounterMove->decreasePP();
+    // Move animation
+    auto category = encounterMove->getDefinition()->getCategory();
+    if (category != MoveDef::STATUS)
     {
-        encounterMove->decreasePP();
-        // Move animation
-        auto category = encounterMove->getDefinition()->getCategory();
-        if (category != MoveDef::STATUS)
+        // Damage computation
+        // Damage animation
+        playerPkmn->decreaseHP(computeDamage(encounterPkmn, encounterMove));
+
+        if (playerPkmn->isKO())
         {
-            // Damage computation
-            // Damage animation
-            playerPkmn->decreaseHP(computeDamage(encounterPkmn, encounterMove));
-
-            if (playerPkmn->isKO())
-            {
-                // TODO state PKMNS if at least one pkmn not KO
-                state = END;
-                return;
-            }
+            // TODO state PKMNS if at least one pkmn not KO
+            state = END;
+            return;
         }
-
-        if (playerFirst)
-            state = ACTIONS;
-        else
-            state = PLAYER_MOVES;
     }
+
+    if (playerFirst)
+    {
+        battleActions->reset();
+        state = ACTIONS;
+    }
+    else
+        state = PLAYER_MOVES;
 }
 
 void EncounterScene::draw_O_MOVES(Fps const* /*fps*/, RenderSizes /*rs*/)
@@ -311,8 +537,19 @@ void EncounterScene::draw_O_MOVES(Fps const* /*fps*/, RenderSizes /*rs*/)
 
 void EncounterScene::update_O_RUN(Inputs const* /*inputs*/)
 {
+    // Run computation
+    // Run animation
+    state = END;
 }
 
 void EncounterScene::draw_O_RUN(Fps const* /*fps*/, RenderSizes /*rs*/)
+{
+}
+
+void EncounterScene::update_END(Inputs const* /*inputs*/)
+{
+}
+
+void EncounterScene::draw_END(Fps const* /*fps*/, RenderSizes /*rs*/)
 {
 }

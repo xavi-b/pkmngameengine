@@ -33,9 +33,11 @@ void BattleSpeech::update(Inputs const* inputs)
         {
             if (animations[currentAnimation]->isFinished())
             {
-                currentAnimation++;
-                if (currentAnimation < animations.size())
+                if (currentAnimation < animations.size() - 1)
+                {
+                    currentAnimation++;
                     animations[currentAnimation]->start();
+                }
             }
         }
         else if (inputs->start || Settings::instance()->autoText())
@@ -83,11 +85,6 @@ void BattleSpeech::draw(Fps const* /*fps*/, RenderSizes rs)
                                                   rect.x + dstPaddingX + dstBorderSizeX,
                                                   rect.y + dstPaddingY + textAdjustY,
                                                   rs.aw - BattleActions::TextBoxWidth - (paddingX + borderSize) * 2);
-}
-
-bool BattleSpeech::shouldClose() const
-{
-    return currentAnimation >= animations.size();
 }
 
 bool BattleSpeech::mayClose() const

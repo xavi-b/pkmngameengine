@@ -46,7 +46,7 @@ void IntroScene::update(Inputs const* inputs)
         if (!introAnimation->isStarted())
             introAnimation->start();
         introSpeech->update(inputs);
-        if (introSpeech->shouldClose())
+        if (introSpeech->mayClose() && (inputs->A || inputs->start))
         {
             Game::instance()->data.player.name.clear();
             state = Keyboard;
@@ -93,6 +93,7 @@ void IntroScene::update(Inputs const* inputs)
             // TODO temp
             PkmnDef::PkmnDefPtr definition = Game::instance()->data.pkmns.front();
             auto                pkmn       = std::make_shared<Pkmn>(definition, 5);
+            pkmn->addMovesFromPkmnDef();
             Game::instance()->data.player.pkmns.at(0).swap(pkmn);
             state = OutroSpeech;
         }
@@ -100,7 +101,7 @@ void IntroScene::update(Inputs const* inputs)
     }
     case OutroSpeech:
         outroSpeech->update(inputs);
-        if (outroSpeech->shouldClose())
+        if (outroSpeech->mayClose() && (inputs->A || inputs->start))
         {
             state = Leave;
         }
@@ -168,6 +169,5 @@ std::string IntroScene::name()
 void IntroScene::debug()
 {
     std::cout << name() << " state: " << state << std::endl;
-    std::cout << name() << " gender shouldClose: " << genderSpeech->shouldClose() << std::endl;
     std::cout << name() << " gender mayClose: " << genderSpeech->mayClose() << std::endl;
 }

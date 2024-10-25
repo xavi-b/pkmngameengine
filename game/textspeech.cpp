@@ -32,9 +32,11 @@ void TextSpeech::update(Inputs const* inputs)
         {
             if (animations[currentAnimation]->isFinished())
             {
-                currentAnimation++;
-                if (currentAnimation < animations.size())
+                if (currentAnimation < animations.size() - 1)
+                {
+                    currentAnimation++;
                     animations[currentAnimation]->start();
+                }
             }
         }
         else if (inputs->start || Settings::instance()->autoText())
@@ -82,11 +84,6 @@ void TextSpeech::draw(Fps const* /*fps*/, RenderSizes rs)
                                                   rect.x + dstPaddingX + dstBorderSizeX,
                                                   rect.y + dstPaddingY + textAdjustY,
                                                   rs.aw - (paddingX + borderSize) * 2);
-}
-
-bool TextSpeech::shouldClose() const
-{
-    return currentAnimation >= animations.size();
 }
 
 bool TextSpeech::mayClose() const

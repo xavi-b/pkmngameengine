@@ -3,6 +3,7 @@
 
 #include "fps.h"
 #include "inputs.h"
+#include "pkmn.h"
 #include "textspeech.h"
 
 #include <SDL_image.h>
@@ -17,7 +18,7 @@ public:
     static constexpr int ArrowSize    = 16;
     static constexpr int TextPaddingX = 10;
 
-    static constexpr size_t MoveCount = 4;
+    static constexpr size_t MaxMoveCount = 4;
 
     MoveSelection(SDL_Renderer* renderer);
     ~MoveSelection();
@@ -33,6 +34,8 @@ public:
 
     bool shouldQuit() const;
 
+    void setPkmn(Pkmn::PkmnPtr const& pkmn);
+
 private:
     SDL_Renderer* renderer;
     SDL_Surface*  bgSurface;
@@ -43,6 +46,8 @@ private:
     bool selected     = false;
     int  currentIndex = 0;
     bool quit         = false;
+
+    Pkmn::PkmnPtr pkmn;
 };
 
 #endif // MOVESELECTION_H

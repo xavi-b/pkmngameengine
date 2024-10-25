@@ -53,7 +53,6 @@ void TitleMenu::update(Inputs const* inputs)
         switch (currentIndex)
         {
         case Continue:
-            // TODO
             goToGame = true;
             return;
         case NewGame:

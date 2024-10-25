@@ -30,9 +30,14 @@ void MoveSelection::init()
 
 void MoveSelection::update(Inputs const* inputs)
 {
+    auto const nonNullMovesResult = std::find(pkmn->getMoves().begin(), pkmn->getMoves().end(), nullptr);
+    int const  nonNullMovesCount  = std::distance(pkmn->getMoves().begin(), nonNullMovesResult);
+
     if (inputs->A)
     {
         selected = true;
+        if (Game::instance()->isDebug())
+            std::cout << "MoveSelection selected: " << currentIndex << std::endl;
     }
     else if (inputs->B)
     {
@@ -42,38 +47,53 @@ void MoveSelection::update(Inputs const* inputs)
     else if (inputs->right)
     {
         if (currentIndex % 2 == 0) // first column
-            currentIndex = (currentIndex + 1) % MoveCount;
-        if (Game::instance()->isDebug())
-            std::cout << "MoveSelection: " << currentIndex << std::endl;
+        {
+            size_t oldIndex = currentIndex;
+            currentIndex    = (currentIndex + 1) % MaxMoveCount;
+            if (currentIndex >= nonNullMovesCount)
+                currentIndex = oldIndex;
+        }
     }
     else if (inputs->left)
     {
         if (currentIndex % 2 == 1) // second column
-            currentIndex = (currentIndex - 1 + MoveCount) % MoveCount;
-        if (Game::instance()->isDebug())
-            std::cout << "MoveSelection: " << currentIndex << std::endl;
+        {
+            size_t oldIndex = currentIndex;
+            currentIndex    = (currentIndex - 1 + MaxMoveCount) % MaxMoveCount;
+            if (currentIndex >= nonNullMovesCount)
+                currentIndex = oldIndex;
+        }
     }
     else if (inputs->down)
     {
-        if (currentIndex < int(MoveCount) - 2) // second row
-            currentIndex = (currentIndex + 2) % MoveCount;
-        if (Game::instance()->isDebug())
-            std::cout << "MoveSelection: " << currentIndex << std::endl;
+        if (currentIndex < int(MaxMoveCount) - 2) // second
+        {
+            size_t oldIndex = currentIndex;
+            currentIndex    = (currentIndex + 2) % MaxMoveCount;
+            if (currentIndex >= nonNullMovesCount)
+                currentIndex = oldIndex;
+        }
     }
     else if (inputs->up)
     {
         if (currentIndex > 1) // second row
-            currentIndex = (currentIndex - 2 + MoveCount) % MoveCount;
-        if (Game::instance()->isDebug())
-            std::cout << "MoveSelection: " << currentIndex << std::endl;
+        {
+            size_t oldIndex = currentIndex;
+            currentIndex    = (currentIndex - 2 + MaxMoveCount) % MaxMoveCount;
+            if (currentIndex >= nonNullMovesCount)
+                currentIndex = oldIndex;
+        }
     }
 }
 
 void MoveSelection::draw(Fps const* /*fps*/, RenderSizes rs)
 {
     std::vector<std::string> movesTexts;
-    for (size_t i = 0; i < MoveCount; ++i)
-        movesTexts.push_back(std::string("MOVE ") + std::to_string(i + 1)); // TODO
+    for (size_t i = 0; i < pkmn->getMoves().size(); ++i)
+    {
+        if (pkmn->getMoves().at(i))
+            movesTexts.push_back(pkmn->getMoves().at(i)->getDefinition()->getName());
+    }
 
     int borderSize     = TextSpeech::TextBoxBorderSize;
     int dstBorderSizeX = borderSize * rs.ww / rs.aw;
@@ -158,4 +178,9 @@ int MoveSelection::selectedIndex() const
 bool MoveSelection::shouldQuit() const
 {
     return quit;
+}
+
+void MoveSelection::setPkmn(Pkmn::PkmnPtr const& pkmn)
+{
+    this->pkmn = pkmn;
 }

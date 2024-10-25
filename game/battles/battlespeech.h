@@ -19,7 +19,6 @@ public:
     void update(Inputs const* inputs);
     void draw(Fps const* fps, RenderSizes rs);
 
-    bool shouldClose() const;
     bool mayClose() const;
     void reset();
 

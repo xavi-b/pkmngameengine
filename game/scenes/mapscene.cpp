@@ -436,8 +436,11 @@ bool MapScene::manageEncounters()
 
                     PkmnDef::PkmnDefPtr pkmnDef = Game::instance()->data.pkmnDefFor(e.getPkmnId());
                     if (pkmnDef)
-                        encounteredPkmn =
-                            std::make_shared<Pkmn>(pkmnDef, Utils::randint(e.getLevelMin(), e.getLevelMax()));
+                    {
+                        size_t level    = Utils::randint(e.getLevelMin(), e.getLevelMax());
+                        encounteredPkmn = std::make_shared<Pkmn>(pkmnDef, level);
+                        encounteredPkmn->addMovesFromPkmnDef();
+                    }
                     return true;
                 }
             }
