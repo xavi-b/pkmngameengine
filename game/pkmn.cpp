@@ -58,6 +58,50 @@ void Pkmn::setMoves(std::array<Move::MovePtr, 4> const& newMoves)
     moves = newMoves;
 }
 
+void Pkmn::addMovesFromPkmnDef()
+{
+    std::vector<PkmnDef::MoveToLearn> levelAvailableMoves;
+    std::copy_if(definition->getMovesToLearn().begin(),
+                 definition->getMovesToLearn().end(),
+                 std::back_inserter(levelAvailableMoves),
+                 [this](auto e) {
+                     return e.level <= this->level;
+                 });
+
+    if (Game::instance()->isDebug())
+    {
+        std::cout << __PRETTY_FUNCTION__ << " MoveToLearn" << std::endl;
+        for (size_t i = 0; i < levelAvailableMoves.size(); ++i)
+        {
+            std::cout << "Id: " << levelAvailableMoves.at(i).id << " Level: " << levelAvailableMoves.at(i).level
+                      << std::endl;
+        }
+    }
+
+    size_t max = std::min(levelAvailableMoves.size(), moves.size());
+    for (size_t i = 0; i < max; ++i)
+    {
+        size_t               index          = Utils::randint(0, max - 1 - i);
+        PkmnDef::MoveToLearn newMoveToLearn = levelAvailableMoves.at(index);
+
+        levelAvailableMoves.erase(levelAvailableMoves.begin() + index);
+
+        MoveDef::MoveDefPtr newMoveDef = Game::instance()->data.moveDefFor(newMoveToLearn.id);
+        Move::MovePtr       newMove    = std::make_shared<Move>(newMoveDef);
+        newMove->setCurrentPP(newMoveDef->getTotalPP());
+        moves.at(i).swap(newMove);
+    }
+
+    if (Game::instance()->isDebug())
+    {
+        std::cout << __PRETTY_FUNCTION__ << " Moves" << std::endl;
+        for (size_t i = 0; i < max; ++i)
+        {
+            std::cout << "Id: " << moves.at(i)->getDefinition()->getName() << std::endl;
+        }
+    }
+}
+
 size_t Pkmn::getLevel() const
 {
     return level;

@@ -41,6 +41,7 @@ public:
     std::array<Move::MovePtr, 4> const& getMoves() const;
     std::array<Move::MovePtr, 4>&       getMoves();
     void                                setMoves(std::array<Move::MovePtr, 4> const& newMoves);
+    void                                addMovesFromPkmnDef();
 
     size_t getLevel() const;
     void   incrementLevel();
