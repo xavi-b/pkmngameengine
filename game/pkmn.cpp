@@ -18,7 +18,7 @@ std::map<PkmnDef::Stat, size_t> Pkmn::getStats()
     for (size_t i = static_cast<int>(PkmnDef::HP) + 1; i < PkmnDef::StatCount; ++i)
     {
         PkmnDef::Stat stat = static_cast<PkmnDef::Stat>(i);
-        stats[PkmnDef::HP] = ((((2 * baseStats[stat] + IVs[stat] + EVs[stat] / 4) * level) / 100) + 5); // TODO * nature
+        stats[stat]        = ((((2 * baseStats[stat] + IVs[stat] + EVs[stat] / 4) * level) / 100) + 5); // TODO * nature
     }
     return stats;
 }
