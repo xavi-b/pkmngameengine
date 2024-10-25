@@ -10,6 +10,7 @@
 #endif
 
 #include <SDL.h>
+#include <boost/format.hpp>
 #include <boost/locale.hpp>
 #include <iostream>
 
