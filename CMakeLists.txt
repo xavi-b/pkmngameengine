@@ -32,3 +32,5 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/pkmnlibrary)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/game)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/mapeditor)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/pkmneditor)
+
+add_custom_target(readme SOURCES README.md)
