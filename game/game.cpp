@@ -210,6 +210,9 @@ std::unique_ptr<MapScene> Game::load()
         std::stringstream buffer;
         buffer << file.rdbuf();
 
+        if (debug)
+            std::cout << buffer.str() << std::endl;
+
         try
         {
             js::value  json = js::parse(buffer);
