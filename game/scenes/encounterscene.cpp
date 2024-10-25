@@ -321,7 +321,8 @@ void EncounterScene::update_P_MOVES(Inputs const* /*inputs*/)
                 }
                 else
                 {
-                    playerPkmn->increaseExp(exp);
+                    playerPkmn->increaseExp(expFromBattle);
+                    expFromBattle = 0;
                 }
             }
 

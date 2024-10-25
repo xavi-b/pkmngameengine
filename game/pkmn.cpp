@@ -58,6 +58,12 @@ void Pkmn::setMoves(std::array<Move::MovePtr, 4> const& newMoves)
     moves = newMoves;
 }
 
+void Pkmn::generateFromPkmnDef()
+{
+    addMovesFromPkmnDef();
+    hp = getStats()[PkmnDef::HP];
+}
+
 void Pkmn::addMovesFromPkmnDef()
 {
     std::vector<PkmnDef::MoveToLearn> levelAvailableMoves;
@@ -109,6 +115,7 @@ size_t Pkmn::getLevel() const
 
 void Pkmn::incrementLevel()
 {
+    exp = 0;
     ++level;
     if (happiness <= 99)
         happiness += 5;

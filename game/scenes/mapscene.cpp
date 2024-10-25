@@ -439,7 +439,7 @@ bool MapScene::manageEncounters()
                     {
                         size_t level    = Utils::randint(e.getLevelMin(), e.getLevelMax());
                         encounteredPkmn = std::make_shared<Pkmn>(pkmnDef, level);
-                        encounteredPkmn->addMovesFromPkmnDef();
+                        encounteredPkmn->generateFromPkmnDef();
                     }
                     return true;
                 }

@@ -3,6 +3,7 @@
 #include "game.h"
 #include "renderutils.h"
 #include "textspeech.h"
+#include "utils.h"
 
 #include <SDL_ttf.h>
 #include <iostream>
@@ -156,6 +157,34 @@ void MoveSelection::draw(Fps const* /*fps*/, RenderSizes rs)
     rect.h = dstHeight;
     rect.y = rs.wh - rect.h;
     RenderUtils::drawBorderImage(renderer, rs, bgSurface, bgTexture, rect, borderSize, borderSize);
+
+    auto currentMove = pkmn->getMoves().at(currentIndex);
+
+    if (currentMove)
+    {
+        RenderUtils::drawGreyText(renderer,
+                                  rs,
+                                  "PP",
+                                  fontSize,
+                                  rect.x + dstBorderSizeX + dstPaddingX + textAdjustX,
+                                  rect.y + dstPaddingY + textAdjustY);
+
+        auto formatPP =
+            boost::format("%1%/%2%") % currentMove->getCurrentPP() % currentMove->getDefinition()->getTotalPP();
+        RenderUtils::drawGreyTextRightAligned(renderer,
+                                              rs,
+                                              formatPP.str(),
+                                              fontSize,
+                                              rect.x + rect.w - dstBorderSizeX - dstPaddingX - textAdjustX,
+                                              rect.y + dstPaddingY + textAdjustY);
+
+        RenderUtils::drawGreyText(renderer,
+                                  rs,
+                                  "Type/" + currentMove->getDefinition()->getType(),
+                                  fontSize,
+                                  rect.x + dstBorderSizeX + dstPaddingX + textAdjustX,
+                                  rect.y + dstPaddingY + dstTextHeight + dstPaddingY + textAdjustY);
+    }
 }
 
 bool MoveSelection::isSelected() const

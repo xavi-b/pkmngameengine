@@ -221,7 +221,7 @@ std::string BattleScene::name()
 
 size_t BattleScene::computeDamage(Pkmn::PkmnPtr const& pkmn, Move::MovePtr const& move) const
 {
-    if (!move || move->getCurrentPP() == 0)
+    if (!move)
         return 0;
 
     auto category = move->getDefinition()->getCategory();

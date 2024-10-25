@@ -93,7 +93,7 @@ void IntroScene::update(Inputs const* inputs)
             // TODO temp
             PkmnDef::PkmnDefPtr definition = Game::instance()->data.pkmns.front();
             auto                pkmn       = std::make_shared<Pkmn>(definition, 5);
-            pkmn->addMovesFromPkmnDef();
+            pkmn->generateFromPkmnDef();
             Game::instance()->data.player.pkmns.at(0).swap(pkmn);
             state = OutroSpeech;
         }
