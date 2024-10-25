@@ -29,8 +29,10 @@ void RenderUtils::drawText(SDL_Renderer*      renderer,
 
     SDL_Surface* bgSurface1 = TTF_RenderText_Solid(RenderUtils::instance()->font, text.c_str(), bgColor);
     SDL_Texture* bgTexture1 = SDL_CreateTextureFromSurface(renderer, bgSurface1);
-    if (w != 0)
+    if (w > 0) // Centered
         offsetX = (w - bgSurface1->w * rs.ww / rs.aw) / 2;
+    else if (w < 0) // Align right
+        offsetX = -(bgSurface1->w * rs.ww / rs.aw);
     rect.x = x + 2 * rs.ww / rs.aw + offsetX;
     rect.y = y;
     rect.w = bgSurface1->w * rs.ww / rs.aw;
@@ -41,8 +43,10 @@ void RenderUtils::drawText(SDL_Renderer*      renderer,
 
     SDL_Surface* bgSurface2 = TTF_RenderText_Solid(RenderUtils::instance()->font, text.c_str(), bgColor);
     SDL_Texture* bgTexture2 = SDL_CreateTextureFromSurface(renderer, bgSurface2);
-    if (w != 0)
+    if (w > 0) // Centered
         offsetX = (w - bgSurface2->w * rs.ww / rs.aw) / 2;
+    else if (w < 0) // Align right
+        offsetX = -(bgSurface2->w * rs.ww / rs.aw);
     rect.x = x + offsetX;
     rect.y = y + 2 * rs.wh / rs.ah;
     rect.w = bgSurface2->w * rs.ww / rs.aw;
@@ -53,8 +57,10 @@ void RenderUtils::drawText(SDL_Renderer*      renderer,
 
     SDL_Surface* surface = TTF_RenderText_Solid(RenderUtils::instance()->font, text.c_str(), color);
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-    if (w != 0)
+    if (w > 0) // Centered
         offsetX = (w - surface->w * rs.ww / rs.aw) / 2;
+    else if (w < 0) // Align right
+        offsetX = -(surface->w * rs.ww / rs.aw);
     rect.x = x + offsetX;
     rect.y = y;
     rect.w = surface->w * rs.ww / rs.aw;
@@ -88,6 +94,18 @@ void RenderUtils::drawGreyText(SDL_Renderer*      renderer,
     SDL_Color color   = {80, 80, 80, 255};
     SDL_Color bgColor = {180, 180, 180, 255};
     drawText(renderer, rs, text, color, bgColor, fontSize, x, y, w);
+}
+
+void RenderUtils::drawGreyTextRightAligned(SDL_Renderer*      renderer,
+                                           RenderSizes        rs,
+                                           std::string const& text,
+                                           int                fontSize,
+                                           int                x,
+                                           int                y)
+{
+    SDL_Color color   = {80, 80, 80, 255};
+    SDL_Color bgColor = {180, 180, 180, 255};
+    drawText(renderer, rs, text, color, bgColor, fontSize, x, y, -1);
 }
 
 void RenderUtils::drawWhiteTextCentered(SDL_Renderer*      renderer,
