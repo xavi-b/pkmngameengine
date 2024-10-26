@@ -5,27 +5,40 @@
 
 Pkmn::Pkmn(PkmnDef::PkmnDefPtr definition, size_t level) : definition(definition), level(level)
 {
-    happiness = definition->getHappiness();
-    male      = Utils::randint(0, 1); // TODO
 }
 
-std::map<PkmnDef::Stat, size_t> Pkmn::getStats()
+std::map<PkmnDef::Stat, size_t> Pkmn::getStats() const
 {
     std::map<PkmnDef::Stat, size_t> baseStats = definition->getBaseStats();
+    std::map<PkmnDef::Stat, size_t> IVs       = getIVs();
+    std::map<PkmnDef::Stat, size_t> EVs       = getEVs();
     std::map<PkmnDef::Stat, size_t> stats;
     stats[PkmnDef::HP] =
-        (((2 * baseStats[PkmnDef::HP] + IVs[PkmnDef::HP] + EVs[PkmnDef::HP] / 4) * level) / 100) + level + 10;
+        (((2 * baseStats[PkmnDef::HP] + IVs.at(PkmnDef::HP) + EVs.at(PkmnDef::HP) / 4) * level) / 100) + level + 10;
     for (size_t i = static_cast<int>(PkmnDef::HP) + 1; i < PkmnDef::StatCount; ++i)
     {
         PkmnDef::Stat stat = static_cast<PkmnDef::Stat>(i);
-        stats[stat]        = ((((2 * baseStats[stat] + IVs[stat] + EVs[stat] / 4) * level) / 100) + 5); // TODO * nature
+        stats[stat] = ((((2 * baseStats[stat] + IVs.at(stat) + EVs.at(stat) / 4) * level) / 100) + 5); // TODO * nature
     }
     return stats;
 }
 
-std::map<PkmnDef::Stat, size_t> const& Pkmn::getIVs() const
+size_t Pkmn::getTotalHP() const
 {
-    return IVs;
+    return getStats()[PkmnDef::HP];
+}
+
+std::map<PkmnDef::Stat, size_t> Pkmn::getIVs() const
+{
+    auto temp = IVs;
+    for (size_t i = 0; i < PkmnDef::__SIZE_STAT; ++i)
+    {
+        if (temp.count(static_cast<PkmnDef::Stat>(i)) == 0)
+        {
+            temp[static_cast<PkmnDef::Stat>(i)] = 0;
+        }
+    }
+    return temp;
 }
 
 void Pkmn::setIVs(std::map<PkmnDef::Stat, size_t> const& newIVs)
@@ -33,9 +46,17 @@ void Pkmn::setIVs(std::map<PkmnDef::Stat, size_t> const& newIVs)
     IVs = newIVs;
 }
 
-std::map<PkmnDef::Stat, size_t> const& Pkmn::getEVs() const
+std::map<PkmnDef::Stat, size_t> Pkmn::getEVs() const
 {
-    return EVs;
+    auto temp = EVs;
+    for (size_t i = 0; i < PkmnDef::__SIZE_STAT; ++i)
+    {
+        if (temp.count(static_cast<PkmnDef::Stat>(i)) == 0)
+        {
+            temp[static_cast<PkmnDef::Stat>(i)] = 0;
+        }
+    }
+    return temp;
 }
 
 void Pkmn::setEVs(std::map<PkmnDef::Stat, size_t> const& newEVs)
@@ -61,7 +82,8 @@ void Pkmn::setMoves(std::array<Move::MovePtr, 4> const& newMoves)
 void Pkmn::generateFromPkmnDef()
 {
     addMovesFromPkmnDef();
-    hp = getStats()[PkmnDef::HP];
+    hp        = getStats()[PkmnDef::HP];
+    happiness = definition->getHappiness();
 }
 
 void Pkmn::addMovesFromPkmnDef()
@@ -143,6 +165,11 @@ void Pkmn::setDefinition(PkmnDef::PkmnDefPtr const& newDefinition)
 size_t Pkmn::getHP() const
 {
     return hp;
+}
+
+float Pkmn::getPercentageHP() const
+{
+    return hp / (1.0 * getTotalHP());
 }
 
 bool Pkmn::isKO() const
@@ -229,14 +256,31 @@ void Pkmn::setHappiness(unsigned char newHappiness)
     happiness = newHappiness;
 }
 
-bool Pkmn::getMale() const
+bool Pkmn::isMale() const
 {
-    return male;
+    return gender == MALE;
 }
 
-void Pkmn::setMale(bool newMale)
+bool Pkmn::isFemale() const
 {
-    male = newMale;
+    return gender == FEMALE;
+}
+
+Pkmn::Gender Pkmn::getGender() const
+{
+    return gender;
+}
+
+void Pkmn::setGender(Gender newGender)
+{
+    gender = newGender;
+}
+
+std::string Pkmn::getDisplayName() const
+{
+    if (nickName.empty())
+        return definition->getId();
+    return nickName;
 }
 
 void tag_invoke(js::value_from_tag, js::value& jv, Pkmn::PkmnPtr const& o)
@@ -265,7 +309,8 @@ void tag_invoke(js::value_from_tag, js::value& jv, Pkmn::PkmnPtr const& o)
             {"IVs", jsIVs},
             {"EVs", jsEVs},
             {"statusCondition", o->statusCondition},
-            {"happiness", o->happiness}
+            {"happiness", o->happiness},
+            {"gender", o->gender}
         };
     }
     else
@@ -289,6 +334,7 @@ Pkmn::PkmnPtr tag_invoke(js::value_to_tag<Pkmn::PkmnPtr>, js::value const& jv)
     pkmn->moves           = js::value_to<std::array<Move::MovePtr, 4>>(obj.at("moves"));
     pkmn->statusCondition = static_cast<Pkmn::StatusCondition>(js::value_to<int>(obj.at("statusCondition")));
     pkmn->happiness       = js::value_to<unsigned char>(obj.at("happiness"));
+    pkmn->gender          = static_cast<Pkmn::Gender>(js::value_to<size_t>(obj.at("gender")));
     for (auto& value : obj.at("IVs").as_array())
     {
         js::object const& obj                                                  = value.as_object();

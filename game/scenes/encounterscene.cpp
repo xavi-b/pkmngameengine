@@ -23,12 +23,12 @@ void EncounterScene::init()
     battleSpeech->init();
 
     boost::format pkmnEncounterText = boost::format(lc::translate("A wild %1% appears !"))
-                                    % (encounterPkmn ? encounterPkmn->getDefinition()->getName() : "#ERROR");
+                                    % (encounterPkmn ? encounterPkmn->getDisplayName() : "#ERROR");
     pkmnEncounterSpeech->setTexts({pkmnEncounterText.str()});
     pkmnEncounterSpeech->init();
 
     boost::format firstPkmnText =
-        boost::format(lc::translate("%1% go !")) % (playerPkmn ? playerPkmn->getDefinition()->getName() : "#ERROR");
+        boost::format(lc::translate("%1% go !")) % (playerPkmn ? playerPkmn->getDisplayName() : "#ERROR");
     firstPkmnSpeech->setTexts({firstPkmnText.str()});
     firstPkmnSpeech->init();
 }
@@ -36,6 +36,7 @@ void EncounterScene::init()
 void EncounterScene::draw(Fps const* fps, RenderSizes rs)
 {
     battleBackground->draw(fps, rs);
+    singleBattleUi->draw(fps, rs);
 
     BattleScene::draw(fps, rs);
 }
@@ -48,11 +49,13 @@ std::string EncounterScene::name()
 void EncounterScene::setEncounterPkmn(Pkmn::PkmnPtr const& newEncounterPkmn)
 {
     encounterPkmn = newEncounterPkmn;
+    singleBattleUi->setFoePkmn(newEncounterPkmn);
 }
 
 void EncounterScene::setPlayerPkmn(Pkmn::PkmnPtr const& newPlayerPkmn)
 {
     playerPkmn = newPlayerPkmn;
+    singleBattleUi->setPlayerPkmn(newPlayerPkmn);
 }
 
 void EncounterScene::chooseOpponentAction()

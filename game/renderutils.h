@@ -30,7 +30,7 @@ public:
                               int                x,
                               int                y,
                               int                w = 0);
-    static void drawGreyText(SDL_Renderer*      renderer,
+    static int  drawGreyText(SDL_Renderer*      renderer,
                              RenderSizes        rs,
                              std::string const& text,
                              int                fontSize,
@@ -77,6 +77,14 @@ public:
                                              int                x,
                                              int                y,
                                              int                width);
+    static void drawUnicodeSymbol(SDL_Renderer*  renderer,
+                                  RenderSizes    rs,
+                                  wchar_t const& symbol,
+                                  SDL_Color      color,
+                                  SDL_Color      bgColor,
+                                  int            fontSize,
+                                  int            x,
+                                  int            y);
     static void drawBorderImage(SDL_Renderer* renderer,
                                 RenderSizes   rs,
                                 SDL_Surface*  surface,
@@ -89,15 +97,15 @@ private:
     RenderUtils();
     ~RenderUtils();
 
-    static void drawText(SDL_Renderer*      renderer,
-                         RenderSizes        rs,
-                         std::string const& text,
-                         SDL_Color          color,
-                         SDL_Color          bgColor,
-                         int                fontSize,
-                         int                x,
-                         int                y,
-                         int                w = 0);
+    static int drawText(SDL_Renderer*      renderer,
+                        RenderSizes        rs,
+                        std::string const& text,
+                        SDL_Color          color,
+                        SDL_Color          bgColor,
+                        int                fontSize,
+                        int                x,
+                        int                y,
+                        int                w = 0);
 };
 
 #endif // RENDERUTILS_H

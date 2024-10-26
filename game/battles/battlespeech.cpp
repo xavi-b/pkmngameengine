@@ -3,6 +3,7 @@
 #include "battleactions.h"
 #include "renderutils.h"
 #include "settings.h"
+#include "textspeech.h"
 
 #include <SDL_ttf.h>
 #include <iostream>
@@ -56,7 +57,7 @@ void BattleSpeech::draw(Fps const* /*fps*/, RenderSizes rs)
     int borderSize     = TextSpeech::TextBoxBorderSize;
     int dstBorderSizeX = borderSize * rs.ww / rs.aw;
 
-    int height    = 2 * BattleSpeech::TextBoxSize;
+    int height    = 2 * TextSpeech::TextBoxHeight;
     int dstHeight = height * rs.wh / rs.ah;
 
     SDL_Rect rect;

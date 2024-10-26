@@ -8,18 +8,18 @@ RenderUtils* RenderUtils::instance()
     return &i;
 }
 
-void RenderUtils::drawText(SDL_Renderer*      renderer,
-                           RenderSizes        rs,
-                           std::string const& text,
-                           SDL_Color          color,
-                           SDL_Color          bgColor,
-                           int                fontSize,
-                           int                x,
-                           int                y,
-                           int                w)
+int RenderUtils::drawText(SDL_Renderer*      renderer,
+                          RenderSizes        rs,
+                          std::string const& text,
+                          SDL_Color          color,
+                          SDL_Color          bgColor,
+                          int                fontSize,
+                          int                x,
+                          int                y,
+                          int                w)
 {
     if (text.empty())
-        return;
+        return 0;
 
     TTF_SetFontSize(RenderUtils::instance()->font, fontSize);
 
@@ -68,6 +68,8 @@ void RenderUtils::drawText(SDL_Renderer*      renderer,
     SDL_RenderCopy(renderer, texture, NULL, &rect);
     SDL_DestroyTexture(texture);
     SDL_FreeSurface(surface);
+
+    return surface->w;
 }
 
 void RenderUtils::drawWhiteText(SDL_Renderer*      renderer,
@@ -83,17 +85,17 @@ void RenderUtils::drawWhiteText(SDL_Renderer*      renderer,
     drawText(renderer, rs, text, color, bgColor, fontSize, x, y, w);
 }
 
-void RenderUtils::drawGreyText(SDL_Renderer*      renderer,
-                               RenderSizes        rs,
-                               std::string const& text,
-                               int                fontSize,
-                               int                x,
-                               int                y,
-                               int                w)
+int RenderUtils::drawGreyText(SDL_Renderer*      renderer,
+                              RenderSizes        rs,
+                              std::string const& text,
+                              int                fontSize,
+                              int                x,
+                              int                y,
+                              int                w)
 {
     SDL_Color color   = {80, 80, 80, 255};
     SDL_Color bgColor = {180, 180, 180, 255};
-    drawText(renderer, rs, text, color, bgColor, fontSize, x, y, w);
+    return drawText(renderer, rs, text, color, bgColor, fontSize, x, y, w);
 }
 
 void RenderUtils::drawGreyTextRightAligned(SDL_Renderer*      renderer,
@@ -201,6 +203,53 @@ void RenderUtils::drawGreyTextWithIntroWrapped(SDL_Renderer*      renderer,
     SDL_Color color   = {80, 80, 80, 255};
     SDL_Color bgColor = {180, 180, 180, 255};
     drawTextWithIntroWrapped(renderer, rs, text, color, bgColor, introColor, introBgColor, fontSize, x, y, width);
+}
+
+void RenderUtils::drawUnicodeSymbol(SDL_Renderer*  renderer,
+                                    RenderSizes    rs,
+                                    wchar_t const& symbol,
+                                    SDL_Color      color,
+                                    SDL_Color      bgColor,
+                                    int            fontSize,
+                                    int            x,
+                                    int            y)
+{
+    TTF_SetFontSize(RenderUtils::instance()->font, fontSize);
+
+    SDL_Rect rect;
+
+    SDL_Surface* bgSurface1 =
+        TTF_RenderUNICODE_Solid(RenderUtils::instance()->font, (Uint16 const*)std::wstring(1, symbol).c_str(), bgColor);
+    SDL_Texture* bgTexture1 = SDL_CreateTextureFromSurface(renderer, bgSurface1);
+    rect.x                  = x + 2 * rs.ww / rs.aw;
+    rect.y                  = y;
+    rect.w                  = bgSurface1->w * rs.ww / rs.aw;
+    rect.h                  = bgSurface1->h * rs.wh / rs.ah;
+    SDL_RenderCopy(renderer, bgTexture1, NULL, &rect);
+    SDL_DestroyTexture(bgTexture1);
+    SDL_FreeSurface(bgSurface1);
+
+    SDL_Surface* bgSurface2 =
+        TTF_RenderUNICODE_Solid(RenderUtils::instance()->font, (Uint16 const*)std::wstring(1, symbol).c_str(), bgColor);
+    SDL_Texture* bgTexture2 = SDL_CreateTextureFromSurface(renderer, bgSurface2);
+    rect.x                  = x;
+    rect.y                  = y + 2 * rs.wh / rs.ah;
+    rect.w                  = bgSurface2->w * rs.ww / rs.aw;
+    rect.h                  = bgSurface2->h * rs.wh / rs.ah;
+    SDL_RenderCopy(renderer, bgTexture2, NULL, &rect);
+    SDL_DestroyTexture(bgTexture2);
+    SDL_FreeSurface(bgSurface2);
+
+    SDL_Surface* surface =
+        TTF_RenderUNICODE_Solid(RenderUtils::instance()->font, (Uint16 const*)std::wstring(1, symbol).c_str(), color);
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+    rect.x               = x;
+    rect.y               = y;
+    rect.w               = surface->w * rs.ww / rs.aw;
+    rect.h               = surface->h * rs.wh / rs.ah;
+    SDL_RenderCopy(renderer, texture, NULL, &rect);
+    SDL_DestroyTexture(texture);
+    SDL_FreeSurface(surface);
 }
 
 void RenderUtils::drawBorderImage(SDL_Renderer* renderer,

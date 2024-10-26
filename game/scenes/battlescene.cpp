@@ -47,7 +47,8 @@ BattleScene::BattleScene(SDL_Renderer* renderer) : Scene(renderer)
     battleSpeech     = std::make_unique<BattleSpeech>(renderer);
     battleActions    = std::make_unique<BattleActions>(renderer);
     battleActions->init();
-    moveSelection = std::make_unique<MoveSelection>(renderer);
+    singleBattleUi = std::make_unique<SingleBattleUi>(renderer);
+    moveSelection  = std::make_unique<MoveSelection>(renderer);
     moveSelection->init();
 }
 
@@ -339,14 +340,14 @@ std::string BattleScene::canEvolve(Pkmn::PkmnPtr const& pkmn)
         case PkmnDef::LevelMale:
             if (pkmn->getLevel() == size_t(std::stoi(e.second.data)))
             {
-                if (pkmn->getMale())
+                if (pkmn->isMale())
                     possibleEvolutions.push_back(e.second.pkmnId);
             }
             break;
         case PkmnDef::LevelFemale:
             if (pkmn->getLevel() == size_t(std::stoi(e.second.data)))
             {
-                if (!pkmn->getMale())
+                if (pkmn->isFemale())
                     possibleEvolutions.push_back(e.second.pkmnId);
             }
             break;

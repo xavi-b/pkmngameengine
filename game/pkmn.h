@@ -21,6 +21,13 @@ public:
         SLEEP
     };
 
+    enum Gender
+    {
+        MALE,
+        FEMALE,
+        GENDERLESS
+    };
+
     static constexpr unsigned char HighFriendship = 160;
 
     using PkmnPtr = std::shared_ptr<Pkmn>;
@@ -30,13 +37,14 @@ public:
 
     Pkmn(PkmnDef::PkmnDefPtr definition, size_t level);
 
-    std::map<PkmnDef::Stat, size_t> getStats();
+    std::map<PkmnDef::Stat, size_t> getStats() const;
+    size_t                          getTotalHP() const;
 
-    std::map<PkmnDef::Stat, size_t> const& getIVs() const;
-    void                                   setIVs(std::map<PkmnDef::Stat, size_t> const& newIVs);
+    std::map<PkmnDef::Stat, size_t> getIVs() const;
+    void                            setIVs(std::map<PkmnDef::Stat, size_t> const& newIVs);
 
-    std::map<PkmnDef::Stat, size_t> const& getEVs() const;
-    void                                   setEVs(std::map<PkmnDef::Stat, size_t> const& newEVs);
+    std::map<PkmnDef::Stat, size_t> getEVs() const;
+    void                            setEVs(std::map<PkmnDef::Stat, size_t> const& newEVs);
 
     std::array<Move::MovePtr, 4> const& getMoves() const;
     std::array<Move::MovePtr, 4>&       getMoves();
@@ -53,6 +61,7 @@ public:
     void                setDefinition(PkmnDef::PkmnDefPtr const& newDefinition);
 
     size_t getHP() const;
+    float  getPercentageHP() const;
     bool   isKO() const;
     void   setHP(size_t newHp);
     void   decreaseHP(size_t n);
@@ -66,8 +75,12 @@ public:
     unsigned char getHappiness() const;
     void          setHappiness(unsigned char newHappiness);
 
-    bool getMale() const;
-    void setMale(bool newMale);
+    bool   isMale() const;
+    bool   isFemale() const;
+    Gender getGender() const;
+    void   setGender(Gender newGender);
+
+    std::string getDisplayName() const;
 
 private:
     std::array<Move::MovePtr, 4>    moves;
@@ -80,7 +93,7 @@ private:
     std::map<PkmnDef::Stat, size_t> EVs;
     StatusCondition                 statusCondition = NONE;
     unsigned char                   happiness       = 0;
-    bool                            male            = true;
+    Gender                          gender          = MALE;
 };
 
 #endif // PKMN_H

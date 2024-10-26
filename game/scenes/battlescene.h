@@ -5,6 +5,7 @@
 #include "battles/battlebackground.h"
 #include "battles/battlespeech.h"
 #include "battles/moveselection.h"
+#include "battles/singlebattleui.h"
 #include "pkmn.h"
 #include "scene.h"
 
@@ -91,6 +92,7 @@ protected:
     std::unique_ptr<BattleBackground> battleBackground;
     std::unique_ptr<BattleSpeech>     battleSpeech;
     std::unique_ptr<BattleActions>    battleActions;
+    std::unique_ptr<SingleBattleUi>   singleBattleUi;
     std::unique_ptr<MoveSelection>    moveSelection;
 
     State state         = START;

@@ -3,15 +3,12 @@
 
 #include "animations/textanimation.h"
 #include "inputs.h"
-#include "textspeech.h"
 
 #include <SDL_image.h>
 
 class BattleSpeech
 {
 public:
-    static constexpr int TextBoxSize = 48;
-
     BattleSpeech(SDL_Renderer* renderer);
     ~BattleSpeech();
 
