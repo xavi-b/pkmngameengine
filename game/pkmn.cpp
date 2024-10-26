@@ -195,10 +195,10 @@ void Pkmn::resetHP()
     hp = getStats()[PkmnDef::HP];
 }
 
-size_t Pkmn::expToNextLevel()
+size_t Pkmn::accumulatedExpForLevel(size_t level, PkmnDef::GrowthRate growthRate)
 {
     // https://bulbapedia.bulbagarden.net/wiki/Experience#Relation_to_level
-    switch (definition->getGrowthRate())
+    switch (growthRate)
     {
     case PkmnDef::ERRATIC:
         if (level < 50)
@@ -224,16 +224,26 @@ size_t Pkmn::expToNextLevel()
             return level * level * level * (level + 14) / 50;
         else
             return level * level * level * (level / 2 + 32) / 50;
-    case PkmnDef::__SIZE_GROWTH_RATE:
+    default:
         return 1;
     }
+}
 
-    return 1;
+size_t Pkmn::expToNextLevel() const
+{
+    size_t toNextLevel = accumulatedExpForLevel(level, definition->getGrowthRate())
+                       - accumulatedExpForLevel(level - 1, definition->getGrowthRate());
+    return toNextLevel > 0 ? toNextLevel : 1;
 }
 
 size_t Pkmn::getExp() const
 {
     return exp;
+}
+
+float Pkmn::getPercentageExp() const
+{
+    return exp / (1.0 * expToNextLevel());
 }
 
 void Pkmn::setExp(size_t newExp)

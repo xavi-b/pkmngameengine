@@ -40,11 +40,7 @@ void SingleBattleUi::setPlayerPkmn(Pkmn::PkmnPtr const& newPlayerPkmn)
 
 void SingleBattleUi::draw(Fps const* /*fps*/, RenderSizes rs)
 {
-    // render hp
-    // render state (paralyzed, frozen, etc)
-    // render xp
-    // render display name
-    // render gender
+    // TODO: render state (paralyzed, frozen, etc)
 
     int fontSize = RenderUtils::TextSize;
 
@@ -166,4 +162,23 @@ void SingleBattleUi::draw(Fps const* /*fps*/, RenderSizes rs)
     srcPlayerHpRect.x = 0;
     srcPlayerHpRect.y = overlayYBasedOnPercentageHP(playerPercentageHP) * overlayHpSurface->h / 3;
     SDL_RenderCopy(renderer, overlayHpTexture, &srcPlayerHpRect, &dstPlayerHpRect);
+
+    float    playerPercentageExp = playerPkmn->getPercentageExp();
+    SDL_Rect dstPlayerXpRect     = dstRect;
+    dstPlayerXpRect.x += 40 * rs.ww / rs.aw;
+    dstPlayerXpRect.y += 74 * rs.wh / rs.ah;
+    dstPlayerXpRect.w = playerPercentageExp * overlayXpSurface->w * rs.ww / rs.aw;
+    dstPlayerXpRect.h = overlayXpSurface->h * rs.wh / rs.ah;
+    SDL_RenderCopy(renderer, overlayXpTexture, NULL, &dstPlayerXpRect);
+
+    SDL_Rect dstPlayerHpTextRect = dstRect;
+    dstPlayerHpTextRect.x += 232 * rs.ww / rs.aw;
+    dstPlayerHpTextRect.y += (56 - fontSize / 3) * rs.wh / rs.ah;
+    boost::format playerHp = boost::format("%1% / %2%") % playerPkmn->getHP() % playerPkmn->getTotalHP();
+    RenderUtils::drawGreyTextRightAligned(renderer,
+                                          rs,
+                                          playerHp.str(),
+                                          fontSize * 2 / 3,
+                                          dstPlayerHpTextRect.x,
+                                          dstPlayerHpTextRect.y);
 }

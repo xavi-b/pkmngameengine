@@ -297,8 +297,8 @@ void EncounterScene::update_P_MOVES(Inputs const* /*inputs*/)
             size_t expFromBattle = b * L / 7 * 1 / s * e * a * t;
             while (expFromBattle > 0)
             {
-                size_t exp = playerPkmn->expToNextLevel();
-                if (expFromBattle > exp)
+                size_t expLeftToNextLevel = playerPkmn->expToNextLevel() - playerPkmn->getExp();
+                if (expFromBattle > expLeftToNextLevel)
                 {
                     playerPkmn->incrementLevel();
                     std::string evolutionId = canEvolve(playerPkmn);
@@ -320,7 +320,7 @@ void EncounterScene::update_P_MOVES(Inputs const* /*inputs*/)
                     // TODO
                     // new move
 
-                    expFromBattle -= exp;
+                    expFromBattle -= expLeftToNextLevel;
                 }
                 else
                 {

@@ -63,8 +63,8 @@ Game::Game(int argc, char* argv[])
     window = SDL_CreateWindow(PROJECT_NAME,
                               SDL_WINDOWPOS_UNDEFINED,
                               SDL_WINDOWPOS_UNDEFINED,
-                              640,
-                              480,
+                              960,
+                              720,
                               SDL_WINDOW_RESIZABLE);
 
     renderer        = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);

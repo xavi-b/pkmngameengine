@@ -67,8 +67,11 @@ public:
     void   decreaseHP(size_t n);
     void   resetHP();
 
-    size_t expToNextLevel();
+    static size_t accumulatedExpForLevel(size_t level, PkmnDef::GrowthRate growthRate);
+
+    size_t expToNextLevel() const;
     size_t getExp() const;
+    float  getPercentageExp() const;
     void   setExp(size_t newExp);
     void   increaseExp(size_t newExp);
 
