@@ -2,6 +2,7 @@
 
 #include "renderutils.h"
 #include "textspeech.h"
+#include "utils.h"
 
 #include <SDL_ttf.h>
 #include <iostream>
@@ -10,10 +11,14 @@ std::string Menu::SelectionToString(Selection e)
 {
     switch (e)
     {
+    case PKMNS:
+        return lc::translate("PKMNS");
+    case BAG:
+        return lc::translate("BAG");
     case SAVE:
-        return "SAVE";
+        return lc::translate("SAVE");
     case QUIT:
-        return "QUIT";
+        return lc::translate("QUIT");
     case __SIZE:
         return "__SIZE";
     }

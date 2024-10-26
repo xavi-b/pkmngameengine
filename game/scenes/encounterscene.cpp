@@ -509,6 +509,9 @@ void EncounterScene::draw_O_ITEMS(Fps const* /*fps*/, RenderSizes /*rs*/)
 
 void EncounterScene::update_O_MOVES(Inputs const* /*inputs*/)
 {
+    if (Game::instance()->isDebug())
+        std::cout << __PRETTY_FUNCTION__ << " Move: " << encounterMove->getDefinition()->getId() << std::endl;
+
     encounterMove->decreasePP();
     // Move animation
     auto category = encounterMove->getDefinition()->getCategory();

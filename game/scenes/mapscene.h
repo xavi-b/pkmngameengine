@@ -76,6 +76,8 @@ protected:
 
     bool                  openMenu = false;
     std::unique_ptr<Menu> menu;
+    bool                  openPkmns = false;
+    bool                  openBag   = false;
 };
 
 #endif // MAP_H

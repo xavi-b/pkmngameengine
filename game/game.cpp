@@ -132,10 +132,18 @@ int Game::exec()
                 auto nextScene = scenes.back()->nextScene();
                 if (nextScene)
                 {
+                    printDebug();
                     if (scenes.back()->pushScene())
+                    {
                         scenes.emplace_back(std::move(nextScene));
+                        std::cout << scenes.back()->name() << " scene pushed !" << std::endl;
+                    }
                     else
+                    {
                         scenes.back().swap(nextScene);
+                        std::cout << scenes.back()->name() << " scene swapped !" << std::endl;
+                    }
+                    printDebug();
                     scenes.back()->init();
                 }
             }

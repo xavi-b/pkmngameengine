@@ -16,6 +16,8 @@ public:
 
     enum Selection
     {
+        PKMNS,
+        BAG,
         SAVE,
         QUIT,
         __SIZE

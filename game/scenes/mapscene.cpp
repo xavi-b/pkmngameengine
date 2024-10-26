@@ -1,6 +1,8 @@
 #include "mapscene.h"
 
+#include "bagscene.h"
 #include "game.h"
+#include "pkmnsscene.h"
 
 #include <fstream>
 #include <iostream>
@@ -50,13 +52,26 @@ void MapScene::update(Inputs const* inputs)
         {
             if (menu->isSelected())
             {
-                if (menu->selection() == Menu::QUIT)
+                switch (menu->selection())
                 {
-                    Game::instance()->quit();
+                case Menu::PKMNS: {
+                    openPkmns = true;
+                    break;
                 }
-                else if (menu->selection() == Menu::SAVE)
-                {
+                case Menu::BAG: {
+                    openBag = true;
+                    break;
+                }
+                case Menu::SAVE: {
                     Game::instance()->save();
+                    break;
+                }
+                case Menu::QUIT: {
+                    Game::instance()->quit();
+                    break;
+                }
+                default:
+                    break;
                 }
             }
             else
@@ -454,17 +469,29 @@ bool MapScene::manageEncounters()
 
 bool MapScene::pushScene() const
 {
-    return encounteredPkmn != nullptr;
+    return encounteredPkmn != nullptr || openBag || openPkmns;
 }
 
 void MapScene::popReset()
 {
+    openPkmns = false;
+    openBag   = false;
     encounteredPkmn.reset();
 }
 
 std::unique_ptr<Scene> MapScene::nextScene()
 {
-    if (encounteredPkmn)
+    if (openPkmns)
+    {
+        auto scene = std::make_unique<PkmnsScene>(renderer);
+        return scene;
+    }
+    else if (openBag)
+    {
+        auto scene = std::make_unique<BagScene>(renderer);
+        return scene;
+    }
+    else if (encounteredPkmn)
     {
         auto scene = std::make_unique<EncounterScene>(renderer);
         scene->setEncounterPkmn(encounteredPkmn);
