@@ -1,6 +1,8 @@
 #include "encounterscene.h"
 
+#include "bagscene.h"
 #include "game.h"
+#include "pkmnsscene.h"
 #include "utils.h"
 
 EncounterScene::EncounterScene(SDL_Renderer* renderer) : BattleScene(renderer)
@@ -392,35 +394,32 @@ void EncounterScene::draw_P_ITEMS(Fps const* /*fps*/, RenderSizes /*rs*/)
 
 void EncounterScene::update_P_PKMNS(Inputs const* /*inputs*/)
 {
-    // Open pkmn selection scene
+    playerPkmn = newSelectedPkmn;
+    newSelectedPkmn.reset();
 
-    bool selected = true;
-    if (selected)
+    // Pkmn computation
+    // Pkmn animation
+    // Pkmn text
+
+    chooseOpponentAction();
+
+    playerFirst = true;
+
+    switch (opponentAction)
     {
-        // Pkmn computation
-        // Pkmn animation
-        // Pkmn text
-
-        chooseOpponentAction();
-
-        playerFirst = true;
-
-        switch (opponentAction)
-        {
-        case BattleActions::BAG:
-            state = OPPONENT_ITEMS;
-            break;
-        case BattleActions::PKMNS:
-            state = OPPONENT_PKMNS;
-            break;
-        case BattleActions::RUN:
-            state = OPPONENT_RUN;
-            break;
-        case BattleActions::MOVES:
-        default:
-            state = OPPONENT_MOVES;
-            break;
-        }
+    case BattleActions::BAG:
+        state = OPPONENT_ITEMS;
+        break;
+    case BattleActions::PKMNS:
+        state = OPPONENT_PKMNS;
+        break;
+    case BattleActions::RUN:
+        state = OPPONENT_RUN;
+        break;
+    case BattleActions::MOVES:
+    default:
+        state = OPPONENT_MOVES;
+        break;
     }
 }
 
@@ -559,4 +558,60 @@ void EncounterScene::update_END(Inputs const* /*inputs*/)
 
 void EncounterScene::draw_END(Fps const* /*fps*/, RenderSizes /*rs*/)
 {
+}
+
+bool EncounterScene::pushScene() const
+{
+    return state == BAG || state == PKMNS;
+}
+
+void EncounterScene::popReset()
+{
+    switch (state)
+    {
+    case BAG: {
+        // TODO: If selected
+        // state = PLAYER_ITEMS;
+        // TODO: If not selected
+        battleActions->reset();
+        state = ACTIONS;
+        break;
+    }
+    case PKMNS: {
+        if (!newSelectedPkmn || newSelectedPkmn == playerPkmn)
+        {
+            if (Game::instance()->isDebug())
+                std::cout << __PRETTY_FUNCTION__ << " no new selected pkmn" << std::endl;
+
+            newSelectedPkmn.reset();
+            battleActions->reset();
+            state = ACTIONS;
+        }
+        else
+        {
+            if (Game::instance()->isDebug())
+                std::cout << __PRETTY_FUNCTION__ << " new selected pkmn: " << newSelectedPkmn->getDisplayName()
+                          << std::endl;
+
+            state = PLAYER_PKMNS;
+        }
+        break;
+    }
+    default:
+        break;
+    }
+}
+
+std::unique_ptr<Scene> EncounterScene::nextScene()
+{
+    switch (state)
+    {
+    case BAG:
+        return std::make_unique<BagScene>(renderer);
+    case PKMNS:
+        newSelectedPkmn = playerPkmn;
+        return std::make_unique<PkmnsScene>(renderer, newSelectedPkmn);
+    default:
+        return nullptr;
+    }
 }

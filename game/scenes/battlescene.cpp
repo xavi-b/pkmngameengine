@@ -1,8 +1,6 @@
 #include "battlescene.h"
 
-#include "bagscene.h"
 #include "game.h"
-#include "pkmnsscene.h"
 #include "utils.h"
 
 std::string BattleScene::StateToString(State e)
@@ -172,47 +170,6 @@ void BattleScene::draw(Fps const* fps, RenderSizes rs)
 bool BattleScene::popScene() const
 {
     return state == END;
-}
-
-bool BattleScene::pushScene() const
-{
-    return state == BAG || state == PKMNS;
-}
-
-void BattleScene::popReset()
-{
-    switch (state)
-    {
-    case BAG: {
-        // If selected
-        state = PLAYER_ITEMS;
-        // If not selected
-        state = ACTIONS;
-        break;
-    }
-    case PKMNS: {
-        // If selected
-        state = PLAYER_PKMNS;
-        // If not selected
-        state = ACTIONS;
-        break;
-    }
-    default:
-        break;
-    }
-}
-
-std::unique_ptr<Scene> BattleScene::nextScene()
-{
-    switch (state)
-    {
-    case BAG:
-        return std::make_unique<BagScene>(renderer);
-    case PKMNS:
-        return std::make_unique<PkmnsScene>(renderer);
-    default:
-        return nullptr;
-    }
 }
 
 std::string BattleScene::name()

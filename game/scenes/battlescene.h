@@ -22,10 +22,6 @@ public:
     virtual void draw(Fps const* fps, RenderSizes rs) override;
 
     virtual bool popScene() const override;
-    virtual bool pushScene() const override;
-    virtual void popReset() override;
-
-    virtual std::unique_ptr<Scene> nextScene() override;
 
     virtual std::string name() override;
 

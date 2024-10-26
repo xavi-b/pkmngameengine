@@ -15,6 +15,11 @@ public:
     virtual void init() override;
     virtual void draw(Fps const* fps, RenderSizes rs) override;
 
+    virtual bool pushScene() const override;
+    virtual void popReset() override;
+
+    virtual std::unique_ptr<Scene> nextScene() override;
+
     virtual std::string name() override;
 
     void setEncounterPkmn(Pkmn::PkmnPtr const& newEncounterPkmn);
@@ -69,7 +74,8 @@ private:
     std::unique_ptr<TextSpeech> pkmnEncounterSpeech;
     std::unique_ptr<TextSpeech> firstPkmnSpeech;
 
-    BattleActions::Type opponentAction = BattleActions::Type::MOVES;
+    BattleActions::Type opponentAction  = BattleActions::Type::MOVES;
+    Pkmn::PkmnPtr       newSelectedPkmn = nullptr;
 };
 
 #endif // ENCOUNTERSCENE_H

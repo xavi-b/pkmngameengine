@@ -483,8 +483,8 @@ std::unique_ptr<Scene> MapScene::nextScene()
 {
     if (openPkmns)
     {
-        auto scene = std::make_unique<PkmnsScene>(renderer);
-        return scene;
+        Pkmn::PkmnPtr emptyPkmnPtr = nullptr;
+        return std::make_unique<PkmnsScene>(renderer, emptyPkmnPtr);
     }
     else if (openBag)
     {
