@@ -14,6 +14,8 @@ SingleBattleUi::SingleBattleUi(SDL_Renderer* renderer) : renderer(renderer)
     overlayXpTexture = SDL_CreateTextureFromSurface(renderer, overlayXpSurface);
     overlayHpSurface = IMG_Load("resources/Graphics/UI/Battle/overlay_hp.png");
     overlayHpTexture = SDL_CreateTextureFromSurface(renderer, overlayHpSurface);
+    statusSurface    = IMG_Load("resources/Graphics/UI/Battle/icon_statuses.png");
+    statusTexture    = SDL_CreateTextureFromSurface(renderer, statusSurface);
 }
 
 SingleBattleUi::~SingleBattleUi()
@@ -86,8 +88,6 @@ void SingleBattleUi::setPlayerPkmn(Pkmn::PkmnPtr const& newPlayerPkmn)
 
 void SingleBattleUi::draw(Fps const* /*fps*/, RenderSizes rs)
 {
-    // TODO: render state (paralyzed, frozen, etc)
-
     int fontSize = RenderUtils::TextSize;
 
     int bottomMargin    = 2 * TextSpeech::TextBoxHeight;
@@ -109,6 +109,26 @@ void SingleBattleUi::draw(Fps const* /*fps*/, RenderSizes rs)
             return 1;
         else
             return 2;
+    };
+
+    auto statusYBasedOnStatus = [](Pkmn::StatusCondition status) {
+        switch (status)
+        {
+        case Pkmn::BURN:
+            return 2;
+        case Pkmn::FREEZE:
+            return 4;
+        case Pkmn::PARALYSIS:
+            return 3;
+        case Pkmn::POISON:
+            return 1;
+        case Pkmn::BADLY_POISON:
+            return 5;
+        case Pkmn::SLEEP:
+            return 0;
+        default:
+            return -1;
+        }
     };
 
     SDL_Rect dstRect;
@@ -158,6 +178,18 @@ void SingleBattleUi::draw(Fps const* /*fps*/, RenderSizes rs)
     srcFoeHpRect.x = 0;
     srcFoeHpRect.y = overlayYBasedOnPercentageHP(foePercentageHP) * overlayHpSurface->h / 3;
     SDL_RenderCopy(renderer, overlayHpTexture, &srcFoeHpRect, &dstFoeHpRect);
+
+    SDL_Rect dstFoeStatusRect = dstRect;
+    dstFoeStatusRect.x += dstDataboxMargin;
+    dstFoeStatusRect.y += 35 * rs.wh / rs.ah;
+    dstFoeStatusRect.w = statusSurface->w * rs.ww / rs.aw;
+    dstFoeStatusRect.h = statusSurface->h * rs.wh / rs.ah / 6;
+    SDL_Rect srcFoeStatusRect;
+    srcFoeStatusRect.w = statusSurface->w;
+    srcFoeStatusRect.h = statusSurface->h / 6;
+    srcFoeStatusRect.x = 0;
+    srcFoeStatusRect.y = statusYBasedOnStatus(foePkmn->getStatusCondition()) * statusSurface->h / 6;
+    SDL_RenderCopy(renderer, statusTexture, &srcFoeStatusRect, &dstFoeStatusRect);
 
     /* PLAYER PKMN */
     dstRect.w = playerUiSurface->w * rs.ww / rs.aw;
@@ -209,6 +241,18 @@ void SingleBattleUi::draw(Fps const* /*fps*/, RenderSizes rs)
     srcPlayerHpRect.x = 0;
     srcPlayerHpRect.y = overlayYBasedOnPercentageHP(playerPercentageHP) * overlayHpSurface->h / 3;
     SDL_RenderCopy(renderer, overlayHpTexture, &srcPlayerHpRect, &dstPlayerHpRect);
+
+    SDL_Rect dstPlayerStatusRect = dstRect;
+    dstPlayerStatusRect.x += dstDataboxMargin * 4;
+    dstPlayerStatusRect.y += 35 * rs.wh / rs.ah;
+    dstPlayerStatusRect.w = statusSurface->w * rs.ww / rs.aw;
+    dstPlayerStatusRect.h = statusSurface->h * rs.wh / rs.ah / 6;
+    SDL_Rect srcPlayerStatusRect;
+    srcPlayerStatusRect.w = statusSurface->w;
+    srcPlayerStatusRect.h = statusSurface->h / 6;
+    srcPlayerStatusRect.x = 0;
+    srcPlayerStatusRect.y = statusYBasedOnStatus(playerPkmn->getStatusCondition()) * statusSurface->h / 6;
+    SDL_RenderCopy(renderer, statusTexture, &srcPlayerStatusRect, &dstPlayerStatusRect);
 
     float    playerPercentageExp = playerPkmn->getPercentageExp();
     SDL_Rect dstPlayerXpRect     = dstRect;

@@ -155,6 +155,11 @@ Pkmn::StatusCondition Pkmn::getStatusCondition() const
     return statusCondition;
 }
 
+void Pkmn::setStatusCondition(StatusCondition newStatusCondition)
+{
+    statusCondition = newStatusCondition;
+}
+
 PkmnDef::PkmnDefPtr Pkmn::getDefinition() const
 {
     return definition;

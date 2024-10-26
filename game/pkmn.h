@@ -56,6 +56,7 @@ public:
     void   incrementLevel();
 
     StatusCondition getStatusCondition() const;
+    void            setStatusCondition(StatusCondition newStatusCondition);
 
     PkmnDef::PkmnDefPtr getDefinition() const;
     void                setDefinition(PkmnDef::PkmnDefPtr const& newDefinition);

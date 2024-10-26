@@ -27,6 +27,8 @@ private:
     SDL_Texture*  overlayHpTexture;
     SDL_Surface*  overlayXpSurface;
     SDL_Texture*  overlayXpTexture;
+    SDL_Surface*  statusSurface;
+    SDL_Texture*  statusTexture;
 
     SDL_Surface* playerBackSurface;
     SDL_Texture* playerBackTexture;
