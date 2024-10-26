@@ -4,6 +4,13 @@ Player::Player()
 {
 }
 
+size_t Player::getPkmnCount() const
+{
+    return std::count_if(pkmns.begin(), pkmns.end(), [](auto e) {
+        return e != nullptr;
+    });
+}
+
 void tag_invoke(js::value_from_tag, js::value& jv, Player const& o)
 {
     jv = {

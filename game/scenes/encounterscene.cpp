@@ -394,7 +394,7 @@ void EncounterScene::draw_P_ITEMS(Fps const* /*fps*/, RenderSizes /*rs*/)
 
 void EncounterScene::update_P_PKMNS(Inputs const* /*inputs*/)
 {
-    playerPkmn = newSelectedPkmn;
+    setPlayerPkmn(newSelectedPkmn);
     newSelectedPkmn.reset();
 
     // Pkmn computation

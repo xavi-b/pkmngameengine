@@ -22,6 +22,8 @@ public:
 
     Player();
 
+    size_t getPkmnCount() const;
+
     Gender gender = BOY;
 
     std::string name;

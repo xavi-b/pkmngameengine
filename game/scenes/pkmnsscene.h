@@ -22,8 +22,37 @@ public:
 private:
     void selectPkmn(Pkmn::PkmnPtr newSelectedPkmn);
 
-    bool           leave = false;
+    SDL_Surface* bgSurface;
+    SDL_Texture* bgTexture;
+
+    SDL_Surface* panelBlankSurface;
+    SDL_Texture* panelBlankTexture;
+    SDL_Surface* panelSurface;
+    SDL_Texture* panelTexture;
+    SDL_Surface* panelFaintSurface;
+    SDL_Texture* panelFaintTexture;
+
+    SDL_Surface* panelSelSurface;
+    SDL_Texture* panelSelTexture;
+    SDL_Surface* panelFaintSelSurface;
+    SDL_Texture* panelFaintSelTexture;
+
+    SDL_Surface* panelSwapSurface;
+    SDL_Texture* panelSwapTexture;
+    SDL_Surface* panelSwapSelSurface;
+    SDL_Texture* panelSwapSelTexture;
+    SDL_Surface* panelSwapSel2Surface;
+    SDL_Texture* panelSwapSel2Texture;
+
+    std::map<Pkmn::PkmnPtr, std::pair<SDL_Surface*, SDL_Texture*>> pkmnsRendering;
+
+    size_t ticks = 0;
+
+    bool           leave         = false;
+    bool           selectingPkmn = false;
     Pkmn::PkmnPtr& selectedPkmn;
+    size_t         currentIndex = 0;
+    int            swapIndex    = -1;
 };
 
 #endif // PKMNSSCENE_H
