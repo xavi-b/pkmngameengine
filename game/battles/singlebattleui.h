@@ -28,6 +28,11 @@ private:
     SDL_Surface*  overlayXpSurface;
     SDL_Texture*  overlayXpTexture;
 
+    SDL_Surface* playerBackSurface;
+    SDL_Texture* playerBackTexture;
+    SDL_Surface* foeFrontSurface;
+    SDL_Texture* foeFrontTexture;
+
     Pkmn::PkmnPtr foePkmn;
     Pkmn::PkmnPtr playerPkmn;
 };

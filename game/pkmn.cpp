@@ -3,6 +3,8 @@
 #include "game.h"
 #include "utils.h"
 
+#include <limits>
+
 Pkmn::Pkmn(PkmnDef::PkmnDefPtr definition, size_t level) : definition(definition), level(level)
 {
 }
@@ -84,6 +86,7 @@ void Pkmn::generateFromPkmnDef()
     addMovesFromPkmnDef();
     hp        = getStats()[PkmnDef::HP];
     happiness = definition->getHappiness();
+    shiny     = Utils::randint(0, std::numeric_limits<unsigned short>::max()) < 8;
 }
 
 void Pkmn::addMovesFromPkmnDef()
@@ -291,6 +294,11 @@ std::string Pkmn::getDisplayName() const
     if (nickName.empty())
         return definition->getId();
     return nickName;
+}
+
+bool Pkmn::isShiny() const
+{
+    return shiny;
 }
 
 void tag_invoke(js::value_from_tag, js::value& jv, Pkmn::PkmnPtr const& o)

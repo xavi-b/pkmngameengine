@@ -85,6 +85,8 @@ public:
 
     std::string getDisplayName() const;
 
+    bool isShiny() const;
+
 private:
     std::array<Move::MovePtr, 4>    moves;
     PkmnDef::PkmnDefPtr             definition;
@@ -97,6 +99,7 @@ private:
     StatusCondition                 statusCondition = NONE;
     unsigned char                   happiness       = 0;
     Gender                          gender          = MALE;
+    bool                            shiny           = false;
 };
 
 #endif // PKMN_H

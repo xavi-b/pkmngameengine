@@ -26,16 +26,62 @@ SingleBattleUi::~SingleBattleUi()
     SDL_FreeSurface(overlayXpSurface);
     SDL_DestroyTexture(overlayHpTexture);
     SDL_FreeSurface(overlayHpSurface);
+
+    if (foeFrontTexture)
+        SDL_DestroyTexture(foeFrontTexture);
+    if (foeFrontSurface)
+        SDL_FreeSurface(foeFrontSurface);
+
+    if (playerBackTexture)
+        SDL_DestroyTexture(playerBackTexture);
+    if (playerBackSurface)
+        SDL_FreeSurface(playerBackSurface);
 }
 
 void SingleBattleUi::setFoePkmn(Pkmn::PkmnPtr const& newFoePkmn)
 {
-    foePkmn = newFoePkmn;
+    foePkmn          = newFoePkmn;
+    std::string file = "resources/Graphics/Pokemon/Front";
+    if (newFoePkmn->isShiny())
+        file += " shiny";
+    file += "/";
+    file += newFoePkmn->getDefinition()->getId();
+    if (newFoePkmn->isFemale())
+    {
+        std::string femaleFile = file + ".png";
+        foeFrontSurface        = IMG_Load(femaleFile.c_str());
+        if (foeFrontSurface)
+        {
+            foeFrontTexture = SDL_CreateTextureFromSurface(renderer, foeFrontSurface);
+            return;
+        }
+    }
+    file += ".png";
+    foeFrontSurface = IMG_Load(file.c_str());
+    foeFrontTexture = SDL_CreateTextureFromSurface(renderer, foeFrontSurface);
 }
 
 void SingleBattleUi::setPlayerPkmn(Pkmn::PkmnPtr const& newPlayerPkmn)
 {
-    playerPkmn = newPlayerPkmn;
+    playerPkmn       = newPlayerPkmn;
+    std::string file = "resources/Graphics/Pokemon/Back";
+    if (newPlayerPkmn->isShiny())
+        file += " shiny";
+    file += "/";
+    file += newPlayerPkmn->getDefinition()->getId();
+    if (newPlayerPkmn->isFemale())
+    {
+        std::string femaleFile = file + ".png";
+        playerBackSurface      = IMG_Load(femaleFile.c_str());
+        if (playerBackSurface)
+        {
+            playerBackTexture = SDL_CreateTextureFromSurface(renderer, playerBackSurface);
+            return;
+        }
+    }
+    file += ".png";
+    playerBackSurface = IMG_Load(file.c_str());
+    playerBackTexture = SDL_CreateTextureFromSurface(renderer, playerBackSurface);
 }
 
 void SingleBattleUi::draw(Fps const* /*fps*/, RenderSizes rs)
@@ -55,6 +101,7 @@ void SingleBattleUi::draw(Fps const* /*fps*/, RenderSizes rs)
     SDL_Color genderColor;
     SDL_Color genderBgColor = {180, 180, 180, 255};
 
+    // https://gamefaqs.gamespot.com/gameboy/367023-pokemon-red-version/faqs/64175/hp-bar-colour
     auto overlayYBasedOnPercentageHP = [](float percentageHP) {
         if (percentageHP > 0.5625)
             return 0;
@@ -181,4 +228,18 @@ void SingleBattleUi::draw(Fps const* /*fps*/, RenderSizes rs)
                                           fontSize * 2 / 3,
                                           dstPlayerHpTextRect.x,
                                           dstPlayerHpTextRect.y);
+
+    /* PKMNS */
+
+    dstRect.w = foeFrontSurface->w * rs.ww / rs.aw;
+    dstRect.h = foeFrontSurface->h * rs.wh / rs.ah;
+    dstRect.x = rs.ww - dstRect.w * 4 / 3;
+    dstRect.y = dstDataboxMargin * 3;
+    SDL_RenderCopy(renderer, foeFrontTexture, NULL, &dstRect);
+
+    dstRect.w = playerBackSurface->w * rs.ww / rs.aw;
+    dstRect.h = playerBackSurface->h * rs.wh / rs.ah;
+    dstRect.x = dstRect.w / 3;
+    dstRect.y = rs.wh - dstRect.h - dstBottomMargin;
+    SDL_RenderCopy(renderer, playerBackTexture, NULL, &dstRect);
 }
