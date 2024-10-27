@@ -98,6 +98,18 @@ int RenderUtils::drawGreyText(SDL_Renderer*      renderer,
     return drawText(renderer, rs, text, color, bgColor, fontSize, x, y, w);
 }
 
+void RenderUtils::drawWhiteTextRightAligned(SDL_Renderer*      renderer,
+                                            RenderSizes        rs,
+                                            std::string const& text,
+                                            int                fontSize,
+                                            int                x,
+                                            int                y)
+{
+    SDL_Color color   = {255, 255, 255, 255};
+    SDL_Color bgColor = {127, 127, 127, 255};
+    drawText(renderer, rs, text, color, bgColor, fontSize, x, y, -1);
+}
+
 void RenderUtils::drawGreyTextRightAligned(SDL_Renderer*      renderer,
                                            RenderSizes        rs,
                                            std::string const& text,

@@ -1,6 +1,8 @@
 #include "pkmnsscene.h"
 
 #include "game.h"
+#include "pkmnutils.h"
+#include "utils.h"
 
 PkmnsScene::PkmnsScene(SDL_Renderer* renderer, Pkmn::PkmnPtr& currentPkmn)
     : Scene(renderer), selectingPkmn(currentPkmn != nullptr), selectedPkmn(currentPkmn)
@@ -26,6 +28,13 @@ PkmnsScene::PkmnsScene(SDL_Renderer* renderer, Pkmn::PkmnPtr& currentPkmn)
     panelSwapSelTexture  = SDL_CreateTextureFromSurface(renderer, panelSwapSelSurface);
     panelSwapSel2Surface = IMG_Load("resources/Graphics/UI/Party/panel_rect_swap_sel2.png");
     panelSwapSel2Texture = SDL_CreateTextureFromSurface(renderer, panelSwapSel2Surface);
+
+    overlayHpBackSurface      = IMG_Load("resources/Graphics/UI/Party/overlay_hp_back.png");
+    overlayHpBackTexture      = SDL_CreateTextureFromSurface(renderer, overlayHpBackSurface);
+    overlayHpBackFaintSurface = IMG_Load("resources/Graphics/UI/Party/overlay_hp_back_faint.png");
+    overlayHpBackFaintTexture = SDL_CreateTextureFromSurface(renderer, overlayHpBackFaintSurface);
+    overlayHpBackSwapSurface  = IMG_Load("resources/Graphics/UI/Party/overlay_hp_back_swap.png");
+    overlayHpBackSwapTexture  = SDL_CreateTextureFromSurface(renderer, overlayHpBackSwapSurface);
 
     for (size_t i = 0; i < Game::instance()->data.player.getPkmnCount(); ++i)
     {
@@ -79,6 +88,15 @@ PkmnsScene::~PkmnsScene()
     SDL_FreeSurface(panelSwapSelSurface);
     SDL_DestroyTexture(panelSwapSel2Texture);
     SDL_FreeSurface(panelSwapSel2Surface);
+
+    SDL_DestroyTexture(overlayHpTexture);
+    SDL_FreeSurface(overlayHpSurface);
+    SDL_DestroyTexture(overlayHpBackTexture);
+    SDL_FreeSurface(overlayHpBackSurface);
+    SDL_DestroyTexture(overlayHpBackFaintTexture);
+    SDL_FreeSurface(overlayHpBackFaintSurface);
+    SDL_DestroyTexture(overlayHpBackSwapTexture);
+    SDL_FreeSurface(overlayHpBackSwapSurface);
 
     for (auto it = pkmnsRendering.begin(); it != pkmnsRendering.end(); ++it)
     {
@@ -148,6 +166,11 @@ void PkmnsScene::update(Inputs const* inputs)
 
 void PkmnsScene::draw(Fps const* /*fps*/, RenderSizes rs)
 {
+    SDL_Color genderBgColor = {180, 180, 180, 255};
+
+    int margin    = 10;
+    int dstMargin = margin * rs.ww / rs.aw;
+
     SDL_Rect dstRect;
 
     dstRect.w = bgSurface->w * rs.ww / rs.aw;
@@ -172,41 +195,87 @@ void PkmnsScene::draw(Fps const* /*fps*/, RenderSizes rs)
         {
             auto pkmn = Game::instance()->data.player.pkmns[i];
 
+            SDL_Texture* selectedPanelTexture = NULL;
+            SDL_Texture* selectedHpTexture    = NULL;
+
             if (int(i) == swapIndex)
             {
                 if (i == currentIndex)
-                    SDL_RenderCopy(renderer, panelSwapSel2Texture, NULL, &dstPanelRect);
+                    selectedPanelTexture = panelSwapSel2Texture;
                 else
-                    SDL_RenderCopy(renderer, panelSwapSelTexture, NULL, &dstPanelRect);
+                    selectedPanelTexture = panelSwapSelTexture;
+                selectedHpTexture = overlayHpBackSwapTexture;
             }
             else
             {
                 if (swapIndex >= 0 && i == currentIndex)
                 {
-                    SDL_RenderCopy(renderer, panelSwapTexture, NULL, &dstPanelRect);
+                    selectedPanelTexture = panelSwapTexture;
+                    selectedHpTexture    = overlayHpBackSwapTexture;
                 }
                 else
                 {
                     if (pkmn->isKO())
                     {
                         if (i == currentIndex)
-                            SDL_RenderCopy(renderer, panelFaintSelTexture, NULL, &dstPanelRect);
+                            selectedPanelTexture = panelFaintSelTexture;
                         else
-                            SDL_RenderCopy(renderer, panelFaintTexture, NULL, &dstPanelRect);
+                            selectedPanelTexture = panelFaintTexture;
+                        selectedHpTexture = overlayHpBackFaintTexture;
                     }
                     else
                     {
                         if (i == currentIndex)
-                            SDL_RenderCopy(renderer, panelSelTexture, NULL, &dstPanelRect);
+                            selectedPanelTexture = panelSelTexture;
                         else
-                            SDL_RenderCopy(renderer, panelTexture, NULL, &dstPanelRect);
+                            selectedPanelTexture = panelTexture;
+                        selectedHpTexture = overlayHpBackTexture;
                     }
                 }
             }
 
+            SDL_RenderCopy(renderer, selectedPanelTexture, NULL, &dstPanelRect);
+
+            // TODO: hp overlay
+            // TODO: status condition
+
+            SDL_Rect dstHpRect = dstPanelRect;
+            dstHpRect.w        = overlayHpBackSurface->w * rs.ww / rs.aw;
+            dstHpRect.h        = overlayHpBackSurface->h * rs.wh / rs.ah;
+            dstHpRect.x += dstPanelRect.w / 3;
+            dstHpRect.y += (panelBlankSurface->h - overlayHpBackSurface->h + 10) * rs.wh / rs.ah / 2;
+            SDL_RenderCopy(renderer, selectedHpTexture, NULL, &dstHpRect);
+
+            SDL_Rect dstNameRect = dstPanelRect;
+            dstNameRect.x        = dstHpRect.x;
+            dstNameRect.y += dstMargin;
+            RenderUtils::drawWhiteText(renderer,
+                                       rs,
+                                       pkmn->getDisplayName(),
+                                       RenderUtils::TextSize,
+                                       dstNameRect.x,
+                                       dstNameRect.y);
+
+            SDL_Rect dstLvlRect = dstPanelRect;
+            dstLvlRect.x += dstMargin * 2;
+            dstLvlRect.y += (panelBlankSurface->h - RenderUtils::TextSize - margin * 1.5) * rs.wh / rs.ah;
+            boost::format foeLvl = boost::format("Lv.%1%") % pkmn->getLevel();
+            RenderUtils::drawWhiteText(renderer, rs, foeLvl.str(), RenderUtils::TextSize, dstLvlRect.x, dstLvlRect.y);
+
+            SDL_Rect dstPlayerHpTextRect = dstHpRect;
+            dstPlayerHpTextRect.x += dstHpRect.w;
+            dstPlayerHpTextRect.y += dstHpRect.h;
+            boost::format playerHp = boost::format("%1% / %2%") % pkmn->getHP() % pkmn->getTotalHP();
+            RenderUtils::drawWhiteTextRightAligned(renderer,
+                                                   rs,
+                                                   playerHp.str(),
+                                                   RenderUtils::TextSize,
+                                                   dstPlayerHpTextRect.x,
+                                                   dstPlayerHpTextRect.y);
+
             SDL_Rect dstIconRect = dstPanelRect;
-            dstIconRect.x += 10 * rs.ww / rs.aw;
-            dstIconRect.y += (panelBlankSurface->h - pkmnsRendering[pkmn].first->h) * rs.wh / rs.ah / 2;
+            dstIconRect.x += dstMargin;
+            dstIconRect.y += (panelBlankSurface->h - pkmnsRendering[pkmn].first->h - 30) * rs.wh / rs.ah / 2;
             dstIconRect.w = pkmnsRendering[pkmn].first->w * rs.ww / rs.aw / 2;
             dstIconRect.h = pkmnsRendering[pkmn].first->h * rs.wh / rs.ah;
             SDL_Rect srcIconRect;
@@ -215,6 +284,18 @@ void PkmnsScene::draw(Fps const* /*fps*/, RenderSizes rs)
             srcIconRect.x = ticks % 3 ? 0 : pkmnsRendering[pkmn].first->w / 2;
             srcIconRect.y = 0;
             SDL_RenderCopy(renderer, pkmnsRendering[pkmn].second, &srcIconRect, &dstIconRect);
+
+            SDL_Rect dstGenderRect = dstPanelRect;
+            dstGenderRect.x += dstPanelRect.w - dstMargin * 3;
+            dstGenderRect.y += dstMargin;
+            RenderUtils::drawUnicodeSymbol(renderer,
+                                           rs,
+                                           PkmnUtils::genderSymbol(pkmn->getGender()),
+                                           PkmnUtils::genderColor(pkmn->getGender()),
+                                           genderBgColor,
+                                           RenderUtils::TextSize,
+                                           dstGenderRect.x,
+                                           dstGenderRect.y);
         }
     }
 }
@@ -227,10 +308,4 @@ bool PkmnsScene::popScene() const
 std::string PkmnsScene::name()
 {
     return "PkmnsScene";
-}
-
-void PkmnsScene::selectPkmn(Pkmn::PkmnPtr newSelectedPkmn)
-{
-    selectedPkmn = newSelectedPkmn;
-    leave        = true;
 }

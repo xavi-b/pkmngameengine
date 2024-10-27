@@ -37,6 +37,12 @@ public:
                              int                x,
                              int                y,
                              int                w = 0);
+    static void drawWhiteTextRightAligned(SDL_Renderer*      renderer,
+                                          RenderSizes        rs,
+                                          std::string const& text,
+                                          int                fontSize,
+                                          int                x,
+                                          int                y);
     static void drawGreyTextRightAligned(SDL_Renderer*      renderer,
                                          RenderSizes        rs,
                                          std::string const& text,

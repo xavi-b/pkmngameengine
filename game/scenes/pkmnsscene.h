@@ -20,8 +20,6 @@ public:
     virtual std::string name() override;
 
 private:
-    void selectPkmn(Pkmn::PkmnPtr newSelectedPkmn);
-
     SDL_Surface* bgSurface;
     SDL_Texture* bgTexture;
 
@@ -43,6 +41,15 @@ private:
     SDL_Texture* panelSwapSelTexture;
     SDL_Surface* panelSwapSel2Surface;
     SDL_Texture* panelSwapSel2Texture;
+
+    SDL_Surface* overlayHpSurface;
+    SDL_Texture* overlayHpTexture;
+    SDL_Surface* overlayHpBackSurface;
+    SDL_Texture* overlayHpBackTexture;
+    SDL_Surface* overlayHpBackFaintSurface;
+    SDL_Texture* overlayHpBackFaintTexture;
+    SDL_Surface* overlayHpBackSwapSurface;
+    SDL_Texture* overlayHpBackSwapTexture;
 
     std::map<Pkmn::PkmnPtr, std::pair<SDL_Surface*, SDL_Texture*>> pkmnsRendering;
 
