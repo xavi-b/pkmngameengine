@@ -6,7 +6,7 @@
 
 TitleScene::TitleScene(SDL_Renderer* renderer) : Scene(renderer)
 {
-    music        = Mix_LoadMUS("resources/Audio/BGM/Title.ogg");
+    music        = Mix_LoadMUS("resources/Audio/BGM/Title.ogg.wav");
     bgSurface    = IMG_Load("resources/Graphics/Titles/title.png");
     bgTexture    = SDL_CreateTextureFromSurface(renderer, bgSurface);
     startSurface = IMG_Load("resources/Graphics/Titles/start.png");

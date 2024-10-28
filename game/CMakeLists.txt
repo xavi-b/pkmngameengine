@@ -88,6 +88,28 @@ target_sources(${MODULE_NAME}
        ${INC_FILES}
 )
 
+# wav files
+find_program(FFMPEG_PROGRAM ffmpeg)
+if(NOT FFMPEG_PROGRAM)
+    message(FATAL_ERROR "ffmpeg not found!")
+endif()
+file(GLOB_RECURSE oggs RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "${CMAKE_CURRENT_SOURCE_DIR}/resources/**/*.ogg")
+set(wavs)
+foreach(ogg ${oggs})
+    message("wav file will be generated for ${ogg}")
+    set(outputfile "${CMAKE_INSTALL_BINDIR}/${ogg}.wav")
+    set(inputfile "${CMAKE_CURRENT_SOURCE_DIR}/${ogg}")
+    add_custom_command(
+        OUTPUT ${outputfile}
+        COMMAND ${FFMPEG_PROGRAM} -y -i ${inputfile} ${outputfile}
+        DEPENDS ${inputfile}
+        COMMENT "Generating wav for: ${ogg}"
+        VERBATIM
+    )
+    list(APPEND wavs ${outputfile})
+endforeach()
+add_custom_target(wavs ALL DEPENDS ${wavs})
+
 # resources
 file(GLOB_RECURSE RC_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "${CMAKE_CURRENT_SOURCE_DIR}/resources/**")
 #set_target_properties(${MODULE_NAME} PROPERTIES RESOURCE "${RC_FILES}")
