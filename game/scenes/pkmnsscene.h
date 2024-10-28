@@ -51,6 +51,9 @@ private:
     SDL_Surface* overlayHpBackSwapSurface;
     SDL_Texture* overlayHpBackSwapTexture;
 
+    SDL_Surface* statusSurface;
+    SDL_Texture* statusTexture;
+
     std::map<Pkmn::PkmnPtr, std::pair<SDL_Surface*, SDL_Texture*>> pkmnsRendering;
 
     size_t ticks = 0;

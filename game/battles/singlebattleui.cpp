@@ -28,6 +28,8 @@ SingleBattleUi::~SingleBattleUi()
     SDL_FreeSurface(overlayXpSurface);
     SDL_DestroyTexture(overlayHpTexture);
     SDL_FreeSurface(overlayHpSurface);
+    SDL_DestroyTexture(statusTexture);
+    SDL_FreeSurface(statusSurface);
 
     if (foeFrontTexture)
         SDL_DestroyTexture(foeFrontTexture);

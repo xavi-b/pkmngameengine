@@ -29,12 +29,17 @@ PkmnsScene::PkmnsScene(SDL_Renderer* renderer, Pkmn::PkmnPtr& currentPkmn)
     panelSwapSel2Surface = IMG_Load("resources/Graphics/UI/Party/panel_rect_swap_sel2.png");
     panelSwapSel2Texture = SDL_CreateTextureFromSurface(renderer, panelSwapSel2Surface);
 
+    overlayHpSurface          = IMG_Load("resources/Graphics/UI/Party/overlay_hp.png");
+    overlayHpTexture          = SDL_CreateTextureFromSurface(renderer, overlayHpSurface);
     overlayHpBackSurface      = IMG_Load("resources/Graphics/UI/Party/overlay_hp_back.png");
     overlayHpBackTexture      = SDL_CreateTextureFromSurface(renderer, overlayHpBackSurface);
     overlayHpBackFaintSurface = IMG_Load("resources/Graphics/UI/Party/overlay_hp_back_faint.png");
     overlayHpBackFaintTexture = SDL_CreateTextureFromSurface(renderer, overlayHpBackFaintSurface);
     overlayHpBackSwapSurface  = IMG_Load("resources/Graphics/UI/Party/overlay_hp_back_swap.png");
     overlayHpBackSwapTexture  = SDL_CreateTextureFromSurface(renderer, overlayHpBackSwapSurface);
+
+    statusSurface = IMG_Load("resources/Graphics/UI/Battle/icon_statuses.png");
+    statusTexture = SDL_CreateTextureFromSurface(renderer, statusSurface);
 
     for (size_t i = 0; i < Game::instance()->data.player.getPkmnCount(); ++i)
     {
@@ -97,6 +102,9 @@ PkmnsScene::~PkmnsScene()
     SDL_FreeSurface(overlayHpBackFaintSurface);
     SDL_DestroyTexture(overlayHpBackSwapTexture);
     SDL_FreeSurface(overlayHpBackSwapSurface);
+
+    SDL_DestroyTexture(statusTexture);
+    SDL_FreeSurface(statusSurface);
 
     for (auto it = pkmnsRendering.begin(); it != pkmnsRendering.end(); ++it)
     {
@@ -166,6 +174,36 @@ void PkmnsScene::update(Inputs const* inputs)
 
 void PkmnsScene::draw(Fps const* /*fps*/, RenderSizes rs)
 {
+    // https://gamefaqs.gamespot.com/gameboy/367023-pokemon-red-version/faqs/64175/hp-bar-colour
+    auto overlayYBasedOnPercentageHP = [](float percentageHP) {
+        if (percentageHP > 0.5625)
+            return 0;
+        else if (percentageHP > 0.207)
+            return 1;
+        else
+            return 2;
+    };
+
+    auto statusYBasedOnStatus = [](Pkmn::StatusCondition status) {
+        switch (status)
+        {
+        case Pkmn::BURN:
+            return 2;
+        case Pkmn::FREEZE:
+            return 4;
+        case Pkmn::PARALYSIS:
+            return 3;
+        case Pkmn::POISON:
+            return 1;
+        case Pkmn::BADLY_POISON:
+            return 5;
+        case Pkmn::SLEEP:
+            return 0;
+        default:
+            return -1;
+        }
+    };
+
     SDL_Color genderBgColor = {180, 180, 180, 255};
 
     int margin    = 10;
@@ -236,15 +274,36 @@ void PkmnsScene::draw(Fps const* /*fps*/, RenderSizes rs)
 
             SDL_RenderCopy(renderer, selectedPanelTexture, NULL, &dstPanelRect);
 
-            // TODO: hp overlay
-            // TODO: status condition
-
             SDL_Rect dstHpRect = dstPanelRect;
             dstHpRect.w        = overlayHpBackSurface->w * rs.ww / rs.aw;
             dstHpRect.h        = overlayHpBackSurface->h * rs.wh / rs.ah;
             dstHpRect.x += dstPanelRect.w / 3;
             dstHpRect.y += (panelBlankSurface->h - overlayHpBackSurface->h + 10) * rs.wh / rs.ah / 2;
             SDL_RenderCopy(renderer, selectedHpTexture, NULL, &dstHpRect);
+
+            float    percentageHP     = pkmn->getPercentageHP();
+            SDL_Rect dstOverlayHpRect = dstHpRect;
+            dstOverlayHpRect.x += 32 * rs.ww / rs.aw;
+            dstOverlayHpRect.y += 2 * rs.wh / rs.ah;
+            dstOverlayHpRect.w = percentageHP * overlayHpSurface->w * rs.ww / rs.aw;
+            dstOverlayHpRect.h = overlayHpSurface->h / 3 * rs.wh / rs.ah;
+            SDL_Rect srcOverlayHpRect;
+            srcOverlayHpRect.w = overlayHpSurface->w;
+            srcOverlayHpRect.h = overlayHpSurface->h / 3;
+            srcOverlayHpRect.x = 0;
+            srcOverlayHpRect.y = overlayYBasedOnPercentageHP(percentageHP) * overlayHpSurface->h / 3;
+            SDL_RenderCopy(renderer, overlayHpTexture, &srcOverlayHpRect, &dstOverlayHpRect);
+
+            SDL_Rect dstStatusRect = dstHpRect;
+            dstStatusRect.y += dstHpRect.h + dstMargin;
+            dstStatusRect.w = statusSurface->w * rs.ww / rs.aw;
+            dstStatusRect.h = statusSurface->h * rs.wh / rs.ah / 6;
+            SDL_Rect srcStatusRect;
+            srcStatusRect.w = statusSurface->w;
+            srcStatusRect.h = statusSurface->h / 6;
+            srcStatusRect.x = 0;
+            srcStatusRect.y = statusYBasedOnStatus(pkmn->getStatusCondition()) * statusSurface->h / 6;
+            SDL_RenderCopy(renderer, statusTexture, &srcStatusRect, &dstStatusRect);
 
             SDL_Rect dstNameRect = dstPanelRect;
             dstNameRect.x        = dstHpRect.x;
@@ -259,8 +318,8 @@ void PkmnsScene::draw(Fps const* /*fps*/, RenderSizes rs)
             SDL_Rect dstLvlRect = dstPanelRect;
             dstLvlRect.x += dstMargin * 2;
             dstLvlRect.y += (panelBlankSurface->h - RenderUtils::TextSize - margin * 1.5) * rs.wh / rs.ah;
-            boost::format foeLvl = boost::format("Lv.%1%") % pkmn->getLevel();
-            RenderUtils::drawWhiteText(renderer, rs, foeLvl.str(), RenderUtils::TextSize, dstLvlRect.x, dstLvlRect.y);
+            boost::format lvl = boost::format("Lv.%1%") % pkmn->getLevel();
+            RenderUtils::drawWhiteText(renderer, rs, lvl.str(), RenderUtils::TextSize, dstLvlRect.x, dstLvlRect.y);
 
             SDL_Rect dstPlayerHpTextRect = dstHpRect;
             dstPlayerHpTextRect.x += dstHpRect.w;
