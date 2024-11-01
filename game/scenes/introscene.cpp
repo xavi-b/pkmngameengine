@@ -46,7 +46,7 @@ void IntroScene::update(Inputs const* inputs)
         if (!introAnimation->isStarted())
             introAnimation->start();
         introSpeech->update(inputs);
-        if (introSpeech->mayClose() && (inputs->A || inputs->start))
+        if (introSpeech->shouldClose())
         {
             Game::instance()->data.player.name.clear();
             state = Keyboard;
@@ -101,7 +101,7 @@ void IntroScene::update(Inputs const* inputs)
     }
     case OutroSpeech:
         outroSpeech->update(inputs);
-        if (outroSpeech->mayClose() && (inputs->A || inputs->start))
+        if (outroSpeech->shouldClose())
         {
             state = Leave;
         }

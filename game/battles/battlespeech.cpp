@@ -28,7 +28,11 @@ void BattleSpeech::init()
 
 void BattleSpeech::update(Inputs const* inputs)
 {
-    if (currentAnimation < animations.size())
+    if (mayClose() && (inputs->A || inputs->start))
+    {
+        close = true;
+    }
+    else if (currentAnimation < animations.size())
     {
         if (inputs->A || inputs->B)
         {
@@ -94,9 +98,15 @@ bool BattleSpeech::mayClose() const
         && (animations.size() == 0 || animations[currentAnimation]->isFinished());
 }
 
+bool BattleSpeech::shouldClose() const
+{
+    return close;
+}
+
 void BattleSpeech::reset()
 {
     currentAnimation = 0;
+    close            = false;
 }
 
 void BattleSpeech::setTexts(std::vector<std::string> const& texts)

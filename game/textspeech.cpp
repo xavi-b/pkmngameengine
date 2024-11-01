@@ -26,7 +26,11 @@ void TextSpeech::init()
 
 void TextSpeech::update(Inputs const* inputs)
 {
-    if (currentAnimation < animations.size())
+    if (mayClose() && (inputs->A || inputs->start))
+    {
+        close = true;
+    }
+    else if (currentAnimation < animations.size())
     {
         if (inputs->A || inputs->B)
         {
@@ -92,9 +96,15 @@ bool TextSpeech::mayClose() const
         && (animations.size() == 0 || animations[currentAnimation]->isFinished());
 }
 
+bool TextSpeech::shouldClose() const
+{
+    return close;
+}
+
 void TextSpeech::reset()
 {
     currentAnimation = 0;
+    close            = false;
 }
 
 void TextSpeech::setTexts(std::vector<std::string> const& texts)

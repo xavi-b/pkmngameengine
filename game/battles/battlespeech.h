@@ -17,6 +17,7 @@ public:
     void draw(Fps const* fps, RenderSizes rs);
 
     bool mayClose() const;
+    bool shouldClose() const;
     void reset();
 
     void setTexts(std::vector<std::string> const& texts);
@@ -27,6 +28,7 @@ private:
     SDL_Texture*  bgTexture;
 
     unsigned int currentAnimation = 0;
+    bool         close            = false;
 
     std::vector<std::unique_ptr<TextAnimation>> animations;
 };

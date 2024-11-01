@@ -96,7 +96,7 @@ void EncounterScene::update_START(Inputs const* inputs)
     if (pkmnEncounterSpeech)
     {
         pkmnEncounterSpeech->update(inputs);
-        if (pkmnEncounterSpeech->mayClose() && (inputs->A || inputs->start))
+        if (pkmnEncounterSpeech->shouldClose())
         {
             pkmnEncounterSpeech.release();
         }
@@ -111,7 +111,7 @@ void EncounterScene::update_START(Inputs const* inputs)
     if (firstPkmnSpeech)
     {
         firstPkmnSpeech->update(inputs);
-        if (firstPkmnSpeech->mayClose() && (inputs->A || inputs->start))
+        if (firstPkmnSpeech->shouldClose())
         {
             firstPkmnSpeech.release();
         }
@@ -119,16 +119,6 @@ void EncounterScene::update_START(Inputs const* inputs)
         {
             return;
         }
-    }
-
-    // TODO: Weather animation
-    // TODO: Weather text
-
-    battleSpeech->update(inputs);
-    if (battleSpeech->mayClose())
-    {
-        battleActions->reset();
-        state = ACTIONS;
     }
 }
 
@@ -150,45 +140,53 @@ void EncounterScene::draw_START(Fps const* fps, RenderSizes rs)
         return;
     }
 
-    // TODO: Weather animation
-    // TODO: Weather text
-
-    battleSpeech->draw(fps, rs);
+    battleActions->reset();
+    state = ACTIONS;
 }
 
 void EncounterScene::update_ACTIONS(Inputs const* inputs)
 {
-    if (battleActions->isFinished())
+    // TODO: Weather animation
+    // TODO: Weather text
+
+    battleSpeech->update(inputs);
+    if (battleSpeech->mayClose())
     {
-        switch (battleActions->selectedAction())
+        if (battleActions->isFinished())
         {
-        case BattleActions::MOVES: {
-            moveSelection->reset();
-            moveSelection->setPkmn(playerPkmn);
-            state = MOVES;
-            break;
+            switch (battleActions->selectedAction())
+            {
+            case BattleActions::MOVES: {
+                moveSelection->reset();
+                moveSelection->setPkmn(playerPkmn);
+                state = MOVES;
+                break;
+            }
+            case BattleActions::BAG:
+                state = BAG;
+                break;
+            case BattleActions::PKMNS:
+                state = PKMNS;
+                break;
+            case BattleActions::RUN:
+                state = PLAYER_RUN;
+                break;
+            default:
+                break;
+            }
         }
-        case BattleActions::BAG:
-            state = BAG;
-            break;
-        case BattleActions::PKMNS:
-            state = PKMNS;
-            break;
-        case BattleActions::RUN:
-            state = PLAYER_RUN;
-            break;
-        default:
-            break;
+        else
+        {
+            battleActions->update(inputs);
         }
-    }
-    else
-    {
-        battleActions->update(inputs);
     }
 }
 
 void EncounterScene::draw_ACTIONS(Fps const* fps, RenderSizes rs)
 {
+    // TODO: Weather animation
+    // TODO: Weather text
+
     battleSpeech->draw(fps, rs);
     battleActions->draw(fps, rs);
 }
