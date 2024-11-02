@@ -1,6 +1,7 @@
 #ifndef MAPSCENE_H
 #define MAPSCENE_H
 
+#include "animations/battleintroanimation.h"
 #include "map.h"
 #include "menu.h"
 #include "pkmn.h"
@@ -41,7 +42,8 @@ public:
 
     virtual void initPlayerPosition(int x, int y, Direction direction = NONE);
 
-    virtual bool manageEncounters();
+    virtual bool                                  manageEncounters();
+    virtual std::unique_ptr<BattleIntroAnimation> manageBattleIntro();
 
     virtual bool pushScene() const override;
     virtual void popReset() override;
@@ -72,7 +74,8 @@ protected:
     Speed speed         = WALK;
     Speed previousSpeed = WALK;
 
-    Pkmn::PkmnPtr encounteredPkmn;
+    Pkmn::PkmnPtr                         encounteredPkmn;
+    std::unique_ptr<BattleIntroAnimation> battleIntro;
 
     bool                  openMenu = false;
     std::unique_ptr<Menu> menu;

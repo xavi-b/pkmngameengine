@@ -44,6 +44,12 @@ MapScene::~MapScene()
 
 void MapScene::update(Inputs const* inputs)
 {
+    if (battleIntro && !battleIntro->isFinished())
+    {
+        battleIntro->incrementTicks();
+        return;
+    }
+
     if (openMenu)
     {
         menu->update(inputs);
@@ -102,7 +108,11 @@ void MapScene::update(Inputs const* inputs)
     playerPreviousX = playerX;
 
     if (encounter)
+    {
+        battleIntro = manageBattleIntro();
+        battleIntro->start();
         return;
+    }
 
     if (inputs->B)
         speed = RUN;
@@ -390,6 +400,9 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
         }
     }
 
+    if (battleIntro)
+        battleIntro->draw(fps, rs);
+
     if (openMenu)
         menu->draw(fps, rs);
 }
@@ -467,9 +480,36 @@ bool MapScene::manageEncounters()
     return false;
 }
 
+std::unique_ptr<BattleIntroAnimation> MapScene::manageBattleIntro()
+{
+    auto battleIntro = std::make_unique<BattleIntroAnimation>(renderer);
+    battleIntro->setFile("resources/Graphics/Transitions/battle2.png");
+
+    if (!encounteredPkmn)
+    {
+        // Force to implement logic for specific trainers
+        battleIntro->stop();
+    }
+
+    return battleIntro;
+}
+
 bool MapScene::pushScene() const
 {
-    return encounteredPkmn != nullptr || openBag || openPkmns;
+    if (openPkmns)
+    {
+        return true;
+    }
+    else if (openBag)
+    {
+        return true;
+    }
+    else if (encounteredPkmn && battleIntro && battleIntro->isFinished())
+    {
+        return true;
+    }
+
+    return false;
 }
 
 void MapScene::popReset()
@@ -477,6 +517,7 @@ void MapScene::popReset()
     openPkmns = false;
     openBag   = false;
     encounteredPkmn.reset();
+    battleIntro.reset();
 }
 
 std::unique_ptr<Scene> MapScene::nextScene()
@@ -491,7 +532,7 @@ std::unique_ptr<Scene> MapScene::nextScene()
         auto scene = std::make_unique<BagScene>(renderer);
         return scene;
     }
-    else if (encounteredPkmn)
+    else if (encounteredPkmn && battleIntro && battleIntro->isFinished())
     {
         auto scene = std::make_unique<EncounterScene>(renderer);
         scene->setEncounterPkmn(encounteredPkmn);
