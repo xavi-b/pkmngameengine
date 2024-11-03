@@ -49,6 +49,8 @@ BattleScene::BattleScene(SDL_Renderer* renderer) : Scene(renderer)
     moveSelection  = std::make_unique<MoveSelection>(renderer);
     moveSelection->init();
     fadeOutAnimation = std::make_unique<FadeAnimation>(renderer, false);
+    eyeAnimation     = std::make_unique<EyeAnimation>(renderer);
+    eyeAnimation->start();
 }
 
 BattleScene::~BattleScene()

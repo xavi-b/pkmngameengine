@@ -91,10 +91,14 @@ void EncounterScene::chooseOpponentAction()
 
 void EncounterScene::update_START(Inputs const* inputs)
 {
+    if (!eyeAnimation->isFinished())
+    {
+        eyeAnimation->incrementTicks();
+    }
+
     // TODO: separate singlebattleui ? foe + player
 
     // TODO: Open animation
-    // Eye opening animation
     // Pkmn + player entrance -> singlebattleui
     // Show pkmn databox -> singlebattleui
 
@@ -105,26 +109,21 @@ void EncounterScene::update_START(Inputs const* inputs)
         {
             pkmnEncounterSpeech.release();
         }
-        else
-        {
-            return;
-        }
     }
 
     // TODO: Pkmn animation
     // Throw player pkmn -> singlebattleui
     // Show player databox -> singlebattleui
 
-    if (firstPkmnSpeech)
+    else if (firstPkmnSpeech)
     {
         firstPkmnSpeech->update(inputs);
         if (firstPkmnSpeech->shouldClose())
         {
             firstPkmnSpeech.release();
-        }
-        else
-        {
-            return;
+
+            battleActions->reset();
+            state = ACTIONS;
         }
     }
 }
@@ -136,19 +135,19 @@ void EncounterScene::draw_START(Fps const* fps, RenderSizes rs)
     if (pkmnEncounterSpeech)
     {
         pkmnEncounterSpeech->draw(fps, rs);
-        return;
     }
 
     // TODO: Pkmn animation
 
-    if (firstPkmnSpeech)
+    else if (firstPkmnSpeech)
     {
         firstPkmnSpeech->draw(fps, rs);
-        return;
     }
 
-    battleActions->reset();
-    state = ACTIONS;
+    if (eyeAnimation->isStarted() && !eyeAnimation->isFinished())
+    {
+        eyeAnimation->draw(fps, rs);
+    }
 }
 
 void EncounterScene::update_ACTIONS(Inputs const* inputs)
@@ -613,7 +612,8 @@ void EncounterScene::update_END(Inputs const* /*inputs*/)
     {
         fadeOutAnimation->start();
     }
-    else
+
+    if (!fadeOutAnimation->isFinished())
     {
         fadeOutAnimation->incrementTicks();
     }
