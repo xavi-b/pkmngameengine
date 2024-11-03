@@ -26,6 +26,8 @@ MapScene::MapScene(SDL_Renderer* renderer, std::string const& mapPath) : Scene(r
 
     menu = std::make_unique<Menu>(renderer);
     menu->init();
+
+    fadeInAnimation = std::make_unique<FadeAnimation>(renderer, true);
 }
 
 MapScene::~MapScene()
@@ -44,6 +46,11 @@ MapScene::~MapScene()
 
 void MapScene::update(Inputs const* inputs)
 {
+    if (fadeInAnimation->isStarted())
+    {
+        fadeInAnimation->incrementTicks();
+    }
+
     if (battleIntro && !battleIntro->isFinished())
     {
         battleIntro->incrementTicks();
@@ -400,6 +407,9 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
         }
     }
 
+    if (fadeInAnimation->isStarted())
+        fadeInAnimation->draw(fps, rs);
+
     if (battleIntro)
         battleIntro->draw(fps, rs);
 
@@ -514,6 +524,12 @@ bool MapScene::pushScene() const
 
 void MapScene::popReset()
 {
+    if (battleIntro)
+    {
+        fadeInAnimation->reset();
+        fadeInAnimation->start();
+    }
+
     openPkmns = false;
     openBag   = false;
     encounteredPkmn.reset();
@@ -536,8 +552,15 @@ std::unique_ptr<Scene> MapScene::nextScene()
     {
         auto scene = std::make_unique<EncounterScene>(renderer);
         scene->setEncounterPkmn(encounteredPkmn);
-        // TODO first pkmn not KO
-        scene->setPlayerPkmn(Game::instance()->data.player.pkmns.front());
+        auto& pkmns = Game::instance()->data.player.pkmns;
+        for (size_t i = 0; i < pkmns.size(); ++i)
+        {
+            if (!pkmns[i]->isKO())
+            {
+                scene->setPlayerPkmn(pkmns[i]);
+                break;
+            }
+        }
         return scene;
     }
     return nullptr;

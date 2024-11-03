@@ -2,6 +2,7 @@
 #define MAPSCENE_H
 
 #include "animations/battleintroanimation.h"
+#include "animations/fadeanimation.h"
 #include "map.h"
 #include "menu.h"
 #include "pkmn.h"
@@ -76,6 +77,7 @@ protected:
 
     Pkmn::PkmnPtr                         encounteredPkmn;
     std::unique_ptr<BattleIntroAnimation> battleIntro;
+    std::unique_ptr<FadeAnimation>        fadeInAnimation;
 
     bool                  openMenu = false;
     std::unique_ptr<Menu> menu;

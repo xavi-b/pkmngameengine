@@ -91,7 +91,12 @@ void EncounterScene::chooseOpponentAction()
 
 void EncounterScene::update_START(Inputs const* inputs)
 {
+    // TODO: separate singlebattleui ? foe + player
+
     // TODO: Open animation
+    // Eye opening animation
+    // Pkmn + player entrance -> singlebattleui
+    // Show pkmn databox -> singlebattleui
 
     if (pkmnEncounterSpeech)
     {
@@ -107,6 +112,8 @@ void EncounterScene::update_START(Inputs const* inputs)
     }
 
     // TODO: Pkmn animation
+    // Throw player pkmn -> singlebattleui
+    // Show player databox -> singlebattleui
 
     if (firstPkmnSpeech)
     {
@@ -425,8 +432,50 @@ void EncounterScene::draw_P_PKMNS(Fps const* /*fps*/, RenderSizes /*rs*/)
 {
 }
 
-void EncounterScene::update_P_RUN(Inputs const* /*inputs*/)
+void EncounterScene::update_P_RUN(Inputs const* inputs)
 {
+    if (runSpeech)
+    {
+        runSpeech->update(inputs);
+        if (runSpeech->shouldClose())
+        {
+            runSpeech.release();
+            state = END;
+        }
+        return;
+    }
+
+    if (failedRunSpeech)
+    {
+        failedRunSpeech->update(inputs);
+        if (failedRunSpeech->shouldClose())
+        {
+            failedRunSpeech.release();
+
+            chooseOpponentAction();
+
+            playerFirst = true;
+
+            switch (opponentAction)
+            {
+            case BattleActions::BAG:
+                state = OPPONENT_ITEMS;
+                break;
+            case BattleActions::PKMNS:
+                state = OPPONENT_PKMNS;
+                break;
+            case BattleActions::RUN:
+                state = OPPONENT_RUN;
+                break;
+            case BattleActions::MOVES:
+            default:
+                state = OPPONENT_MOVES;
+                break;
+            }
+        }
+        return;
+    }
+
     ++runAttemps;
     bool   run       = true;
     size_t wildSpeed = encounterPkmn->getStats()[PkmnDef::SPEED];
@@ -445,39 +494,31 @@ void EncounterScene::update_P_RUN(Inputs const* /*inputs*/)
 
     if (run)
     {
-        // TODO: Successful run text
-        state = END;
+        runSpeech = std::make_unique<TextSpeech>(renderer);
+        runSpeech->setTexts({lc::translate("Got away safely !")});
+        runSpeech->init();
     }
     else
     {
-        // TODO: Failed run text
-
-        chooseOpponentAction();
-
-        playerFirst = true;
-
-        switch (opponentAction)
-        {
-        case BattleActions::BAG:
-            state = OPPONENT_ITEMS;
-            break;
-        case BattleActions::PKMNS:
-            state = OPPONENT_PKMNS;
-            break;
-        case BattleActions::RUN:
-            state = OPPONENT_RUN;
-            break;
-        case BattleActions::MOVES:
-        default:
-            state = OPPONENT_MOVES;
-            break;
-        }
+        failedRunSpeech = std::make_unique<TextSpeech>(renderer);
+        failedRunSpeech->setTexts({lc::translate("Can't get away !")});
+        failedRunSpeech->init();
     }
 }
 
-void EncounterScene::draw_P_RUN(Fps const* /*fps*/, RenderSizes /*rs*/)
+void EncounterScene::draw_P_RUN(Fps const* fps, RenderSizes rs)
 {
-    // TODO: "fade out" animation
+    if (runSpeech)
+    {
+        runSpeech->draw(fps, rs);
+        return;
+    }
+
+    if (failedRunSpeech)
+    {
+        failedRunSpeech->draw(fps, rs);
+        return;
+    }
 }
 
 void EncounterScene::update_O_PKMNS(Inputs const* /*inputs*/)
@@ -539,23 +580,48 @@ void EncounterScene::draw_O_MOVES(Fps const* /*fps*/, RenderSizes /*rs*/)
 {
 }
 
-void EncounterScene::update_O_RUN(Inputs const* /*inputs*/)
+void EncounterScene::update_O_RUN(Inputs const* inputs)
 {
-    // Run computation
-    // Run animation
-    state = END;
+    if (!runSpeech)
+    {
+        runSpeech             = std::make_unique<TextSpeech>(renderer);
+        boost::format runText = boost::format(lc::translate("Wild %1% fled !"))
+                              % (encounterPkmn ? encounterPkmn->getDisplayName() : "#ERROR");
+        runSpeech->setTexts({runText.str()});
+        runSpeech->init();
+    }
+
+    runSpeech->update(inputs);
+    if (runSpeech->shouldClose())
+    {
+        runSpeech.release();
+        state = END;
+    }
 }
 
-void EncounterScene::draw_O_RUN(Fps const* /*fps*/, RenderSizes /*rs*/)
+void EncounterScene::draw_O_RUN(Fps const* fps, RenderSizes rs)
 {
+    if (runSpeech)
+    {
+        runSpeech->draw(fps, rs);
+    }
 }
 
 void EncounterScene::update_END(Inputs const* /*inputs*/)
 {
+    if (!fadeOutAnimation->isStarted())
+    {
+        fadeOutAnimation->start();
+    }
+    else
+    {
+        fadeOutAnimation->incrementTicks();
+    }
 }
 
-void EncounterScene::draw_END(Fps const* /*fps*/, RenderSizes /*rs*/)
+void EncounterScene::draw_END(Fps const* fps, RenderSizes rs)
 {
+    fadeOutAnimation->draw(fps, rs);
 }
 
 bool EncounterScene::pushScene() const

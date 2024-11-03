@@ -44,6 +44,11 @@ SingleBattleUi::~SingleBattleUi()
 
 void SingleBattleUi::setFoePkmn(Pkmn::PkmnPtr const& newFoePkmn)
 {
+    if (foeFrontTexture)
+        SDL_DestroyTexture(foeFrontTexture);
+    if (foeFrontSurface)
+        SDL_FreeSurface(foeFrontSurface);
+
     foePkmn          = newFoePkmn;
     std::string file = "resources/Graphics/Pokemon/Front";
     if (newFoePkmn->isShiny())
@@ -67,6 +72,11 @@ void SingleBattleUi::setFoePkmn(Pkmn::PkmnPtr const& newFoePkmn)
 
 void SingleBattleUi::setPlayerPkmn(Pkmn::PkmnPtr const& newPlayerPkmn)
 {
+    if (playerBackTexture)
+        SDL_DestroyTexture(playerBackTexture);
+    if (playerBackSurface)
+        SDL_FreeSurface(playerBackSurface);
+
     playerPkmn       = newPlayerPkmn;
     std::string file = "resources/Graphics/Pokemon/Back";
     if (newPlayerPkmn->isShiny())

@@ -1,6 +1,7 @@
 #ifndef BATTLESCENE_H
 #define BATTLESCENE_H
 
+#include "animations/fadeanimation.h"
 #include "battles/battleactions.h"
 #include "battles/battlebackground.h"
 #include "battles/battlespeech.h"
@@ -90,6 +91,7 @@ protected:
     std::unique_ptr<BattleActions>    battleActions;
     std::unique_ptr<SingleBattleUi>   singleBattleUi;
     std::unique_ptr<MoveSelection>    moveSelection;
+    std::unique_ptr<FadeAnimation>    fadeOutAnimation;
 
     State state         = START;
     State previousState = END;

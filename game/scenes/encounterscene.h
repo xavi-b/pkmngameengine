@@ -73,6 +73,8 @@ private:
 
     std::unique_ptr<TextSpeech> pkmnEncounterSpeech;
     std::unique_ptr<TextSpeech> firstPkmnSpeech;
+    std::unique_ptr<TextSpeech> runSpeech;
+    std::unique_ptr<TextSpeech> failedRunSpeech;
 
     BattleActions::Type opponentAction  = BattleActions::Type::MOVES;
     Pkmn::PkmnPtr       newSelectedPkmn = nullptr;

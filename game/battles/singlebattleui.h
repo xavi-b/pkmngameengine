@@ -30,10 +30,10 @@ private:
     SDL_Surface*  statusSurface;
     SDL_Texture*  statusTexture;
 
-    SDL_Surface* playerBackSurface;
-    SDL_Texture* playerBackTexture;
-    SDL_Surface* foeFrontSurface;
-    SDL_Texture* foeFrontTexture;
+    SDL_Surface* playerBackSurface = NULL;
+    SDL_Texture* playerBackTexture = NULL;
+    SDL_Surface* foeFrontSurface   = NULL;
+    SDL_Texture* foeFrontTexture   = NULL;
 
     Pkmn::PkmnPtr foePkmn;
     Pkmn::PkmnPtr playerPkmn;

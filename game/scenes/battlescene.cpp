@@ -48,6 +48,7 @@ BattleScene::BattleScene(SDL_Renderer* renderer) : Scene(renderer)
     singleBattleUi = std::make_unique<SingleBattleUi>(renderer);
     moveSelection  = std::make_unique<MoveSelection>(renderer);
     moveSelection->init();
+    fadeOutAnimation = std::make_unique<FadeAnimation>(renderer, false);
 }
 
 BattleScene::~BattleScene()
@@ -169,7 +170,7 @@ void BattleScene::draw(Fps const* fps, RenderSizes rs)
 
 bool BattleScene::popScene() const
 {
-    return state == END;
+    return state == END && fadeOutAnimation->isFinished();
 }
 
 std::string BattleScene::name()
