@@ -1,5 +1,6 @@
 #include "battlescene.h"
 
+#include "animations/weather/rainanimation.h"
 #include "game.h"
 #include "utils.h"
 
@@ -9,6 +10,8 @@ std::string BattleScene::StateToString(State e)
     {
     case START:
         return "START";
+    case WEATHER:
+        return "WEATHER";
     case ACTIONS:
         return "ACTIONS";
     case MOVES:
@@ -75,6 +78,10 @@ void BattleScene::update(Inputs const* inputs)
         update_START(inputs);
         break;
     }
+    case WEATHER: {
+        update_WEATHER(inputs);
+        break;
+    }
     case ACTIONS: {
         update_ACTIONS(inputs);
         break;
@@ -131,6 +138,9 @@ void BattleScene::draw(Fps const* fps, RenderSizes rs)
     {
     case START:
         draw_START(fps, rs);
+        break;
+    case WEATHER:
+        draw_WEATHER(fps, rs);
         break;
     case ACTIONS:
         draw_ACTIONS(fps, rs);
@@ -344,4 +354,28 @@ std::string BattleScene::canEvolve(Pkmn::PkmnPtr const& pkmn)
     }
 
     return {};
+}
+
+void BattleScene::changeWeather(Map::Weather weather)
+{
+    this->weather = weather;
+
+    if (weather == Map::Weather::NONE)
+    {
+        weatherAnimation.release();
+        weatherSpeech.release();
+        return;
+    }
+
+    weatherSpeech = std::make_unique<TextSpeech>(renderer);
+
+    switch (weather)
+    {
+    // TODO: all weather animations
+    default:
+        weatherAnimation = std::make_unique<RainAnimation>(renderer);
+        break;
+    }
+    weatherSpeech->setTexts({weatherAnimation->getStartingText()});
+    weatherSpeech->init();
 }

@@ -79,8 +79,8 @@ target_sources(${MODULE_NAME}
 )
 
 # animations
-file(GLOB SRC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/animations/*.cpp")
-file(GLOB INC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/animations/*.h")
+file(GLOB_RECURSE SRC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/animations/*.cpp")
+file(GLOB_RECURSE INC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/animations/*.h")
 
 target_sources(${MODULE_NAME}
    PRIVATE

@@ -10,6 +10,16 @@
 class Map
 {
 public:
+    enum Weather
+    {
+        NONE,
+        HARSH_SUNLIGHT,
+        RAIN,
+        SANDSTORM,
+        HAIL,
+        __SIZE
+    };
+
     Map(size_t nCol, size_t nRow);
 
     std::unique_ptr<Level>& addLevel();
@@ -25,6 +35,8 @@ public:
     std::vector<EncounterMethod> const& getEncounterMethods() const;
     void                                setEncounterMethods(std::vector<EncounterMethod> const& newEncounterMethods);
 
+    Weather getWeather() const;
+
     friend void                 tag_invoke(js::value_from_tag, js::value& jv, std::unique_ptr<Map> const& o);
     friend std::unique_ptr<Map> tag_invoke(js::value_to_tag<std::unique_ptr<Map>>, js::value const& jv);
 
@@ -33,6 +45,8 @@ private:
 
     std::vector<std::unique_ptr<Level>> levels;
     std::vector<EncounterMethod>        encounterMethods;
+
+    Weather weather = Weather::NONE;
 };
 
 #endif // MAP_H

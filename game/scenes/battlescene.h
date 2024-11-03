@@ -3,11 +3,13 @@
 
 #include "animations/eyeanimation.h"
 #include "animations/fadeanimation.h"
+#include "animations/weather/weatheranimation.h"
 #include "battles/battleactions.h"
 #include "battles/battlebackground.h"
 #include "battles/battlespeech.h"
 #include "battles/moveselection.h"
 #include "battles/singlebattleui.h"
+#include "map.h"
 #include "pkmn.h"
 #include "scene.h"
 
@@ -30,8 +32,13 @@ public:
     virtual size_t computeDamage(Pkmn::PkmnPtr const& pkmn, Move::MovePtr const& move) const;
     std::string    canEvolve(Pkmn::PkmnPtr const& pkmn);
 
+    void changeWeather(Map::Weather weather);
+
     virtual void update_START(Inputs const* inputs)         = 0;
     virtual void draw_START(Fps const* fps, RenderSizes rs) = 0;
+
+    virtual void update_WEATHER(Inputs const* inputs)         = 0;
+    virtual void draw_WEATHER(Fps const* fps, RenderSizes rs) = 0;
 
     virtual void update_ACTIONS(Inputs const* inputs)         = 0;
     virtual void draw_ACTIONS(Fps const* fps, RenderSizes rs) = 0;
@@ -70,6 +77,7 @@ protected:
     enum State
     {
         START,
+        WEATHER,
         ACTIONS,
         MOVES,
         BAG,
@@ -94,9 +102,13 @@ protected:
     std::unique_ptr<MoveSelection>    moveSelection;
     std::unique_ptr<FadeAnimation>    fadeOutAnimation;
     std::unique_ptr<EyeAnimation>     eyeAnimation;
+    std::unique_ptr<WeatherAnimation> weatherAnimation;
+    std::unique_ptr<TextSpeech>       weatherSpeech;
 
     State state         = START;
     State previousState = END;
+
+    Map::Weather weather = Map::Weather::NONE;
 };
 
 #endif // BATTLESCENE_H

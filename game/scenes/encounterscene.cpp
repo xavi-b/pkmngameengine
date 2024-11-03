@@ -122,8 +122,7 @@ void EncounterScene::update_START(Inputs const* inputs)
         {
             firstPkmnSpeech.release();
 
-            battleActions->reset();
-            state = ACTIONS;
+            state = WEATHER;
         }
     }
 }
@@ -150,11 +149,53 @@ void EncounterScene::draw_START(Fps const* fps, RenderSizes rs)
     }
 }
 
+void EncounterScene::update_WEATHER(Inputs const* inputs)
+{
+    if (weather == Map::Weather::NONE)
+    {
+        battleActions->reset();
+        state = ACTIONS;
+    }
+
+    if (!weatherAnimation->isStarted())
+    {
+        weatherAnimation->start();
+    }
+
+    if (weatherAnimation->isStarted() && !weatherAnimation->isFinished())
+    {
+        weatherAnimation->incrementTicks();
+    }
+
+    weatherSpeech->update(inputs);
+
+    if (weatherSpeech->shouldClose())
+    {
+        weatherSpeech->setTexts({weatherAnimation->getContinuingText()});
+        weatherSpeech->reset();
+        weatherSpeech->init();
+        weatherAnimation->reset();
+
+        battleActions->reset();
+        state = ACTIONS;
+    }
+}
+
+void EncounterScene::draw_WEATHER(Fps const* fps, RenderSizes rs)
+{
+    if (weatherAnimation->isStarted() && !weatherAnimation->isFinished())
+    {
+        weatherAnimation->draw(fps, rs);
+    }
+
+    if (!weatherSpeech->shouldClose())
+    {
+        weatherSpeech->draw(fps, rs);
+    }
+}
+
 void EncounterScene::update_ACTIONS(Inputs const* inputs)
 {
-    // TODO: Weather animation
-    // TODO: Weather text
-
     battleSpeech->update(inputs);
     if (battleSpeech->mayClose())
     {
@@ -190,9 +231,6 @@ void EncounterScene::update_ACTIONS(Inputs const* inputs)
 
 void EncounterScene::draw_ACTIONS(Fps const* fps, RenderSizes rs)
 {
-    // TODO: Weather animation
-    // TODO: Weather text
-
     battleSpeech->draw(fps, rs);
     battleActions->draw(fps, rs);
 }
@@ -342,14 +380,9 @@ void EncounterScene::update_P_MOVES(Inputs const* /*inputs*/)
     }
 
     if (playerFirst)
-    {
         state = OPPONENT_MOVES;
-    }
     else
-    {
-        battleActions->reset();
-        state = ACTIONS;
-    }
+        state = WEATHER;
 }
 
 void EncounterScene::draw_P_MOVES(Fps const* /*fps*/, RenderSizes /*rs*/)
@@ -536,8 +569,7 @@ void EncounterScene::update_O_ITEMS(Inputs const* /*inputs*/)
     // Item computation
     // Item animation
 
-    battleActions->reset();
-    state = ACTIONS;
+    state = WEATHER;
 }
 
 void EncounterScene::draw_O_ITEMS(Fps const* /*fps*/, RenderSizes /*rs*/)
@@ -567,10 +599,7 @@ void EncounterScene::update_O_MOVES(Inputs const* /*inputs*/)
     }
 
     if (playerFirst)
-    {
-        battleActions->reset();
-        state = ACTIONS;
-    }
+        state = WEATHER;
     else
         state = PLAYER_MOVES;
 }

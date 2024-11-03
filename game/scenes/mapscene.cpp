@@ -551,6 +551,7 @@ std::unique_ptr<Scene> MapScene::nextScene()
     else if (encounteredPkmn && battleIntro && battleIntro->isFinished())
     {
         auto scene = std::make_unique<EncounterScene>(renderer);
+        scene->changeWeather(Map::Weather::RAIN); // TODO: map->getWeather()
         scene->setEncounterPkmn(encounteredPkmn);
         auto& pkmns = Game::instance()->data.player.pkmns;
         for (size_t i = 0; i < pkmns.size(); ++i)

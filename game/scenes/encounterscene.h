@@ -30,6 +30,9 @@ public:
     virtual void update_START(Inputs const* inputs) override;
     virtual void draw_START(Fps const* fps, RenderSizes rs) override;
 
+    virtual void update_WEATHER(Inputs const* inputs) override;
+    virtual void draw_WEATHER(Fps const* fps, RenderSizes rs) override;
+
     virtual void update_ACTIONS(Inputs const* inputs) override;
     virtual void draw_ACTIONS(Fps const* fps, RenderSizes rs) override;
 

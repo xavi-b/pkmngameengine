@@ -50,6 +50,11 @@ void Map::setEncounterMethods(std::vector<EncounterMethod> const& newEncounterMe
     encounterMethods = newEncounterMethods;
 }
 
+Map::Weather Map::getWeather() const
+{
+    return weather;
+}
+
 void tag_invoke(js::value_from_tag, js::value& jv, std::unique_ptr<Map> const& o)
 {
     jv = {
