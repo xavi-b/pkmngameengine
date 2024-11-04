@@ -54,6 +54,7 @@ protected:
     std::unique_ptr<Sprite>                                    playerSprite;
     std::map<std::unique_ptr<Entity>, std::unique_ptr<Sprite>> entities;
 
+    Pkmn::PkmnPtr                         emptyPkmnPtr = nullptr;
     Pkmn::PkmnPtr                         encounteredPkmn;
     std::unique_ptr<BattleIntroAnimation> battleIntro;
     std::unique_ptr<FadeAnimation>        fadeInAnimation;

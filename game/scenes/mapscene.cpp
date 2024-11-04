@@ -592,7 +592,6 @@ std::unique_ptr<Scene> MapScene::nextScene()
 {
     if (openPkmns && fadeOutAnimation->isFinished())
     {
-        Pkmn::PkmnPtr emptyPkmnPtr = nullptr;
         return std::make_unique<PkmnsScene>(renderer, emptyPkmnPtr);
     }
     else if (openBag && fadeOutAnimation->isFinished())
