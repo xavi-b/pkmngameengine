@@ -30,6 +30,8 @@ public:
     std::unique_ptr<MapScene> load();
     void                      printDebug();
     bool                      isDebug();
+    bool                      isDay();
+    bool                      isNight();
 
     GameData data;
 

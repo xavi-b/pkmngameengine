@@ -10,6 +10,7 @@
 #include <SDL_mixer.h>
 #include <algorithm>
 #include <boost/program_options.hpp>
+#include <ctime>
 #include <iostream>
 
 Game* Game::sInstance = nullptr;
@@ -257,4 +258,16 @@ void Game::printDebug()
 bool Game::isDebug()
 {
     return debug;
+}
+
+bool Game::isDay()
+{
+    std::time_t t   = std::time(0);
+    std::tm*    now = std::localtime(&t);
+    return now->tm_hour >= 8 && now->tm_hour < 20;
+}
+
+bool Game::isNight()
+{
+    return !isDay();
 }
