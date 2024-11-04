@@ -15,6 +15,8 @@ public:
     virtual void init() override;
     virtual void draw(Fps const* fps, RenderSizes rs) override;
 
+    virtual bool manageEvents() override;
+
     virtual std::string name() override;
 
     virtual std::unique_ptr<Scene> nextScene() override;

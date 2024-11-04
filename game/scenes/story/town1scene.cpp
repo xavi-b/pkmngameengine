@@ -15,6 +15,27 @@ void Town1Scene::draw(Fps const* fps, RenderSizes rs)
     MapScene::draw(fps, rs);
 }
 
+bool Town1Scene::manageEvents()
+{
+    auto& layer = map->getLevels()[playerLevel]->getEventLayer();
+    auto& event = (*layer.get())(playerX, playerY);
+    if (event && event->getId() == "Road1")
+    {
+        if (direction == RIGHT)
+        {
+            if (!fadeOutAnimation->isStarted())
+            {
+                fadeOutAnimation->reset();
+                fadeOutAnimation->start();
+                goToScene = "Road1";
+                return true;
+            }
+        }
+    }
+
+    return MapScene::manageEvents();
+}
+
 std::string Town1Scene::name()
 {
     return "Town1Scene";
@@ -26,16 +47,15 @@ std::unique_ptr<Scene> Town1Scene::nextScene()
     if (scene)
         return scene;
 
-    auto& layer = map->getLevels()[playerLevel]->getEventLayer();
-    auto& event = (*layer.get())(playerX, playerY);
-    if (event && event->getId() == "Road1")
+    if (fadeOutAnimation->isStarted() && fadeOutAnimation->isFinished())
     {
-        if (direction == RIGHT)
+        if (goToScene == "Road1")
         {
             auto road1Scene = std::make_unique<Road1Scene>(renderer);
             road1Scene->initPlayerPosition(0, 2, RIGHT);
             return road1Scene;
         }
     }
+
     return nullptr;
 }

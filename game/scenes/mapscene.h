@@ -43,6 +43,7 @@ public:
 
     virtual void initPlayerPosition(int x, int y, Direction direction = NONE);
 
+    virtual bool                                  manageEvents();
     virtual bool                                  manageEncounters();
     virtual std::unique_ptr<BattleIntroAnimation> manageBattleIntro();
 
@@ -78,11 +79,14 @@ protected:
     Pkmn::PkmnPtr                         encounteredPkmn;
     std::unique_ptr<BattleIntroAnimation> battleIntro;
     std::unique_ptr<FadeAnimation>        fadeInAnimation;
+    std::unique_ptr<FadeAnimation>        fadeOutAnimation;
 
     bool                  openMenu = false;
     std::unique_ptr<Menu> menu;
     bool                  openPkmns = false;
     bool                  openBag   = false;
+
+    std::string goToScene = "";
 };
 
 #endif // MAP_H

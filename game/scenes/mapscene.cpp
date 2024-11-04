@@ -27,7 +27,10 @@ MapScene::MapScene(SDL_Renderer* renderer, std::string const& mapPath) : Scene(r
     menu = std::make_unique<Menu>(renderer);
     menu->init();
 
-    fadeInAnimation = std::make_unique<FadeAnimation>(renderer, true);
+    fadeOutAnimation = std::make_unique<FadeAnimation>(renderer, false);
+    fadeInAnimation  = std::make_unique<FadeAnimation>(renderer, true);
+    fadeInAnimation->reset();
+    fadeInAnimation->start();
 }
 
 MapScene::~MapScene()
@@ -51,6 +54,12 @@ void MapScene::update(Inputs const* inputs)
         fadeInAnimation->incrementTicks();
     }
 
+    if (fadeOutAnimation->isStarted() && !fadeOutAnimation->isFinished())
+    {
+        fadeOutAnimation->incrementTicks();
+        return;
+    }
+
     if (battleIntro && !battleIntro->isFinished())
     {
         battleIntro->incrementTicks();
@@ -69,10 +78,14 @@ void MapScene::update(Inputs const* inputs)
                 {
                 case Menu::PKMNS: {
                     openPkmns = true;
+                    fadeOutAnimation->reset();
+                    fadeOutAnimation->start();
                     break;
                 }
                 case Menu::BAG: {
                     openBag = true;
+                    fadeOutAnimation->reset();
+                    fadeOutAnimation->start();
                     break;
                 }
                 case Menu::SAVE: {
@@ -108,11 +121,17 @@ void MapScene::update(Inputs const* inputs)
     if (accumulatedTicks != 0)
         return;
 
+    bool event     = manageEvents();
     bool encounter = manageEncounters();
 
     direction       = NONE;
     playerPreviousY = playerY;
     playerPreviousX = playerX;
+
+    if (event)
+    {
+        return;
+    }
 
     if (encounter)
     {
@@ -145,11 +164,6 @@ void MapScene::update(Inputs const* inputs)
             if (l != playerLevel)
                 continue;
 
-            auto& specialTileLayer = level->getSpecialTileLayer();
-            auto& specialTile      = (*specialTileLayer.get())(playerX, playerY - 1);
-            if (specialTile && *(specialTile.get()) != GRASS)
-                continue;
-
             for (size_t h = 0; h < level->getTileLayers().size(); ++h)
             {
                 auto& layer = level->getTileLayers()[h];
@@ -177,11 +191,6 @@ void MapScene::update(Inputs const* inputs)
             auto& level = map->getLevels()[l];
 
             if (l != playerLevel)
-                continue;
-
-            auto& specialTileLayer = level->getSpecialTileLayer();
-            auto& specialTile      = (*specialTileLayer.get())(playerX, playerY + 1);
-            if (specialTile && *(specialTile.get()) != GRASS)
                 continue;
 
             for (size_t h = 0; h < level->getTileLayers().size(); ++h)
@@ -213,11 +222,6 @@ void MapScene::update(Inputs const* inputs)
             if (l != playerLevel)
                 continue;
 
-            auto& specialTileLayer = level->getSpecialTileLayer();
-            auto& specialTile      = (*specialTileLayer.get())(playerX - 1, playerY);
-            if (specialTile && *(specialTile.get()) != GRASS)
-                continue;
-
             for (size_t h = 0; h < level->getTileLayers().size(); ++h)
             {
                 auto& layer = level->getTileLayers()[h];
@@ -245,11 +249,6 @@ void MapScene::update(Inputs const* inputs)
             auto& level = map->getLevels()[l];
 
             if (l != playerLevel)
-                continue;
-
-            auto& specialTileLayer = level->getSpecialTileLayer();
-            auto& specialTile      = (*specialTileLayer.get())(playerX + 1, playerY);
-            if (specialTile && *(specialTile.get()) != GRASS)
                 continue;
 
             for (size_t h = 0; h < level->getTileLayers().size(); ++h)
@@ -407,14 +406,17 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
         }
     }
 
-    if (fadeInAnimation->isStarted())
-        fadeInAnimation->draw(fps, rs);
-
     if (battleIntro)
         battleIntro->draw(fps, rs);
 
     if (openMenu)
         menu->draw(fps, rs);
+
+    if (fadeInAnimation->isStarted() && !fadeInAnimation->isFinished())
+        fadeInAnimation->draw(fps, rs);
+
+    if (fadeOutAnimation->isStarted() && !fadeOutAnimation->isFinished())
+        fadeOutAnimation->draw(fps, rs);
 }
 
 void MapScene::initPlayerPosition(int x, int y, Direction direction)
@@ -424,6 +426,11 @@ void MapScene::initPlayerPosition(int x, int y, Direction direction)
     playerPreviousX = x;
     playerPreviousY = y;
     this->direction = direction;
+}
+
+bool MapScene::manageEvents()
+{
+    return false;
 }
 
 bool MapScene::manageEncounters()
@@ -506,11 +513,11 @@ std::unique_ptr<BattleIntroAnimation> MapScene::manageBattleIntro()
 
 bool MapScene::pushScene() const
 {
-    if (openPkmns)
+    if (openPkmns && fadeOutAnimation->isFinished())
     {
         return true;
     }
-    else if (openBag)
+    else if (openBag && fadeOutAnimation->isFinished())
     {
         return true;
     }
@@ -524,11 +531,8 @@ bool MapScene::pushScene() const
 
 void MapScene::popReset()
 {
-    if (battleIntro)
-    {
-        fadeInAnimation->reset();
-        fadeInAnimation->start();
-    }
+    fadeInAnimation->reset();
+    fadeInAnimation->start();
 
     openPkmns = false;
     openBag   = false;
@@ -538,12 +542,12 @@ void MapScene::popReset()
 
 std::unique_ptr<Scene> MapScene::nextScene()
 {
-    if (openPkmns)
+    if (openPkmns && fadeOutAnimation->isFinished())
     {
         Pkmn::PkmnPtr emptyPkmnPtr = nullptr;
         return std::make_unique<PkmnsScene>(renderer, emptyPkmnPtr);
     }
-    else if (openBag)
+    else if (openBag && fadeOutAnimation->isFinished())
     {
         auto scene = std::make_unique<BagScene>(renderer);
         return scene;
