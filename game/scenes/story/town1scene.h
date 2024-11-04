@@ -5,7 +5,6 @@
 
 #include <memory>
 #include <string>
-#include <vector>
 
 class Town1Scene : public MapScene
 {
@@ -13,6 +12,7 @@ public:
     Town1Scene(SDL_Renderer* renderer);
 
     virtual void init() override;
+    virtual void update(Inputs const* inputs) override;
     virtual void draw(Fps const* fps, RenderSizes rs) override;
 
     virtual bool manageEvents() override;

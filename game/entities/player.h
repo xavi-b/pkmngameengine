@@ -5,8 +5,6 @@
 #include "pkmn.h"
 
 #include <array>
-#include <memory>
-#include <vector>
 
 class Player : public Entity
 {
@@ -24,11 +22,15 @@ public:
 
     size_t getPkmnCount() const;
 
-    Gender gender = BOY;
+    Gender getGender() const;
+    void   setGender(Gender newGender);
 
     std::string name;
 
     std::array<Pkmn::PkmnPtr, 6> pkmns;
+
+private:
+    Gender gender = BOY;
 };
 
 #endif // PLAYER_H

@@ -1,5 +1,6 @@
 #include "road1scene.h"
 
+#include "game.h"
 #include "scenes/story/town1scene.h"
 
 Road1Scene::Road1Scene(SDL_Renderer* renderer) : MapScene(renderer, "resources/maps/road1.pkmap")
@@ -17,11 +18,11 @@ void Road1Scene::draw(Fps const* fps, RenderSizes rs)
 
 bool Road1Scene::manageEvents()
 {
-    auto& layer = map->getLevels()[playerLevel]->getEventLayer();
-    auto& event = (*layer.get())(playerX, playerY);
+    auto& layer = map->getLevels()[Game::instance()->data.player.l]->getEventLayer();
+    auto& event = (*layer.get())(Game::instance()->data.player.x, Game::instance()->data.player.y);
     if (event && event->getId() == "Town1")
     {
-        if (direction == LEFT)
+        if (Game::instance()->data.player.direction == Entity::Direction::LEFT)
         {
             if (!fadeOutAnimation->isStarted())
             {
@@ -52,7 +53,7 @@ std::unique_ptr<Scene> Road1Scene::nextScene()
         if (goToScene == "Town1")
         {
             auto town1Scene = std::make_unique<Town1Scene>(renderer);
-            town1Scene->initPlayerPosition(19, 2, LEFT);
+            town1Scene->initPlayerPosition(19, 2, Entity::Direction::LEFT);
             return town1Scene;
         }
     }

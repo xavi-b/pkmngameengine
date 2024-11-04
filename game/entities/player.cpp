@@ -11,11 +11,21 @@ size_t Player::getPkmnCount() const
     });
 }
 
+Player::Gender Player::getGender() const
+{
+    return gender;
+}
+
+void Player::setGender(Gender newGender)
+{
+    gender = newGender;
+}
+
 void tag_invoke(js::value_from_tag, js::value& jv, Player const& o)
 {
     jv = {
         {"name", o.name},
-        {"gender", static_cast<int>(o.gender)},
+        {"gender", static_cast<int>(o.getGender())},
         {"pkmns", js::value_from<std::array<Pkmn::PkmnPtr, 6> const&>(o.pkmns)}
     };
 }

@@ -81,12 +81,13 @@ void IntroScene::update(Inputs const* inputs)
         Player::Gender gender = static_cast<Player::Gender>(genderQuestion->selectedIndex());
         if (genderQuestion->isFinished())
         {
-            Game::instance()->data.player.gender = gender;
+            Game::instance()->data.player.setGender(gender);
             std::vector<std::string> texts;
-            texts.push_back(
-                lc::translate("Prof: So you are a ").str()
-                + (Game::instance()->data.player.gender == 0 ? lc::translate("boy") : lc::translate("girl")).str()
-                + ".");
+            texts.push_back(lc::translate("Prof: So you are a ").str()
+                            + (Game::instance()->data.player.getGender() == Player::Gender::BOY ? lc::translate("boy")
+                                                                                                : lc::translate("girl"))
+                                  .str()
+                            + ".");
             outroSpeech->setTexts(texts);
             outroSpeech->init();
             outroSpeech->update(inputs);
@@ -155,7 +156,7 @@ std::unique_ptr<Scene> IntroScene::nextScene()
     else if (state == Leave)
     {
         auto scene = std::make_unique<Town1Scene>(renderer);
-        scene->initPlayerPosition(8, 12, MapScene::NONE);
+        scene->initPlayerPosition(8, 12, Entity::Direction::NONE);
         return scene;
     }
     return nullptr;
