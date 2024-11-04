@@ -24,14 +24,15 @@ public:
 
     Entity();
 
-    Direction direction     = NONE;
-    size_t    l             = 0;
-    int       x             = 0;
-    int       y             = 0;
-    int       previousX     = 0;
-    int       previousY     = 0;
-    Speed     speed         = WALK;
-    Speed     previousSpeed = WALK;
+    Direction direction         = NONE;
+    Direction previousDirection = NONE;
+    size_t    l                 = 0;
+    int       x                 = 0;
+    int       y                 = 0;
+    int       previousX         = 0;
+    int       previousY         = 0;
+    Speed     speed             = WALK;
+    Speed     previousSpeed     = WALK;
 };
 
 #endif // ENTITY_H

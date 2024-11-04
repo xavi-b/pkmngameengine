@@ -45,11 +45,12 @@ public:
 
     std::pair<size_t, size_t> currentPlayerPosition() const;
 
+    virtual bool entitiesShouldFreeze() const;
+
 protected:
     std::map<std::string, std::pair<SDL_Surface*, SDL_Texture*>> sprites;
 
     std::unique_ptr<Map>                                       map;
-    size_t                                                     accumulatedTicks = 0;
     std::unique_ptr<Sprite>                                    playerSprite;
     std::map<std::unique_ptr<Entity>, std::unique_ptr<Sprite>> entities;
 

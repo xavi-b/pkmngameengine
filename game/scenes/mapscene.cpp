@@ -45,6 +45,14 @@ MapScene::~MapScene()
 
 void MapScene::update(Inputs const* inputs)
 {
+    for (auto it = entities.begin(); it != entities.end(); ++it)
+    {
+        auto& entity = *(it->first.get());
+        auto& sprite = *(it->second.get());
+
+        sprite.setAccumulatedTicks((sprite.getAccumulatedTicks() + 1) % entity.speed);
+    }
+
     if (fadeInAnimation->isStarted())
     {
         fadeInAnimation->incrementTicks();
@@ -111,12 +119,12 @@ void MapScene::update(Inputs const* inputs)
 
     player.previousSpeed = player.speed;
 
-    accumulatedTicks = (accumulatedTicks + 1) % player.speed;
+    playerSprite->setAccumulatedTicks((playerSprite->getAccumulatedTicks() + 1) % player.speed);
 
     if (player.direction == Entity::Direction::NONE && player.speed == Entity::Speed::WALK)
-        accumulatedTicks = 0;
+        playerSprite->setAccumulatedTicks(0);
 
-    if (accumulatedTicks != 0)
+    if (playerSprite->getAccumulatedTicks() != 0)
         return;
 
     bool event     = manageEvents();
@@ -188,12 +196,12 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
 
     int playerOffsetX = (rs.ww - dstTilePixelWidth) / 2
                       - (player.previousX
-                         + (player.x - player.previousX) * (accumulatedTicks + fps->tickPercentage())
+                         + (player.x - player.previousX) * (playerSprite->getAccumulatedTicks() + fps->tickPercentage())
                                / ((player.speed + player.previousSpeed) / 2.0))
                             * dstTilePixelWidth;
     int playerOffsetY = (rs.wh - dstTilePixelHeight) / 2
                       - (player.previousY
-                         + (player.y - player.previousY) * (accumulatedTicks + fps->tickPercentage())
+                         + (player.y - player.previousY) * (playerSprite->getAccumulatedTicks() + fps->tickPercentage())
                                / ((player.speed + player.previousSpeed) / 2.0))
                             * dstTilePixelHeight;
 
@@ -244,22 +252,30 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
                         if (player.x == int(i) && player.y == int(j) && player.l == l
                             && layer->getType() == TileLayer::SOLID)
                         {
-                            playerSprite->draw(player, fps, accumulatedTicks, &dstPlayerRect);
+                            playerSprite->draw(player, fps, &dstPlayerRect);
                         }
 
                         for (auto it = entities.begin(); it != entities.end(); ++it)
                         {
                             auto const& entity = *(it->first.get());
-                            if (entity.l == l && entity.x == int(i) && entity.y == int(j)
+                            auto&       sprite = *(it->second.get());
+                            if (entity.l == l && entity.previousX == int(i) && entity.previousY == int(j)
                                 && layer->getType() == TileLayer::SOLID)
                             {
+                                int entityOffsetX = (entity.x - entity.previousX)
+                                                  * (sprite.getAccumulatedTicks() + fps->tickPercentage())
+                                                  / ((entity.speed + entity.previousSpeed) / 2.0) * dstTilePixelWidth;
+                                int entityOffsetY = (entity.y - entity.previousY)
+                                                  * (sprite.getAccumulatedTicks() + fps->tickPercentage())
+                                                  / ((entity.speed + entity.previousSpeed) / 2.0) * dstTilePixelHeight;
+
                                 SDL_Rect dstEntityRect;
-                                dstEntityRect.x = i * dstTilePixelWidth + playerOffsetX;
-                                dstEntityRect.y = j * dstTilePixelHeight + playerOffsetY
+                                dstEntityRect.x = i * dstTilePixelWidth + playerOffsetX + entityOffsetX;
+                                dstEntityRect.y = j * dstTilePixelHeight + playerOffsetY + entityOffsetY
                                                 - (EntityPixelHeight - TilePixelSize) * rs.wh / rs.ah;
                                 dstEntityRect.w = dstTilePixelWidth + 1;
                                 dstEntityRect.h = EntityPixelHeight * rs.wh / rs.ah + 1;
-                                it->second->draw(entity, fps, accumulatedTicks, &dstEntityRect);
+                                sprite.draw(entity, fps, &dstEntityRect);
                             }
                         }
                     }
@@ -453,6 +469,10 @@ Entity* MapScene::entityAt(size_t x, size_t y, size_t l)
             return entity;
     }
 
+    auto& player = Game::instance()->data.player;
+    if (player.x == int(x) && player.y == int(y) && player.l == l)
+        return &player;
+
     return {};
 }
 
@@ -602,4 +622,9 @@ std::unique_ptr<Scene> MapScene::nextScene()
 std::pair<size_t, size_t> MapScene::currentPlayerPosition() const
 {
     return {Game::instance()->data.player.x, Game::instance()->data.player.y};
+}
+
+bool MapScene::entitiesShouldFreeze() const
+{
+    return openMenu || battleIntro;
 }

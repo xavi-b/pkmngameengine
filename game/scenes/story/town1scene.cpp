@@ -5,10 +5,14 @@
 
 Town1Scene::Town1Scene(SDL_Renderer* renderer) : MapScene(renderer, "resources/maps/town1.pkmap")
 {
-    auto entity       = std::make_unique<Entity>();
-    entity->x         = 11;
-    entity->y         = 11;
-    auto entitySprite = std::make_unique<Sprite>(renderer);
+    auto entity               = std::make_unique<Entity>();
+    entity->x                 = 11;
+    entity->y                 = 11;
+    entity->previousX         = 11;
+    entity->previousY         = 11;
+    entity->direction         = Entity::RIGHT;
+    entity->previousDirection = Entity::RIGHT;
+    auto entitySprite         = std::make_unique<Sprite>(renderer);
     entitySprite->load("resources/Graphics/Characters/NPC 01.png");
     entities.emplace(std::move(entity), std::move(entitySprite));
 }
@@ -22,10 +26,32 @@ void Town1Scene::update(Inputs const* inputs)
     MapScene::update(inputs);
 
     auto& entity = *(entities.begin()->first.get());
-    entity.x     = 11;
-    entity.y     = 11;
-    // entity.direction = Entity::RIGHT;
-    // move(entity);
+    auto& sprite = *(entities.begin()->second.get());
+    if (sprite.getAccumulatedTicks() == 0)
+    {
+        if (entitiesShouldFreeze())
+        {
+            entity.direction = Entity::NONE;
+            entity.previousY = entity.y;
+            entity.previousX = entity.x;
+        }
+        else
+        {
+            entity.direction = entity.previousDirection;
+            if (entity.x == 18)
+            {
+                entity.direction = Entity::LEFT;
+            }
+            else if (entity.x == 11)
+            {
+                entity.direction = Entity::RIGHT;
+            }
+            entity.previousDirection = entity.direction;
+            entity.previousY         = entity.y;
+            entity.previousX         = entity.x;
+            move(entity);
+        }
+    }
 }
 
 void Town1Scene::draw(Fps const* fps, RenderSizes rs)

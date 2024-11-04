@@ -57,7 +57,7 @@ void Sprite::forceSpriteDirection(Entity::Direction direction)
     }
 }
 
-void Sprite::draw(Entity const& entity, Fps const* fps, size_t accumulatedTicks, SDL_Rect* dstRect)
+void Sprite::draw(Entity const& entity, Fps const* fps, SDL_Rect* dstRect)
 {
     switch (entity.direction)
     {
@@ -90,4 +90,14 @@ void Sprite::draw(Entity const& entity, Fps const* fps, size_t accumulatedTicks,
     srcRect.h = MapScene::EntityPixelHeight;
 
     SDL_RenderCopy(renderer, texture, &srcRect, dstRect);
+}
+
+size_t Sprite::getAccumulatedTicks() const
+{
+    return accumulatedTicks;
+}
+
+void Sprite::setAccumulatedTicks(size_t newAccumulatedTicks)
+{
+    accumulatedTicks = newAccumulatedTicks;
 }
