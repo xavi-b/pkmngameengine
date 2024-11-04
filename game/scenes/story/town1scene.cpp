@@ -10,8 +10,8 @@ Town1Scene::Town1Scene(SDL_Renderer* renderer) : MapScene(renderer, "resources/m
     entity->y                 = 11;
     entity->previousX         = 11;
     entity->previousY         = 11;
-    entity->direction         = Entity::RIGHT;
-    entity->previousDirection = Entity::RIGHT;
+    entity->direction         = Entity::Direction::RIGHT;
+    entity->previousDirection = Entity::Direction::RIGHT;
     auto entitySprite         = std::make_unique<Sprite>(renderer);
     entitySprite->load("resources/Graphics/Characters/NPC 01.png");
     entities.emplace(std::move(entity), std::move(entitySprite));
@@ -31,7 +31,7 @@ void Town1Scene::update(Inputs const* inputs)
     {
         if (entitiesShouldFreeze())
         {
-            entity.direction = Entity::NONE;
+            entity.direction = Entity::Direction::NONE;
             entity.previousY = entity.y;
             entity.previousX = entity.x;
         }
@@ -40,11 +40,11 @@ void Town1Scene::update(Inputs const* inputs)
             entity.direction = entity.previousDirection;
             if (entity.x == 18)
             {
-                entity.direction = Entity::LEFT;
+                entity.direction = Entity::Direction::LEFT;
             }
             else if (entity.x == 11)
             {
-                entity.direction = Entity::RIGHT;
+                entity.direction = Entity::Direction::RIGHT;
             }
             entity.previousDirection = entity.direction;
             entity.previousY         = entity.y;

@@ -232,7 +232,7 @@ void MapperWidget::processMouseEvent(QMouseEvent* event)
 
     auto& level = map->getLevels()[workingLevelIndex];
 
-    if (layerType == EVENTS)
+    if (layerType == LayerType::EVENTS)
     {
         auto& layer = level->getEventLayer();
 
@@ -254,7 +254,7 @@ void MapperWidget::processMouseEvent(QMouseEvent* event)
             (*layer.get())(col, row).swap(event);
         }
     }
-    else if (layerType == SPECIAL_TILE)
+    else if (layerType == LayerType::SPECIAL_TILE)
     {
         auto& layer = level->getSpecialTileLayer();
 
@@ -405,7 +405,7 @@ void MapperWidget::paintEvent(QPaintEvent* event)
         }
     }
 
-    if (showSelectionPixmap && layerType == TILES)
+    if (showSelectionPixmap && layerType == LayerType::TILES)
         painter.drawPixmap(QRect(origin, overlayPixmap.size() * scaleFactor), overlayPixmap);
 }
 

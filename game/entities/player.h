@@ -9,7 +9,7 @@
 class Player : public Entity
 {
 public:
-    enum Gender
+    enum class Gender
     {
         BOY,
         GIRL
@@ -30,7 +30,7 @@ public:
     std::array<Pkmn::PkmnPtr, 6> pkmns;
 
 private:
-    Gender gender = BOY;
+    Gender gender = Gender::BOY;
 };
 
 #endif // PLAYER_H

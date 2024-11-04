@@ -276,12 +276,12 @@ void Pkmn::setHappiness(unsigned char newHappiness)
 
 bool Pkmn::isMale() const
 {
-    return gender == MALE;
+    return gender == Gender::MALE;
 }
 
 bool Pkmn::isFemale() const
 {
-    return gender == FEMALE;
+    return gender == Gender::FEMALE;
 }
 
 Pkmn::Gender Pkmn::getGender() const
@@ -331,9 +331,9 @@ void tag_invoke(js::value_from_tag, js::value& jv, Pkmn::PkmnPtr const& o)
             {"definition", o->definition->getId()},
             {"IVs", jsIVs},
             {"EVs", jsEVs},
-            {"statusCondition", o->statusCondition},
+            {"statusCondition", static_cast<int>(o->statusCondition)},
             {"happiness", o->happiness},
-            {"gender", o->gender}
+            {"gender", static_cast<int>(o->gender)}
         };
     }
     else
@@ -357,7 +357,7 @@ Pkmn::PkmnPtr tag_invoke(js::value_to_tag<Pkmn::PkmnPtr>, js::value const& jv)
     pkmn->moves           = js::value_to<std::array<Move::MovePtr, 4>>(obj.at("moves"));
     pkmn->statusCondition = static_cast<Pkmn::StatusCondition>(js::value_to<int>(obj.at("statusCondition")));
     pkmn->happiness       = js::value_to<unsigned char>(obj.at("happiness"));
-    pkmn->gender          = static_cast<Pkmn::Gender>(js::value_to<size_t>(obj.at("gender")));
+    pkmn->gender          = static_cast<Pkmn::Gender>(js::value_to<int>(obj.at("gender")));
     for (auto& value : obj.at("IVs").as_array())
     {
         js::object const& obj                                                  = value.as_object();

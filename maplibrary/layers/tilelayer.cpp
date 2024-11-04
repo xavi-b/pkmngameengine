@@ -13,11 +13,11 @@ std::string TileLayer::getTypeName() const
 {
     switch (type)
     {
-    case GROUND:
+    case Type::GROUND:
         return "Ground";
-    case SOLID:
+    case Type::SOLID:
         return "Solid";
-    case OVERLAY:
+    case Type::OVERLAY:
         return "Overlay";
     default:
         return "Unknown";
@@ -40,7 +40,7 @@ void tag_invoke(js::value_from_tag, js::value& jv, std::unique_ptr<TileLayer> co
         {"elements", js::value_from<std::vector<std::vector<Tile::TilePtr>> const&>(o->elements)},
         {"nCol",     o->nCol                                                                    },
         {"nRow",     o->nRow                                                                    },
-        {"type",     o->type                                                                    }
+        {"type",     static_cast<int>(o->type)                                                  }
     };
 }
 

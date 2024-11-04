@@ -9,9 +9,9 @@ SDL_Color genderColor(Pkmn::Gender gender)
 {
     switch (gender)
     {
-    case Pkmn::MALE:
+    case Pkmn::Gender::MALE:
         return {78, 208, 251, 255};
-    case Pkmn::FEMALE:
+    case Pkmn::Gender::FEMALE:
         return {247, 152, 144, 255};
     default:
         return {};
@@ -22,9 +22,9 @@ wchar_t genderSymbol(Pkmn::Gender gender)
 {
     switch (gender)
     {
-    case Pkmn::MALE:
+    case Pkmn::Gender::MALE:
         return L'♂';
-    case Pkmn::FEMALE:
+    case Pkmn::Gender::FEMALE:
         return L'♀';
     default:
         return L' ';

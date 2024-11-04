@@ -11,7 +11,7 @@
 class TileLayer : public Layer<Tile::TilePtr>
 {
 public:
-    enum Type
+    enum class Type
     {
         GROUND,
         SOLID,

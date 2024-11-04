@@ -10,7 +10,7 @@
 class Pkmn
 {
 public:
-    enum StatusCondition
+    enum class StatusCondition : size_t
     {
         NONE,
         BURN,
@@ -21,7 +21,7 @@ public:
         SLEEP
     };
 
-    enum Gender
+    enum class Gender : size_t
     {
         MALE,
         FEMALE,
@@ -97,9 +97,9 @@ private:
     std::string                     nickName;
     std::map<PkmnDef::Stat, size_t> IVs;
     std::map<PkmnDef::Stat, size_t> EVs;
-    StatusCondition                 statusCondition = NONE;
+    StatusCondition                 statusCondition = StatusCondition::NONE;
     unsigned char                   happiness       = 0;
-    Gender                          gender          = MALE;
+    Gender                          gender          = Gender::MALE;
     bool                            shiny           = false;
 };
 

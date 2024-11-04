@@ -16,7 +16,7 @@ class MapperWidget : public QWidget
     Q_PROPERTY(bool gridVisible READ isGridVisible WRITE setGridVisible NOTIFY gridVisibleChanged FINAL)
 
 public:
-    enum LayerType
+    enum class LayerType
     {
         TILES,
         EVENTS,
@@ -101,7 +101,7 @@ private:
     int                  workingLayerIndex  = 0;
     int                  workingLevelIndex  = 0;
     bool                 belowLevelsOpacity = false;
-    LayerType            layerType          = TILES;
+    LayerType            layerType          = LayerType::TILES;
     SpecialTileType      specialTileType    = SpecialTileType::GRASS;
     bool                 gridVisible        = true;
 };

@@ -18,7 +18,7 @@ MapScene::MapScene(SDL_Renderer* renderer, std::string const& mapPath) : Scene(r
     map.swap(mapPtr);
 
     playerSprite = std::make_unique<Sprite>(renderer);
-    if (Game::instance()->data.player.getGender() == Player::BOY)
+    if (Game::instance()->data.player.getGender() == Player::Gender::BOY)
         playerSprite->load("resources/Graphics/Characters/boy_run.png");
     else
         playerSprite->load("resources/Graphics/Characters/girl_run.png");
@@ -250,7 +250,7 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
                             SDL_RenderCopy(renderer, sprites[path].second, &srcRect, &dstRect);
 
                         if (player.x == int(i) && player.y == int(j) && player.l == l
-                            && layer->getType() == TileLayer::SOLID)
+                            && layer->getType() == TileLayer::Type::SOLID)
                         {
                             playerSprite->draw(player, fps, &dstPlayerRect);
                         }
@@ -260,7 +260,7 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
                             auto const& entity = *(it->first.get());
                             auto&       sprite = *(it->second.get());
                             if (entity.l == l && entity.previousX == int(i) && entity.previousY == int(j)
-                                && layer->getType() == TileLayer::SOLID)
+                                && layer->getType() == TileLayer::Type::SOLID)
                             {
                                 int entityOffsetX = (entity.x - entity.previousX)
                                                   * (sprite.getAccumulatedTicks() + fps->tickPercentage())
@@ -335,13 +335,13 @@ void MapScene::initPlayerPosition(int x, int y, Entity::Direction direction)
     Game::instance()->data.player.y         = y;
     Game::instance()->data.player.previousX = x;
     Game::instance()->data.player.previousY = y;
-    Game::instance()->data.player.direction = Entity::NONE;
+    Game::instance()->data.player.direction = Entity::Direction::NONE;
     playerSprite->forceSpriteDirection(direction);
 }
 
 void MapScene::move(Entity& entity)
 {
-    if (entity.direction == Entity::UP)
+    if (entity.direction == Entity::Direction::UP)
     {
         for (size_t l = 0; l < map->getLevels().size(); ++l)
         {
@@ -354,7 +354,7 @@ void MapScene::move(Entity& entity)
             {
                 auto& layer = level->getTileLayers()[h];
 
-                if (layer->getType() != TileLayer::SOLID)
+                if (layer->getType() != TileLayer::Type::SOLID)
                     continue;
 
                 if (entity.y > 0)
@@ -368,7 +368,7 @@ void MapScene::move(Entity& entity)
             }
         }
     }
-    else if (entity.direction == Entity::DOWN)
+    else if (entity.direction == Entity::Direction::DOWN)
     {
         for (size_t l = 0; l < map->getLevels().size(); ++l)
         {
@@ -381,7 +381,7 @@ void MapScene::move(Entity& entity)
             {
                 auto& layer = level->getTileLayers()[h];
 
-                if (layer->getType() != TileLayer::SOLID)
+                if (layer->getType() != TileLayer::Type::SOLID)
                     continue;
 
                 if (entity.y < int(map->getNRow() - 1))
@@ -395,7 +395,7 @@ void MapScene::move(Entity& entity)
             }
         }
     }
-    else if (entity.direction == Entity::LEFT)
+    else if (entity.direction == Entity::Direction::LEFT)
     {
         for (size_t l = 0; l < map->getLevels().size(); ++l)
         {
@@ -408,7 +408,7 @@ void MapScene::move(Entity& entity)
             {
                 auto& layer = level->getTileLayers()[h];
 
-                if (layer->getType() != TileLayer::SOLID)
+                if (layer->getType() != TileLayer::Type::SOLID)
                     continue;
 
                 if (entity.x > 0)
@@ -422,7 +422,7 @@ void MapScene::move(Entity& entity)
             }
         }
     }
-    else if (entity.direction == Entity::RIGHT)
+    else if (entity.direction == Entity::Direction::RIGHT)
     {
         for (size_t l = 0; l < map->getLevels().size(); ++l)
         {
@@ -435,7 +435,7 @@ void MapScene::move(Entity& entity)
             {
                 auto& layer = level->getTileLayers()[h];
 
-                if (layer->getType() != TileLayer::SOLID)
+                if (layer->getType() != TileLayer::Type::SOLID)
                     continue;
 
                 if (entity.x < int(map->getNCol() - 1))
@@ -534,7 +534,7 @@ bool MapScene::manageEncounters()
                         encounteredPkmn = std::make_shared<Pkmn>(pkmnDef, level);
                         encounteredPkmn->generateFromPkmnDef();
                         // TODO: temp
-                        encounteredPkmn->setStatusCondition(Pkmn::BADLY_POISON);
+                        encounteredPkmn->setStatusCondition(Pkmn::StatusCondition::BADLY_POISON);
                     }
                     return true;
                 }

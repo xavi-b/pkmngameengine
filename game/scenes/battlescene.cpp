@@ -202,7 +202,7 @@ size_t BattleScene::computeDamage(Pkmn::PkmnPtr const& pkmn, Move::MovePtr const
     size_t power = move->getDefinition()->getPower();
     size_t ad =
         category == MoveDef::PHYSICAL ? pkmn->getStats()[PkmnDef::ATTACK] : pkmn->getStats()[PkmnDef::SPECIAL_ATTACK];
-    float burn = pkmn->getStatusCondition() == Pkmn::BURN ? 0.5 : 1;
+    float burn = pkmn->getStatusCondition() == Pkmn::StatusCondition::BURN ? 0.5 : 1;
     // TODO
     float  screen  = 1.0;
     size_t targets = 1;

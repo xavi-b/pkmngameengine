@@ -126,17 +126,17 @@ void SingleBattleUi::draw(Fps const* /*fps*/, RenderSizes rs)
     auto statusYBasedOnStatus = [](Pkmn::StatusCondition status) {
         switch (status)
         {
-        case Pkmn::BURN:
+        case Pkmn::StatusCondition::BURN:
             return 2;
-        case Pkmn::FREEZE:
+        case Pkmn::StatusCondition::FREEZE:
             return 4;
-        case Pkmn::PARALYSIS:
+        case Pkmn::StatusCondition::PARALYSIS:
             return 3;
-        case Pkmn::POISON:
+        case Pkmn::StatusCondition::POISON:
             return 1;
-        case Pkmn::BADLY_POISON:
+        case Pkmn::StatusCondition::BADLY_POISON:
             return 5;
-        case Pkmn::SLEEP:
+        case Pkmn::StatusCondition::SLEEP:
             return 0;
         default:
             return -1;
