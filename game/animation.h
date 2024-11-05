@@ -7,14 +7,6 @@
 #include <memory>
 #include <vector>
 
-struct AnimationFrame
-{
-    int ticks    = 0;
-    int duration = -1;
-
-    virtual void draw(Fps const* fps, RenderSizes rs) = 0;
-};
-
 class Animation
 {
 public:

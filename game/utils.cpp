@@ -11,7 +11,12 @@ std::ostream& operator<<(std::ostream& o, SDL_Rect r)
 namespace Utils
 {
 
-size_t randint(size_t min, size_t max)
+size_t randint(int min, int max)
+{
+    return std::experimental::randint(min, max);
+}
+
+size_t randuint(size_t min, size_t max)
 {
     return std::experimental::randint(min, max);
 }

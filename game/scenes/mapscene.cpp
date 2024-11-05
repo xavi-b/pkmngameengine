@@ -1,5 +1,6 @@
 #include "mapscene.h"
 
+#include "animations/weather/rainanimation.h"
 #include "bagscene.h"
 #include "game.h"
 #include "pkmnsscene.h"
@@ -113,6 +114,14 @@ void MapScene::update(Inputs const* inputs)
         }
 
         return;
+    }
+
+    if (weatherAnimation)
+    {
+        if (!weatherAnimation->isStarted())
+            weatherAnimation->start();
+
+        weatherAnimation->incrementTicks();
     }
 
     auto& player = Game::instance()->data.player;
@@ -316,7 +325,7 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
         }
     }
 
-    drawWeather();
+    drawWeather(fps, rs);
 
     if (Game::instance()->isNight())
         drawNight();
@@ -334,8 +343,10 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
         fadeOutAnimation->draw(fps, rs);
 }
 
-void MapScene::drawWeather()
+void MapScene::drawWeather(Fps const* fps, RenderSizes rs)
 {
+    if (weatherAnimation)
+        weatherAnimation->draw(fps, rs);
 }
 
 void MapScene::drawNight()
@@ -520,7 +531,7 @@ bool MapScene::manageEncounters()
             if (it != encounterMethods.end())
             {
                 auto const& encounterMethod = *it;
-                size_t      pkmnEncounter   = Utils::randint(0, 99);
+                size_t      pkmnEncounter   = Utils::randuint(0, 99);
 
                 if (Game::instance()->isDebug())
                     std::cout << "PkmnEncounter: " << pkmnEncounter << "/" << encounterMethod.getDensity() << std::endl;
@@ -551,7 +562,7 @@ bool MapScene::manageEncounters()
                     PkmnDef::PkmnDefPtr pkmnDef = Game::instance()->data.pkmnDefFor(e.getPkmnId());
                     if (pkmnDef)
                     {
-                        size_t level    = Utils::randint(e.getLevelMin(), e.getLevelMax());
+                        size_t level    = Utils::randuint(e.getLevelMin(), e.getLevelMax());
                         encounteredPkmn = std::make_shared<Pkmn>(pkmnDef, level);
                         encounteredPkmn->generateFromPkmnDef();
                         // TODO: temp
@@ -623,7 +634,7 @@ std::unique_ptr<Scene> MapScene::nextScene()
     else if (encounteredPkmn && battleIntro && battleIntro->isFinished())
     {
         auto scene = std::make_unique<EncounterScene>(renderer);
-        scene->changeWeather(Map::Weather::RAIN); // TODO: map->getWeather()
+        scene->changeWeather(weather);
         scene->setEncounterPkmn(encounteredPkmn);
         auto& pkmns = Game::instance()->data.player.pkmns;
         for (size_t i = 0; i < pkmns.size(); ++i)
@@ -647,4 +658,26 @@ std::pair<size_t, size_t> MapScene::currentPlayerPosition() const
 bool MapScene::entitiesShouldFreeze() const
 {
     return openMenu || battleIntro;
+}
+
+void MapScene::changeWeather(Map::Weather weather)
+{
+    if (this->weather == weather)
+        return;
+
+    this->weather = weather;
+
+    if (weather == Map::Weather::NONE)
+    {
+        weatherAnimation.release();
+        return;
+    }
+
+    switch (weather)
+    {
+    // TODO: all weather animations
+    default:
+        weatherAnimation = std::make_unique<RainAnimation>(renderer);
+        break;
+    }
 }

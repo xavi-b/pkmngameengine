@@ -86,7 +86,7 @@ void Pkmn::generateFromPkmnDef()
     addMovesFromPkmnDef();
     hp        = getStats()[PkmnDef::HP];
     happiness = definition->getHappiness();
-    shiny     = Utils::randint(0, std::numeric_limits<unsigned short>::max()) < 8;
+    shiny     = Utils::randuint(0, std::numeric_limits<unsigned short>::max()) < 8;
 }
 
 void Pkmn::addMovesFromPkmnDef()
@@ -112,7 +112,7 @@ void Pkmn::addMovesFromPkmnDef()
     size_t max = std::min(levelAvailableMoves.size(), moves.size());
     for (size_t i = 0; i < max; ++i)
     {
-        size_t               index          = Utils::randint(0, max - 1 - i);
+        size_t               index          = Utils::randuint(0, max - 1 - i);
         PkmnDef::MoveToLearn newMoveToLearn = levelAvailableMoves.at(index);
 
         levelAvailableMoves.erase(levelAvailableMoves.begin() + index);

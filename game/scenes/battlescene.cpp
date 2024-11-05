@@ -227,7 +227,7 @@ size_t BattleScene::computeDamage(Pkmn::PkmnPtr const& pkmn, Move::MovePtr const
     // TODO
     // https://bulbapedia.bulbagarden.net/wiki/Type#Type_effectiveness
     float typeEffectiveness = 1.0;
-    float random            = Utils::randint(85, 100) / 100.0;
+    float random            = Utils::randuint(85, 100) / 100.0;
     damage *= stockpile * critical * doubledmg * charge * hh * stab * typeEffectiveness * random;
     return damage;
 }
@@ -349,7 +349,7 @@ std::string BattleScene::canEvolve(Pkmn::PkmnPtr const& pkmn)
 
     if (possibleEvolutions.size())
     {
-        size_t index = Utils::randint(0, possibleEvolutions.size() - 1);
+        size_t index = Utils::randuint(0, possibleEvolutions.size() - 1);
         return possibleEvolutions[index];
     }
 

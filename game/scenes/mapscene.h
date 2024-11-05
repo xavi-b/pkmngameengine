@@ -30,7 +30,7 @@ public:
     virtual void update(Inputs const* inputs) override;
     virtual void draw(Fps const* fps, RenderSizes rs) override;
 
-    virtual void drawWeather();
+    virtual void drawWeather(Fps const* fps, RenderSizes rs);
     virtual void drawNight();
 
     virtual void    initPlayerPosition(int x, int y, Entity::Direction direction = Entity::Direction::NONE);
@@ -50,6 +50,8 @@ public:
 
     virtual bool entitiesShouldFreeze() const;
 
+    void changeWeather(Map::Weather weather);
+
 protected:
     std::map<std::string, std::pair<SDL_Surface*, SDL_Texture*>> sprites;
 
@@ -57,11 +59,14 @@ protected:
     std::unique_ptr<Sprite>                                    playerSprite;
     std::map<std::unique_ptr<Entity>, std::unique_ptr<Sprite>> entities;
 
+    Map::Weather weather = Map::Weather::NONE;
+
     Pkmn::PkmnPtr                         emptyPkmnPtr = nullptr;
     Pkmn::PkmnPtr                         encounteredPkmn;
     std::unique_ptr<BattleIntroAnimation> battleIntro;
     std::unique_ptr<FadeAnimation>        fadeInAnimation;
     std::unique_ptr<FadeAnimation>        fadeOutAnimation;
+    std::unique_ptr<WeatherAnimation>     weatherAnimation;
 
     bool                  openMenu = false;
     std::unique_ptr<Menu> menu;

@@ -13,8 +13,8 @@ public:
     virtual std::string getStartingText() const   = 0;
     virtual std::string getContinuingText() const = 0;
 
-private:
-    float ticksDuration = 8;
+protected:
+    float ticksDuration = 32;
 };
 
 #endif // WEATHERANIMATION_H

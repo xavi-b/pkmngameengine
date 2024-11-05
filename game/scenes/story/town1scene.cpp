@@ -19,6 +19,7 @@ Town1Scene::Town1Scene(SDL_Renderer* renderer) : MapScene(renderer, "resources/m
 
 void Town1Scene::init()
 {
+    changeWeather(Map::Weather::RAIN);
 }
 
 void Town1Scene::update(Inputs const* inputs)

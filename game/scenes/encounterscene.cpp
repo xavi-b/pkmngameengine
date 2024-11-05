@@ -82,7 +82,7 @@ void EncounterScene::chooseOpponentAction()
         auto const& moves              = encounterPkmn->getMoves();
         auto const  nonNullMovesResult = std::find(moves.begin(), moves.end(), nullptr);
         int const   nonNullMovesCount  = std::distance(moves.begin(), nonNullMovesResult);
-        size_t      randomMove         = Utils::randint(0, nonNullMovesCount - 1);
+        size_t      randomMove         = Utils::randuint(0, nonNullMovesCount - 1);
         encounterMove                  = moves.at(randomMove);
         break;
     }
@@ -157,40 +157,46 @@ void EncounterScene::update_WEATHER(Inputs const* inputs)
         state = ACTIONS;
     }
 
-    if (!weatherAnimation->isStarted())
+    if (weatherAnimation)
     {
-        weatherAnimation->start();
-    }
+        if (!weatherAnimation->isStarted())
+        {
+            weatherAnimation->start();
+        }
 
-    if (weatherAnimation->isStarted() && !weatherAnimation->isFinished())
-    {
-        weatherAnimation->incrementTicks();
-    }
+        if (weatherAnimation->isStarted() && !weatherAnimation->isFinished())
+        {
+            weatherAnimation->incrementTicks();
+        }
 
-    weatherSpeech->update(inputs);
+        weatherSpeech->update(inputs);
 
-    if (weatherSpeech->shouldClose())
-    {
-        weatherSpeech->setTexts({weatherAnimation->getContinuingText()});
-        weatherSpeech->reset();
-        weatherSpeech->init();
-        weatherAnimation->reset();
+        if (weatherSpeech->shouldClose())
+        {
+            weatherSpeech->setTexts({weatherAnimation->getContinuingText()});
+            weatherSpeech->reset();
+            weatherSpeech->init();
+            weatherAnimation->reset();
 
-        battleActions->reset();
-        state = ACTIONS;
+            battleActions->reset();
+            state = ACTIONS;
+        }
     }
 }
 
 void EncounterScene::draw_WEATHER(Fps const* fps, RenderSizes rs)
 {
-    if (weatherAnimation->isStarted() && !weatherAnimation->isFinished())
+    if (weatherAnimation)
     {
-        weatherAnimation->draw(fps, rs);
-    }
+        if (weatherAnimation->isStarted() && !weatherAnimation->isFinished())
+        {
+            weatherAnimation->draw(fps, rs);
+        }
 
-    if (!weatherSpeech->shouldClose())
-    {
-        weatherSpeech->draw(fps, rs);
+        if (!weatherSpeech->shouldClose())
+        {
+            weatherSpeech->draw(fps, rs);
+        }
     }
 }
 
@@ -266,7 +272,7 @@ void EncounterScene::update_MOVES(Inputs const* inputs)
                     else if (playerSpeed > encounterSpeed)
                         playerFirst = false;
                     else
-                        playerFirst = Utils::randint(0, 1);
+                        playerFirst = Utils::randuint(0, 1);
                 }
             }
             else
@@ -517,7 +523,7 @@ void EncounterScene::update_P_RUN(Inputs const* inputs)
         // https://bulbapedia.bulbagarden.net/wiki/Escape#Generation_III_and_IV
         size_t playerSpeed = playerPkmn->getStats()[PkmnDef::SPEED];
         size_t odds        = ((playerSpeed * 128 / wildSpeed) + 30 * runAttemps) % 256;
-        size_t random      = Utils::randint(0, 255);
+        size_t random      = Utils::randuint(0, 255);
         run                = random < odds;
     }
 
