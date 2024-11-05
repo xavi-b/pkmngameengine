@@ -12,12 +12,12 @@ public:
     RainAnimation(SDL_Renderer* renderer);
     ~RainAnimation();
 
-    virtual std::string getStartingText() const;
-    virtual std::string getContinuingText() const;
+    virtual std::string getStartingText() const override;
+    virtual std::string getContinuingText() const override;
 
-    virtual void start();
-    virtual void incrementTicks();
-    virtual void draw(Fps const* fps, RenderSizes rs);
+    virtual void start() override;
+    virtual void incrementTicks() override;
+    virtual void draw(Fps const* fps, RenderSizes rs) override;
 
 private:
     static constexpr size_t NumberOfRains = 32;
