@@ -30,6 +30,9 @@ public:
     virtual void update(Inputs const* inputs) override;
     virtual void draw(Fps const* fps, RenderSizes rs) override;
 
+    virtual void drawWeather();
+    virtual void drawNight();
+
     virtual void    initPlayerPosition(int x, int y, Entity::Direction direction = Entity::Direction::NONE);
     virtual void    move(Entity& entity);
     virtual Entity* entityAt(size_t x, size_t y, size_t l);

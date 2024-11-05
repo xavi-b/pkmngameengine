@@ -45,6 +45,9 @@ void LeaveScene::update(Inputs const* inputs)
 
 void LeaveScene::draw(Fps const* fps, RenderSizes rs)
 {
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderClear(renderer);
+
     quitSpeech->draw(fps, rs);
     quitQuestion->draw(fps, rs, TextQuestion::RIGHT);
 }

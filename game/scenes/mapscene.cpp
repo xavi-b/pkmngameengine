@@ -316,6 +316,11 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
         }
     }
 
+    drawWeather();
+
+    if (Game::instance()->isNight())
+        drawNight();
+
     if (battleIntro)
         battleIntro->draw(fps, rs);
 
@@ -327,6 +332,22 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
 
     if (fadeOutAnimation->isStarted() && !fadeOutAnimation->isFinished())
         fadeOutAnimation->draw(fps, rs);
+}
+
+void MapScene::drawWeather()
+{
+}
+
+void MapScene::drawNight()
+{
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(renderer,
+                           TileLayer::NightColor[0],
+                           TileLayer::NightColor[1],
+                           TileLayer::NightColor[2],
+                           TileLayer::NightColor[3]);
+
+    SDL_RenderFillRect(renderer, NULL);
 }
 
 void MapScene::initPlayerPosition(int x, int y, Entity::Direction direction)
