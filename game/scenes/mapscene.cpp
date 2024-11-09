@@ -515,61 +515,63 @@ bool MapScene::manageEvents()
 
 bool MapScene::manageEncounters()
 {
-    if (Game::instance()->data.player.direction != Entity::Direction::NONE && !encounteredPkmn)
-    {
-        auto& level = map->getLevels()[Game::instance()->data.player.l];
+    if (Game::instance()->data.player.direction == Entity::Direction::NONE || encounteredPkmn)
+        return false;
 
-        auto& specialTileLayer = level->getSpecialTileLayer();
-        auto& specialTile = (*specialTileLayer.get())(Game::instance()->data.player.x, Game::instance()->data.player.y);
-        if (specialTile && *(specialTile.get()) == GRASS)
+    auto& level            = map->getLevels()[Game::instance()->data.player.l];
+    auto& specialTileLayer = level->getSpecialTileLayer();
+    auto& specialTile = (*specialTileLayer.get())(Game::instance()->data.player.x, Game::instance()->data.player.y);
+    if (!specialTile)
+        return false;
+
+    if (*(specialTile.get()) == GRASS)
+    {
+        // TODO all cases
+        auto const& encounterMethods = map->getEncounterMethods();
+        auto        it = std::find_if(encounterMethods.begin(), encounterMethods.end(), [=](EncounterMethod const& e) {
+            return e.getType() == EncounterMethod::Type::LAND;
+        });
+        if (it != encounterMethods.end())
         {
-            // TODO all cases
-            auto const& encounterMethods = map->getEncounterMethods();
-            auto it = std::find_if(encounterMethods.begin(), encounterMethods.end(), [=](EncounterMethod const& e) {
-                return e.getType() == EncounterMethod::Type::LAND;
-            });
-            if (it != encounterMethods.end())
+            auto const& encounterMethod = *it;
+            size_t      pkmnEncounter   = Utils::randuint(0, 99);
+
+            if (Game::instance()->isDebug())
+                std::cout << "PkmnEncounter: " << pkmnEncounter << "/" << encounterMethod.getDensity() << std::endl;
+
+            if (pkmnEncounter < encounterMethod.getDensity())
             {
-                auto const& encounterMethod = *it;
-                size_t      pkmnEncounter   = Utils::randuint(0, 99);
+                std::random_device  rd;
+                std::mt19937        gen(rd());
+                auto const&         encounters = encounterMethod.getEncounters();
+                std::vector<double> weights;
+                double              accumulated = 0;
+                for (auto const& e : encounters)
+                {
+                    accumulated += e.getPercentage();
+                    weights.push_back(e.getPercentage());
+                }
+                for (auto& w : weights)
+                {
+                    w /= accumulated;
+                }
+                std::discrete_distribution<> d(weights.begin(), weights.end());
+                int                          eIndex = d(gen);
+                Encounter                    e      = encounters[eIndex];
 
                 if (Game::instance()->isDebug())
-                    std::cout << "PkmnEncounter: " << pkmnEncounter << "/" << encounterMethod.getDensity() << std::endl;
+                    std::cout << "PkmnDef: " << e.getPkmnId() << std::endl;
 
-                if (pkmnEncounter < encounterMethod.getDensity())
+                PkmnDef::PkmnDefPtr pkmnDef = Game::instance()->data.pkmnDefFor(e.getPkmnId());
+                if (pkmnDef)
                 {
-                    std::random_device  rd;
-                    std::mt19937        gen(rd());
-                    auto const&         encounters = encounterMethod.getEncounters();
-                    std::vector<double> weights;
-                    double              accumulated = 0;
-                    for (auto const& e : encounters)
-                    {
-                        accumulated += e.getPercentage();
-                        weights.push_back(e.getPercentage());
-                    }
-                    for (auto& w : weights)
-                    {
-                        w /= accumulated;
-                    }
-                    std::discrete_distribution<> d(weights.begin(), weights.end());
-                    int                          eIndex = d(gen);
-                    Encounter                    e      = encounters[eIndex];
-
-                    if (Game::instance()->isDebug())
-                        std::cout << "PkmnDef: " << e.getPkmnId() << std::endl;
-
-                    PkmnDef::PkmnDefPtr pkmnDef = Game::instance()->data.pkmnDefFor(e.getPkmnId());
-                    if (pkmnDef)
-                    {
-                        size_t level    = Utils::randuint(e.getLevelMin(), e.getLevelMax());
-                        encounteredPkmn = std::make_shared<Pkmn>(pkmnDef, level);
-                        encounteredPkmn->generateFromPkmnDef();
-                        // TODO: temp
-                        encounteredPkmn->setStatusCondition(Pkmn::StatusCondition::BADLY_POISON);
-                    }
-                    return true;
+                    size_t level    = Utils::randuint(e.getLevelMin(), e.getLevelMax());
+                    encounteredPkmn = std::make_shared<Pkmn>(pkmnDef, level);
+                    encounteredPkmn->generateFromPkmnDef();
+                    // TODO: temp
+                    encounteredPkmn->setStatusCondition(Pkmn::StatusCondition::BADLY_POISON);
                 }
+                return true;
             }
         }
     }
