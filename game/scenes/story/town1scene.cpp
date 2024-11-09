@@ -7,9 +7,9 @@ Town1Scene::Town1Scene(SDL_Renderer* renderer) : MapScene(renderer, "resources/m
 {
     auto entity               = std::make_unique<Entity>();
     entity->x                 = 11;
-    entity->y                 = 11;
+    entity->y                 = 10;
     entity->previousX         = 11;
-    entity->previousY         = 11;
+    entity->previousY         = 10;
     entity->direction         = Entity::Direction::RIGHT;
     entity->previousDirection = Entity::Direction::RIGHT;
     auto entitySprite         = std::make_unique<Sprite>(renderer);

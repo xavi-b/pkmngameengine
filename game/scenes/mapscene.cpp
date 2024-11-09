@@ -1,5 +1,6 @@
 #include "mapscene.h"
 
+#include "animations/map/grassanimation.h"
 #include "animations/weather/rainanimation.h"
 #include "bagscene.h"
 #include "game.h"
@@ -116,6 +117,12 @@ void MapScene::update(Inputs const* inputs)
         return;
     }
 
+    for (auto it = tilesAnimation.begin(); it != tilesAnimation.end(); ++it)
+    {
+        auto& anim = *(it->second.get());
+        anim.incrementTicks();
+    }
+
     if (weatherAnimation)
     {
         if (!weatherAnimation->isStarted())
@@ -212,7 +219,8 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
                       - (player.previousY
                          + (player.y - player.previousY) * (playerSprite->getAccumulatedTicks() + fps->tickPercentage())
                                / ((player.speed + player.previousSpeed) / 2.0))
-                            * dstTilePixelHeight;
+                            * dstTilePixelHeight
+                      - 4 * rs.wh / rs.ah;
 
     for (size_t l = 0; l < map->getLevels().size(); ++l)
     {
@@ -251,40 +259,107 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
                     dstRect.w = dstTilePixelWidth + 1;
                     dstRect.h = dstTilePixelHeight + 1;
 
-                    // draw only visible tiles
+                    // Draw only visible tiles
                     if (dstRect.x >= -dstTilePixelWidth && dstRect.x <= (rs.ww + dstTilePixelWidth)
                         && dstRect.y >= -dstTilePixelHeight && dstRect.y <= rs.wh + dstTilePixelHeight)
                     {
                         if (tile)
                             SDL_RenderCopy(renderer, sprites[path].second, &srcRect, &dstRect);
 
-                        if (player.x == int(i) && player.y == int(j) && player.l == l
-                            && layer->getType() == TileLayer::Type::SOLID)
+                        if (layer->getType() == TileLayer::Type::SOLID)
                         {
-                            playerSprite->draw(player, fps, &dstPlayerRect);
-                        }
-
-                        for (auto it = entities.begin(); it != entities.end(); ++it)
-                        {
-                            auto const& entity = *(it->first.get());
-                            auto&       sprite = *(it->second.get());
-                            if (entity.l == l && entity.previousX == int(i) && entity.previousY == int(j)
-                                && layer->getType() == TileLayer::Type::SOLID)
+                            // Draw player
+                            if (player.x == int(i) && player.y == int(j) && player.l == l)
                             {
-                                int entityOffsetX = (entity.x - entity.previousX)
-                                                  * (sprite.getAccumulatedTicks() + fps->tickPercentage())
-                                                  / ((entity.speed + entity.previousSpeed) / 2.0) * dstTilePixelWidth;
-                                int entityOffsetY = (entity.y - entity.previousY)
-                                                  * (sprite.getAccumulatedTicks() + fps->tickPercentage())
-                                                  / ((entity.speed + entity.previousSpeed) / 2.0) * dstTilePixelHeight;
+                                playerSprite->draw(player, fps, &dstPlayerRect);
+                            }
 
-                                SDL_Rect dstEntityRect;
-                                dstEntityRect.x = i * dstTilePixelWidth + playerOffsetX + entityOffsetX;
-                                dstEntityRect.y = j * dstTilePixelHeight + playerOffsetY + entityOffsetY
-                                                - (EntityPixelHeight - TilePixelSize) * rs.wh / rs.ah;
-                                dstEntityRect.w = dstTilePixelWidth + 1;
-                                dstEntityRect.h = EntityPixelHeight * rs.wh / rs.ah + 1;
-                                sprite.draw(entity, fps, &dstEntityRect);
+                            // Draw entities
+                            for (auto it = entities.begin(); it != entities.end(); ++it)
+                            {
+                                auto const& entity = *(it->first.get());
+                                auto&       sprite = *(it->second.get());
+                                if (entity.l == l && entity.previousX == int(i) && entity.previousY == int(j))
+                                {
+                                    int entityOffsetX = (entity.x - entity.previousX)
+                                                      * (sprite.getAccumulatedTicks() + fps->tickPercentage())
+                                                      / ((entity.speed + entity.previousSpeed) / 2.0)
+                                                      * dstTilePixelWidth;
+                                    int entityOffsetY = (entity.y - entity.previousY)
+                                                          * (sprite.getAccumulatedTicks() + fps->tickPercentage())
+                                                          / ((entity.speed + entity.previousSpeed) / 2.0)
+                                                          * dstTilePixelHeight
+                                                      + 2 * rs.wh / rs.ah;
+
+                                    SDL_Rect dstEntityRect;
+                                    dstEntityRect.x = i * dstTilePixelWidth + playerOffsetX + entityOffsetX;
+                                    dstEntityRect.y = j * dstTilePixelHeight + playerOffsetY + entityOffsetY
+                                                    - (EntityPixelHeight - TilePixelSize) * rs.wh / rs.ah;
+                                    dstEntityRect.w = dstTilePixelWidth + 1;
+                                    dstEntityRect.h = EntityPixelHeight * rs.wh / rs.ah + 1;
+                                    sprite.draw(entity, fps, &dstEntityRect);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (layer->getType() == TileLayer::Type::SOLID)
+                {
+                    for (size_t i = 0; i < map->getNCol(); ++i)
+                    {
+                        SDL_Rect dstRect;
+                        dstRect.x = i * dstTilePixelWidth + playerOffsetX;
+                        dstRect.y = j * dstTilePixelHeight + playerOffsetY;
+                        dstRect.w = dstTilePixelWidth + 1;
+                        dstRect.h = dstTilePixelHeight + 1;
+
+                        // Draw only visible tiles
+                        if (dstRect.x >= -dstTilePixelWidth && dstRect.x <= (rs.ww + dstTilePixelWidth)
+                            && dstRect.y >= -dstTilePixelHeight && dstRect.y <= rs.wh + dstTilePixelHeight)
+                        {
+                            // Draw grass animated tiles
+                            auto& specialTileLayer = level->getSpecialTileLayer();
+                            auto& specialTile      = (*specialTileLayer.get())(i, j);
+                            if (specialTile && *(specialTile.get()) == GRASS)
+                            {
+                                auto entity = entityPreviousAt(i, j, l);
+                                if (entity && entity->speed == Entity::WALK)
+                                {
+                                    auto groundLayerIt =
+                                        std::find_if(level->getTileLayers().begin(),
+                                                     level->getTileLayers().end(),
+                                                     [=](auto const& e) {
+                                                         return e->getType() == TileLayer::Type::GROUND;
+                                                     });
+                                    auto& groundTile = (*groundLayerIt->get())(i, j);
+                                    if (groundTile)
+                                    {
+                                        std::string path = groundTile->getSpritePath();
+
+                                        SDL_Rect srcRect;
+                                        srcRect.x = groundTile->getCol() * TilePixelSize;
+                                        srcRect.y = groundTile->getRow() * TilePixelSize + TilePixelSize * 2 / 3;
+                                        srcRect.w = TilePixelSize;
+                                        srcRect.h = TilePixelSize - TilePixelSize * 2 / 3;
+
+                                        SDL_Rect dstRect;
+                                        dstRect.x = i * dstTilePixelWidth + playerOffsetX;
+                                        dstRect.y = j * dstTilePixelHeight + playerOffsetY + dstTilePixelHeight * 2 / 3;
+                                        dstRect.w = dstTilePixelWidth + 1;
+                                        dstRect.h = dstTilePixelHeight + 1 - dstTilePixelHeight * 2 / 3;
+
+                                        SDL_RenderCopy(renderer, sprites[path].second, &srcRect, &dstRect);
+                                    }
+                                }
+
+                                auto it = tilesAnimation.find({i, j});
+
+                                if (it != tilesAnimation.end() && it->second && !it->second->isFinished())
+                                {
+                                    it->second->setDestinationRect(dstRect);
+                                    it->second->draw(fps, rs);
+                                }
                             }
                         }
                     }
@@ -311,7 +386,7 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
                         dstRect.w = dstTilePixelWidth + 1;
                         dstRect.h = dstTilePixelHeight + 1;
 
-                        // draw only visible tiles
+                        // Draw only visible tiles
                         if (dstRect.x >= -dstTilePixelWidth && dstRect.x <= (rs.ww + dstTilePixelWidth)
                             && dstRect.y >= -dstTilePixelHeight && dstRect.y <= rs.wh + dstTilePixelHeight)
                         {
@@ -373,22 +448,25 @@ void MapScene::initPlayerPosition(int x, int y, Entity::Direction direction)
 
 void MapScene::move(Entity& entity)
 {
-    if (entity.direction == Entity::Direction::UP)
-    {
-        for (size_t l = 0; l < map->getLevels().size(); ++l)
-        {
-            auto& level = map->getLevels()[l];
+    if (entity.direction == Entity::Direction::NONE)
+        return;
 
-            if (l != entity.l)
+    for (size_t l = 0; l < map->getLevels().size(); ++l)
+    {
+        auto& level = map->getLevels()[l];
+
+        if (l != entity.l)
+            continue;
+
+        for (size_t h = 0; h < level->getTileLayers().size(); ++h)
+        {
+            auto& layer = level->getTileLayers()[h];
+
+            if (layer->getType() != TileLayer::Type::SOLID)
                 continue;
 
-            for (size_t h = 0; h < level->getTileLayers().size(); ++h)
+            if (entity.direction == Entity::Direction::UP)
             {
-                auto& layer = level->getTileLayers()[h];
-
-                if (layer->getType() != TileLayer::Type::SOLID)
-                    continue;
-
                 if (entity.y > 0)
                 {
                     auto& tile = (*layer.get())(entity.x, entity.y - 1);
@@ -398,24 +476,8 @@ void MapScene::move(Entity& entity)
                     }
                 }
             }
-        }
-    }
-    else if (entity.direction == Entity::Direction::DOWN)
-    {
-        for (size_t l = 0; l < map->getLevels().size(); ++l)
-        {
-            auto& level = map->getLevels()[l];
-
-            if (l != entity.l)
-                continue;
-
-            for (size_t h = 0; h < level->getTileLayers().size(); ++h)
+            else if (entity.direction == Entity::Direction::DOWN)
             {
-                auto& layer = level->getTileLayers()[h];
-
-                if (layer->getType() != TileLayer::Type::SOLID)
-                    continue;
-
                 if (entity.y < int(map->getNRow() - 1))
                 {
                     auto& tile = (*layer.get())(entity.x, entity.y + 1);
@@ -425,24 +487,8 @@ void MapScene::move(Entity& entity)
                     }
                 }
             }
-        }
-    }
-    else if (entity.direction == Entity::Direction::LEFT)
-    {
-        for (size_t l = 0; l < map->getLevels().size(); ++l)
-        {
-            auto& level = map->getLevels()[l];
-
-            if (l != entity.l)
-                continue;
-
-            for (size_t h = 0; h < level->getTileLayers().size(); ++h)
+            else if (entity.direction == Entity::Direction::LEFT)
             {
-                auto& layer = level->getTileLayers()[h];
-
-                if (layer->getType() != TileLayer::Type::SOLID)
-                    continue;
-
                 if (entity.x > 0)
                 {
                     auto& tile = (*layer.get())(entity.x - 1, entity.y);
@@ -452,24 +498,8 @@ void MapScene::move(Entity& entity)
                     }
                 }
             }
-        }
-    }
-    else if (entity.direction == Entity::Direction::RIGHT)
-    {
-        for (size_t l = 0; l < map->getLevels().size(); ++l)
-        {
-            auto& level = map->getLevels()[l];
-
-            if (l != entity.l)
-                continue;
-
-            for (size_t h = 0; h < level->getTileLayers().size(); ++h)
+            else if (entity.direction == Entity::Direction::RIGHT)
             {
-                auto& layer = level->getTileLayers()[h];
-
-                if (layer->getType() != TileLayer::Type::SOLID)
-                    continue;
-
                 if (entity.x < int(map->getNCol() - 1))
                 {
                     auto& tile = (*layer.get())(entity.x + 1, entity.y);
@@ -478,6 +508,27 @@ void MapScene::move(Entity& entity)
                         entity.x++;
                     }
                 }
+            }
+        }
+    }
+
+    if (entity.x != entity.previousX || entity.y != entity.previousY)
+    {
+        auto& level            = map->getLevels()[entity.l];
+        auto& specialTileLayer = level->getSpecialTileLayer();
+        auto& specialTile      = (*specialTileLayer.get())(entity.x, entity.y);
+        if (specialTile && *(specialTile.get()) == GRASS)
+        {
+            auto it = tilesAnimation.find({entity.x, entity.y});
+
+            if (it == tilesAnimation.end())
+            {
+                tilesAnimation[{entity.x, entity.y}] = std::make_unique<GrassAnimation>(renderer);
+                tilesAnimation[{entity.x, entity.y}]->start();
+            }
+            else
+            {
+                it->second->restart();
             }
         }
     }
@@ -508,6 +559,31 @@ Entity* MapScene::entityAt(size_t x, size_t y, size_t l)
     return {};
 }
 
+Entity* MapScene::entityPreviousAt(size_t x, size_t y, size_t l)
+{
+    if (x > map->getNCol())
+        return nullptr;
+
+    if (y > map->getNRow())
+        return nullptr;
+
+    if (l > map->getLevels().size())
+        return nullptr;
+
+    for (auto it = entities.begin(); it != entities.end(); ++it)
+    {
+        auto entity = it->first.get();
+        if (entity->previousX == int(x) && entity->previousY == int(y) && entity->l == l)
+            return entity;
+    }
+
+    auto& player = Game::instance()->data.player;
+    if (player.previousX == int(x) && player.previousY == int(y) && player.l == l)
+        return &player;
+
+    return {};
+}
+
 bool MapScene::manageEvents()
 {
     return false;
@@ -515,12 +591,14 @@ bool MapScene::manageEvents()
 
 bool MapScene::manageEncounters()
 {
-    if (Game::instance()->data.player.direction == Entity::Direction::NONE || encounteredPkmn)
+    auto const& player = Game::instance()->data.player;
+
+    if (player.direction == Entity::Direction::NONE || encounteredPkmn)
         return false;
 
-    auto& level            = map->getLevels()[Game::instance()->data.player.l];
+    auto& level            = map->getLevels()[player.l];
     auto& specialTileLayer = level->getSpecialTileLayer();
-    auto& specialTile = (*specialTileLayer.get())(Game::instance()->data.player.x, Game::instance()->data.player.y);
+    auto& specialTile      = (*specialTileLayer.get())(player.x, player.y);
     if (!specialTile)
         return false;
 

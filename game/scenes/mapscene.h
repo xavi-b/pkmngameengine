@@ -3,6 +3,7 @@
 
 #include "animations/battleintroanimation.h"
 #include "animations/fadeanimation.h"
+#include "animations/map/mapanimation.h"
 #include "entity.h"
 #include "map.h"
 #include "menu.h"
@@ -36,6 +37,7 @@ public:
     virtual void    initPlayerPosition(int x, int y, Entity::Direction direction = Entity::Direction::NONE);
     virtual void    move(Entity& entity);
     virtual Entity* entityAt(size_t x, size_t y, size_t l);
+    virtual Entity* entityPreviousAt(size_t x, size_t y, size_t l);
 
     virtual bool                                  manageEvents();
     virtual bool                                  manageEncounters();
@@ -61,12 +63,13 @@ protected:
 
     Map::Weather weather = Map::Weather::NONE;
 
-    Pkmn::PkmnPtr                         emptyPkmnPtr = nullptr;
-    Pkmn::PkmnPtr                         encounteredPkmn;
-    std::unique_ptr<BattleIntroAnimation> battleIntro;
-    std::unique_ptr<FadeAnimation>        fadeInAnimation;
-    std::unique_ptr<FadeAnimation>        fadeOutAnimation;
-    std::unique_ptr<WeatherAnimation>     weatherAnimation;
+    Pkmn::PkmnPtr                                                emptyPkmnPtr = nullptr;
+    Pkmn::PkmnPtr                                                encounteredPkmn;
+    std::unique_ptr<BattleIntroAnimation>                        battleIntro;
+    std::unique_ptr<FadeAnimation>                               fadeInAnimation;
+    std::unique_ptr<FadeAnimation>                               fadeOutAnimation;
+    std::unique_ptr<WeatherAnimation>                            weatherAnimation;
+    std::map<std::pair<int, int>, std::unique_ptr<MapAnimation>> tilesAnimation;
 
     bool                  openMenu = false;
     std::unique_ptr<Menu> menu;
