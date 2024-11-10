@@ -75,10 +75,11 @@ MapperEditor::MapperEditor(QWidget* parent) : QWidget(parent)
 
     QComboBox* specialTileComboBox = new QComboBox;
     specialTileComboBox->setVisible(false);
-    for (size_t i = SpecialTileType::GRASS; i < SpecialTileTypeCount; ++i)
-        specialTileComboBox->addItem(QString("%1 - ").arg(i)
-                                         + QString(SpecialTileTypeToString((SpecialTileType)i).c_str()),
-                                     QVariant::fromValue(i));
+    for (size_t i = 0; i < SpecialTileTypeCount; ++i)
+        specialTileComboBox->addItem(
+            QString("%1 - ").arg(i)
+                + QString(SpecialTileTypeToString((SpecialTileType)(i + SpecialTileType::GRASS)).c_str()),
+            QVariant::fromValue(i));
     connect(specialTileComboBox, &QComboBox::currentIndexChanged, this, [=]() {
         mapperViewer->contentWidget()->setCurrentSpecialTileType(
             (SpecialTileType)specialTileComboBox->currentData().toInt());

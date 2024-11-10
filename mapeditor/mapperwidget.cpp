@@ -232,15 +232,16 @@ void MapperWidget::processMouseEvent(QMouseEvent* event)
 
     auto& level = map->getLevels()[workingLevelIndex];
 
-    if (layerType == LayerType::EVENTS)
+    switch (layerType)
     {
+    case LayerType::EVENTS: {
         auto& layer = level->getEventLayer();
 
-        if (event->button() == Qt::RightButton || event->buttons() & Qt::RightButton)
+        if (event->button() == Qt::RightButton)
         {
             (*layer.get())(col, row).reset(nullptr);
         }
-        else
+        else if (event->button() == Qt::LeftButton)
         {
             auto& previousEvent = (*layer.get())(col, row);
 
@@ -253,52 +254,63 @@ void MapperWidget::processMouseEvent(QMouseEvent* event)
             auto event = std::make_unique<Event>(id.toStdString());
             (*layer.get())(col, row).swap(event);
         }
+        break;
     }
-    else if (layerType == LayerType::SPECIAL_TILE)
-    {
+    case LayerType::SPECIAL_TILE: {
         auto& layer = level->getSpecialTileLayer();
 
-        if (event->button() == Qt::RightButton || event->buttons() & Qt::RightButton)
+        if (event->button() == Qt::RightButton)
         {
             (*layer.get())(col, row).reset(nullptr);
         }
-        else
+        else if (event->button() == Qt::LeftButton)
         {
             auto type = std::make_unique<SpecialTileType>(specialTileType);
             (*layer.get())(col, row).swap(type);
         }
+        break;
     }
-    else
-    {
+    default: {
         auto& layer = level->getTileLayers()[workingLayerIndex];
 
-        if (event->button() == Qt::RightButton || event->buttons() & Qt::RightButton)
+        if (event->button() == Qt::RightButton)
         {
             (*layer.get())(col, row).reset(nullptr);
         }
-        else
+        else if (event->button() == Qt::LeftButton)
         {
-            QRect rect = data.second;
-
-            for (size_t i = 0; i < size_t(rect.width()); ++i)
+            if (event->modifiers() & Qt::ShiftModifier)
             {
-                if (col + i >= map->getNCol())
-                    continue;
+                auto& tile = (*layer.get())(col, row);
+                if (tile)
+                    tile->setAnimated(!tile->isAnimated());
+            }
+            else
+            {
+                QRect rect = data.second;
 
-                for (size_t j = 0; j < size_t(rect.height()); ++j)
+                for (size_t i = 0; i < size_t(rect.width()); ++i)
                 {
-                    if (row + j >= map->getNRow())
+                    if (col + i >= map->getNCol())
                         continue;
 
-                    if (!data.first.isEmpty())
+                    for (size_t j = 0; j < size_t(rect.height()); ++j)
                     {
-                        std::string spritePath = data.first.toStdString();
-                        auto        tile       = std::make_unique<Tile>(spritePath, rect.x() + i, rect.y() + j);
-                        (*layer.get())(col + i, row + j).swap(tile);
+                        if (row + j >= map->getNRow())
+                            continue;
+
+                        if (!data.first.isEmpty())
+                        {
+                            std::string spritePath = data.first.toStdString();
+                            auto        tile       = std::make_unique<Tile>(spritePath, rect.x() + i, rect.y() + j);
+                            (*layer.get())(col + i, row + j).swap(tile);
+                        }
                     }
                 }
             }
         }
+        break;
+    }
     }
 
     event->accept();
@@ -355,6 +367,16 @@ void MapperWidget::paintEvent(QPaintEvent* event)
                             pixmaps[path] = QPixmap(path);
                         painter.setOpacity(opacity);
                         painter.drawPixmap(QRect(origin, rect.size() * scaleFactor), pixmaps[path], rect);
+
+                        if (tile->isAnimated())
+                        {
+                            painter.save();
+                            painter.setPen(QPen(Qt::cyan, 2));
+                            painter.setOpacity(opacity);
+                            painter.drawRect(
+                                QRect(QPoint(origin.x() + 2, origin.y() + 2), QSize(selSize - 4, selSize - 4)));
+                            painter.restore();
+                        }
                     }
                     painter.setOpacity(1.0);
                     if (isGridVisible())

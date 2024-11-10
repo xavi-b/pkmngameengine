@@ -19,6 +19,16 @@ int Tile::getCol() const
     return col;
 }
 
+bool Tile::isAnimated() const
+{
+    return animated;
+}
+
+void Tile::setAnimated(bool newAnimated)
+{
+    animated = newAnimated;
+}
+
 void tag_invoke(js::value_from_tag, js::value& jv, Tile::TilePtr const& o)
 {
     if (o && !o->spritePath.empty())
@@ -26,7 +36,8 @@ void tag_invoke(js::value_from_tag, js::value& jv, Tile::TilePtr const& o)
         jv = {
             {"spritePath", o->spritePath},
             {"col",        o->col       },
-            {"row",        o->row       }
+            {"row",        o->row       },
+            {"animated",   o->animated  }
         };
     }
     else
@@ -45,7 +56,12 @@ Tile::TilePtr tag_invoke(js::value_to_tag<Tile::TilePtr>, js::value const& jv)
     if (spritePath.empty())
         return nullptr;
     else
-        return std::make_unique<Tile>(spritePath,
-                                      js::value_to<size_t>(obj.at("col")),
-                                      js::value_to<size_t>(obj.at("row")));
+    {
+        auto tile = std::make_unique<Tile>(spritePath,
+                                           js::value_to<size_t>(obj.at("col")),
+                                           js::value_to<size_t>(obj.at("row")));
+        if (obj.contains("animated"))
+            tile->setAnimated(js::value_to<bool>(obj.at("animated")));
+        return tile;
+    }
 }

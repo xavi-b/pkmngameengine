@@ -18,13 +18,17 @@ public:
     int                getRow() const;
     int                getCol() const;
 
+    bool isAnimated() const;
+    void setAnimated(bool newAnimated);
+
     friend void    tag_invoke(js::value_from_tag, js::value& jv, TilePtr const& o);
     friend TilePtr tag_invoke(js::value_to_tag<TilePtr>, js::value const& jv);
 
 private:
     std::string spritePath;
-    int         col = 0;
-    int         row = 0;
+    int         col      = 0;
+    int         row      = 0;
+    bool        animated = false;
 };
 
 #endif // TILE_H

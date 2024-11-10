@@ -87,7 +87,7 @@ void BattleActions::update(Inputs const* inputs)
 void BattleActions::draw(Fps const* /*fps*/, RenderSizes rs)
 {
     std::vector<std::string> texts;
-    for (size_t i = Type::MOVES; i < TypeCount; ++i)
+    for (size_t i = 0; i < TypeCount; ++i)
         texts.push_back(TypeToString(static_cast<Type>(i)));
 
     int borderSize     = TextSpeech::TextBoxBorderSize;

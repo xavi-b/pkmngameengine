@@ -17,7 +17,7 @@ enum SpecialTileType
     __SIZE
 };
 
-static constexpr size_t SpecialTileTypeCount = SpecialTileType::__SIZE + SpecialTileType::GRASS;
+static constexpr size_t SpecialTileTypeCount = SpecialTileType::__SIZE - SpecialTileType::GRASS;
 std::string             SpecialTileTypeToString(SpecialTileType e);
 
 using SpecialTileTypePtr = std::unique_ptr<SpecialTileType>;

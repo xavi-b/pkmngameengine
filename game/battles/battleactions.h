@@ -28,7 +28,7 @@ public:
         __SIZE
     };
 
-    static constexpr size_t TypeCount = Type::__SIZE + Type::MOVES;
+    static constexpr size_t TypeCount = Type::__SIZE - Type::MOVES;
     static std::string      TypeToString(Type e);
 
     BattleActions(SDL_Renderer* renderer);

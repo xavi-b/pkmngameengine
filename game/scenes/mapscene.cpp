@@ -249,6 +249,26 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
 
                         srcRect.x = tile->getCol() * TilePixelSize;
                         srcRect.y = tile->getRow() * TilePixelSize;
+                        if (tile->isAnimated())
+                        {
+                            // 1 row animated autotiles
+                            if (sprites[path].first->h == TilePixelSize)
+                            {
+                                int nSprites = sprites[path].first->w / TilePixelSize;
+                                int addX     = (fps->next / 192 % nSprites) * TilePixelSize;
+                                if (srcRect.x < sprites[path].first->w)
+                                    srcRect.x += addX;
+                            }
+
+                            // 4 rows animated autotiles
+                            if (sprites[path].first->h == 4 * TilePixelSize)
+                            {
+                                int nSprites = sprites[path].first->w / TilePixelSize;
+                                int addX     = 3 * (fps->next / 128 % (nSprites / 3)) * TilePixelSize;
+                                if (srcRect.x < sprites[path].first->w)
+                                    srcRect.x += addX;
+                            }
+                        }
                         srcRect.w = TilePixelSize;
                         srcRect.h = TilePixelSize;
                     }
