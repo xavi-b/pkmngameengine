@@ -15,8 +15,12 @@ std::string TileLayer::getTypeName() const
     {
     case Type::GROUND:
         return "Ground";
+    case Type::GROUND_OVERLAY:
+        return "Ground Overlay";
     case Type::SOLID:
         return "Solid";
+    case Type::SOLID_OVERLAY:
+        return "Solid Overlay";
     case Type::OVERLAY:
         return "Overlay";
     default:
@@ -52,5 +56,19 @@ std::unique_ptr<TileLayer> tag_invoke(js::value_to_tag<std::unique_ptr<TileLayer
                                     js::value_to<size_t>(obj.at("nCol")),
                                     js::value_to<size_t>(obj.at("nRow")));
     o->elements = js::value_to<std::vector<std::vector<Tile::TilePtr>>>(obj.at("elements"));
+    // for (size_t i = 0; i < o->nCol; ++i)
+    // {
+    //     if (i < o->elements.size())
+    //     {
+    //         for (size_t j = o->elements[i].size(); j < o->nRow; ++j)
+    //         {
+    //             o->elements[i].push_back(std::make_unique<Tile>("", 0, 0));
+    //         }
+    //     }
+    //     else
+    //     {
+    //         o->elements.push_back(std::vector<Tile::TilePtr>(o->nRow));
+    //     }
+    // }
     return o;
 }

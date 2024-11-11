@@ -286,7 +286,7 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
                         if (tile)
                             SDL_RenderCopy(renderer, sprites[path].second, &srcRect, &dstRect);
 
-                        if (layer->getType() == TileLayer::Type::SOLID)
+                        if (layer->getType() == TileLayer::Type::SOLID_OVERLAY)
                         {
                             // Draw player
                             if (player.x == int(i) && player.y == int(j) && player.l == l)

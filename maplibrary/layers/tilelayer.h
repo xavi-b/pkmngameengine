@@ -16,7 +16,9 @@ public:
     enum class Type
     {
         GROUND,
+        GROUND_OVERLAY,
         SOLID,
+        SOLID_OVERLAY,
         OVERLAY
     };
 

@@ -3,7 +3,9 @@
 Level::Level(size_t nCol, size_t nRow) : nCol(nCol), nRow(nRow)
 {
     addTileLayer(TileLayer::Type::GROUND);
+    addTileLayer(TileLayer::Type::GROUND_OVERLAY);
     addTileLayer(TileLayer::Type::SOLID);
+    addTileLayer(TileLayer::Type::SOLID_OVERLAY);
     addTileLayer(TileLayer::Type::OVERLAY);
     eventLayer       = std::make_unique<EventLayer>(nCol, nRow);
     specialTileLayer = std::make_unique<SpecialTileLayer>(nCol, nRow);

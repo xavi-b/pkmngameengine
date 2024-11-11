@@ -1,6 +1,7 @@
 #include "town1scene.h"
 
 #include "game.h"
+#include "scenes/story/house1scene.h"
 #include "scenes/story/road1scene.h"
 
 Town1Scene::Town1Scene(SDL_Renderer* renderer) : MapScene(renderer, "resources/maps/town1.pkmap")
@@ -62,17 +63,34 @@ void Town1Scene::draw(Fps const* fps, RenderSizes rs)
 
 bool Town1Scene::manageEvents()
 {
-    auto& layer = map->getLevels()[Game::instance()->data.player.l]->getEventLayer();
-    auto& event = (*layer.get())(Game::instance()->data.player.x, Game::instance()->data.player.y);
+    auto& player = Game::instance()->data.player;
+    auto& layer  = map->getLevels()[player.l]->getEventLayer();
+    auto& event  = (*layer.get())(player.x, player.y);
+
     if (event && event->getId() == "Road1")
     {
-        if (Game::instance()->data.player.direction == Entity::Direction::RIGHT)
+        if (player.direction == Entity::Direction::RIGHT)
         {
             if (!fadeOutAnimation->isStarted())
             {
                 fadeOutAnimation->reset();
                 fadeOutAnimation->start();
                 goToScene = "Road1";
+                return true;
+            }
+        }
+    }
+
+    // TODO
+    if (event && event->getId() == "House1")
+    {
+        if (player.direction == Entity::Direction::UP)
+        {
+            if (!fadeOutAnimation->isStarted())
+            {
+                fadeOutAnimation->reset();
+                fadeOutAnimation->start();
+                goToScene = "House1";
                 return true;
             }
         }
@@ -96,9 +114,17 @@ std::unique_ptr<Scene> Town1Scene::nextScene()
     {
         if (goToScene == "Road1")
         {
-            auto road1Scene = std::make_unique<Road1Scene>(renderer);
-            road1Scene->initPlayerPosition(0, 2, Entity::Direction::RIGHT);
-            return road1Scene;
+            auto scene = std::make_unique<Road1Scene>(renderer);
+            scene->initPlayerPosition(0, 2, Entity::Direction::RIGHT);
+            return scene;
+        }
+
+        if (goToScene == "House1")
+        {
+            // TODO
+            auto scene = std::make_unique<House1Scene>(renderer);
+            scene->initPlayerPosition(1, 7, Entity::Direction::UP);
+            return scene;
         }
     }
 
