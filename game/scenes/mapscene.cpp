@@ -47,12 +47,29 @@ MapScene::~MapScene()
 
 void MapScene::update(Inputs const* inputs)
 {
+    auto& player = Game::instance()->data.player;
+
+    player.previousSpeed = player.speed;
+
+    playerSprite->setAccumulatedTicks((playerSprite->getAccumulatedTicks() + 1) % player.speed);
+
+    if (player.direction == Entity::Direction::NONE && player.speed == Entity::Speed::WALK)
+        playerSprite->setAccumulatedTicks(0);
+
     for (auto it = entities.begin(); it != entities.end(); ++it)
     {
         auto& entity = *(it->first.get());
         auto& sprite = *(it->second.get());
 
         sprite.setAccumulatedTicks((sprite.getAccumulatedTicks() + 1) % entity.speed);
+    }
+
+    if (weatherAnimation)
+    {
+        if (!weatherAnimation->isStarted())
+            weatherAnimation->start();
+
+        weatherAnimation->incrementTicks();
     }
 
     if (fadeInAnimation->isStarted())
@@ -63,6 +80,12 @@ void MapScene::update(Inputs const* inputs)
     if (fadeOutAnimation->isStarted() && !fadeOutAnimation->isFinished())
     {
         fadeOutAnimation->incrementTicks();
+        return;
+    }
+
+    if (doorAnimation && doorAnimation->isStarted() && !doorAnimation->isFinished())
+    {
+        doorAnimation->incrementTicks();
         return;
     }
 
@@ -117,28 +140,11 @@ void MapScene::update(Inputs const* inputs)
         return;
     }
 
-    for (auto it = tilesAnimation.begin(); it != tilesAnimation.end(); ++it)
+    for (auto it = tilesAnimations.begin(); it != tilesAnimations.end(); ++it)
     {
         auto& anim = *(it->second.get());
         anim.incrementTicks();
     }
-
-    if (weatherAnimation)
-    {
-        if (!weatherAnimation->isStarted())
-            weatherAnimation->start();
-
-        weatherAnimation->incrementTicks();
-    }
-
-    auto& player = Game::instance()->data.player;
-
-    player.previousSpeed = player.speed;
-
-    playerSprite->setAccumulatedTicks((playerSprite->getAccumulatedTicks() + 1) % player.speed);
-
-    if (player.direction == Entity::Direction::NONE && player.speed == Entity::Speed::WALK)
-        playerSprite->setAccumulatedTicks(0);
 
     if (playerSprite->getAccumulatedTicks() != 0)
         return;
@@ -146,17 +152,15 @@ void MapScene::update(Inputs const* inputs)
     bool event     = manageEvents();
     bool encounter = manageEncounters();
 
-    player.direction = Entity::Direction::NONE;
-    player.previousY = player.y;
-    player.previousX = player.x;
-
     if (event)
     {
+        stop(player);
         return;
     }
 
     if (encounter)
     {
+        stop(player);
         battleIntro = manageBattleIntro();
         battleIntro->start();
         return;
@@ -169,6 +173,7 @@ void MapScene::update(Inputs const* inputs)
 
     if (inputs->start)
     {
+        stop(player);
         openMenu = true;
         return;
     }
@@ -195,6 +200,10 @@ void MapScene::update(Inputs const* inputs)
         player.direction = Entity::Direction::RIGHT;
         move(player);
     }
+    else
+    {
+        stop(player);
+    }
 }
 
 void MapScene::draw(Fps const* fps, RenderSizes rs)
@@ -219,8 +228,7 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
                       - (player.previousY
                          + (player.y - player.previousY) * (playerSprite->getAccumulatedTicks() + fps->tickPercentage())
                                / ((player.speed + player.previousSpeed) / 2.0))
-                            * dstTilePixelHeight
-                      - 4 * rs.wh / rs.ah;
+                            * dstTilePixelHeight;
 
     for (size_t l = 0; l < map->getLevels().size(); ++l)
     {
@@ -284,7 +292,19 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
                         && dstRect.y >= -dstTilePixelHeight && dstRect.y <= rs.wh + dstTilePixelHeight)
                     {
                         if (tile)
-                            SDL_RenderCopy(renderer, sprites[path].second, &srcRect, &dstRect);
+                        {
+                            if (tile->isDoor() && doorAnimation && doorPosition == std::pair<int, int>{i, j})
+                            {
+                                doorAnimation->setSprite(sprites[path]);
+                                doorAnimation->setSourceRect(srcRect);
+                                doorAnimation->setDestinationRect(dstRect);
+                                doorAnimation->draw(fps, rs);
+                            }
+                            else
+                            {
+                                SDL_RenderCopy(renderer, sprites[path].second, &srcRect, &dstRect);
+                            }
+                        }
 
                         if (layer->getType() == TileLayer::Type::SOLID_OVERLAY)
                         {
@@ -306,10 +326,9 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
                                                       / ((entity.speed + entity.previousSpeed) / 2.0)
                                                       * dstTilePixelWidth;
                                     int entityOffsetY = (entity.y - entity.previousY)
-                                                          * (sprite.getAccumulatedTicks() + fps->tickPercentage())
-                                                          / ((entity.speed + entity.previousSpeed) / 2.0)
-                                                          * dstTilePixelHeight
-                                                      + 2 * rs.wh / rs.ah;
+                                                      * (sprite.getAccumulatedTicks() + fps->tickPercentage())
+                                                      / ((entity.speed + entity.previousSpeed) / 2.0)
+                                                      * dstTilePixelHeight;
 
                                     SDL_Rect dstEntityRect;
                                     dstEntityRect.x = i * dstTilePixelWidth + playerOffsetX + entityOffsetX;
@@ -324,7 +343,7 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
                     }
                 }
 
-                if (layer->getType() == TileLayer::Type::SOLID)
+                if (layer->getType() == TileLayer::Type::SOLID_OVERLAY)
                 {
                     for (size_t i = 0; i < map->getNCol(); ++i)
                     {
@@ -373,9 +392,9 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
                                     }
                                 }
 
-                                auto it = tilesAnimation.find({i, j});
+                                auto it = tilesAnimations.find({i, j});
 
-                                if (it != tilesAnimation.end() && it->second && !it->second->isFinished())
+                                if (it != tilesAnimations.end() && it->second && !it->second->isFinished())
                                 {
                                     it->second->setDestinationRect(dstRect);
                                     it->second->draw(fps, rs);
@@ -458,18 +477,54 @@ void MapScene::drawNight()
 
 void MapScene::initPlayerPosition(int x, int y, Entity::Direction direction)
 {
-    Game::instance()->data.player.x         = x;
-    Game::instance()->data.player.y         = y;
-    Game::instance()->data.player.previousX = x;
-    Game::instance()->data.player.previousY = y;
-    Game::instance()->data.player.direction = Entity::Direction::NONE;
+    auto& player     = Game::instance()->data.player;
+    player.x         = x;
+    player.y         = y;
+    player.previousX = x;
+    player.previousY = y;
+    player.direction = Entity::Direction::NONE;
     playerSprite->forceSpriteDirection(direction);
 }
 
-void MapScene::move(Entity& entity)
+void MapScene::initMovingPlayerPosition(int x, int y, Entity::Direction direction)
+{
+    auto& player = Game::instance()->data.player;
+    initPlayerPosition(x, y, direction);
+    switch (direction)
+    {
+    case Entity::Direction::LEFT:
+        player.previousX = player.x + 1;
+        break;
+    case Entity::Direction::RIGHT:
+        player.previousX = player.x - 1;
+        break;
+    case Entity::Direction::UP:
+        player.previousY = player.y + 1;
+        break;
+    case Entity::Direction::DOWN:
+        player.previousY = player.y - 1;
+        break;
+    case Entity::Direction::NONE:
+    default:
+        break;
+    }
+    player.direction = direction;
+}
+
+void MapScene::stop(Entity& entity)
+{
+    entity.direction = Entity::Direction::NONE;
+    entity.previousY = entity.y;
+    entity.previousX = entity.x;
+}
+
+void MapScene::move(Entity& entity, bool force)
 {
     if (entity.direction == Entity::Direction::NONE)
         return;
+
+    entity.previousX = entity.x;
+    entity.previousY = entity.y;
 
     for (size_t l = 0; l < map->getLevels().size(); ++l)
     {
@@ -478,54 +533,93 @@ void MapScene::move(Entity& entity)
         if (l != entity.l)
             continue;
 
-        for (size_t h = 0; h < level->getTileLayers().size(); ++h)
+        auto& groundLayer = level->getTileLayers()[static_cast<size_t>(TileLayer::Type::GROUND)];
+        auto& solidLayer  = level->getTileLayers()[static_cast<size_t>(TileLayer::Type::SOLID)];
+
+        if (entity.direction == Entity::Direction::UP)
         {
-            auto& layer = level->getTileLayers()[h];
-
-            if (layer->getType() != TileLayer::Type::SOLID)
-                continue;
-
-            if (entity.direction == Entity::Direction::UP)
+            if (entity.y > 0)
             {
-                if (entity.y > 0)
+                if (force)
                 {
-                    auto& tile = (*layer.get())(entity.x, entity.y - 1);
-                    if (!tile && !entityAt(entity.x, entity.y - 1, l))
+                    entity.y--;
+                }
+                else
+                {
+                    auto& solidTile = (*solidLayer.get())(entity.x, entity.y - 1);
+                    if (!solidTile && !entityAt(entity.x, entity.y - 1, l))
                     {
-                        entity.y--;
+                        auto& groundTile = (*groundLayer.get())(entity.x, entity.y - 1);
+                        if (groundTile && !groundTile->isDoor())
+                        {
+                            entity.y--;
+                        }
                     }
                 }
             }
-            else if (entity.direction == Entity::Direction::DOWN)
+        }
+        else if (entity.direction == Entity::Direction::DOWN)
+        {
+            if (entity.y < int(map->getNRow() - 1))
             {
-                if (entity.y < int(map->getNRow() - 1))
+                if (force)
                 {
-                    auto& tile = (*layer.get())(entity.x, entity.y + 1);
-                    if (!tile && !entityAt(entity.x, entity.y + 1, l))
+                    entity.y++;
+                }
+                else
+                {
+                    auto& solidTile = (*solidLayer.get())(entity.x, entity.y + 1);
+                    if (!solidTile && !entityAt(entity.x, entity.y + 1, l))
                     {
-                        entity.y++;
+                        auto& groundTile = (*groundLayer.get())(entity.x, entity.y + 1);
+                        if (groundTile && !groundTile->isDoor())
+                        {
+                            entity.y++;
+                        }
                     }
                 }
             }
-            else if (entity.direction == Entity::Direction::LEFT)
+        }
+        else if (entity.direction == Entity::Direction::LEFT)
+        {
+            if (entity.x > 0)
             {
-                if (entity.x > 0)
+                if (force)
                 {
-                    auto& tile = (*layer.get())(entity.x - 1, entity.y);
-                    if (!tile && !entityAt(entity.x - 1, entity.y, l))
+                    entity.x--;
+                }
+                else
+                {
+                    auto& solidTile = (*solidLayer.get())(entity.x - 1, entity.y);
+                    if (!solidTile && !entityAt(entity.x - 1, entity.y, l))
                     {
-                        entity.x--;
+                        auto& groundTile = (*groundLayer.get())(entity.x - 1, entity.y);
+                        if (groundTile && !groundTile->isDoor())
+                        {
+                            entity.x--;
+                        }
                     }
                 }
             }
-            else if (entity.direction == Entity::Direction::RIGHT)
+        }
+        else if (entity.direction == Entity::Direction::RIGHT)
+        {
+            if (entity.x < int(map->getNCol() - 1))
             {
-                if (entity.x < int(map->getNCol() - 1))
+                if (force)
                 {
-                    auto& tile = (*layer.get())(entity.x + 1, entity.y);
-                    if (!tile && !entityAt(entity.x + 1, entity.y, l))
+                    entity.x++;
+                }
+                else
+                {
+                    auto& solidTile = (*solidLayer.get())(entity.x + 1, entity.y);
+                    if (!solidTile && !entityAt(entity.x + 1, entity.y, l))
                     {
-                        entity.x++;
+                        auto& groundTile = (*groundLayer.get())(entity.x + 1, entity.y);
+                        if (groundTile && !groundTile->isDoor())
+                        {
+                            entity.x++;
+                        }
                     }
                 }
             }
@@ -539,12 +633,12 @@ void MapScene::move(Entity& entity)
         auto& specialTile      = (*specialTileLayer.get())(entity.x, entity.y);
         if (specialTile && *(specialTile.get()) == GRASS)
         {
-            auto it = tilesAnimation.find({entity.x, entity.y});
+            auto it = tilesAnimations.find({entity.x, entity.y});
 
-            if (it == tilesAnimation.end())
+            if (it == tilesAnimations.end())
             {
-                tilesAnimation[{entity.x, entity.y}] = std::make_unique<GrassAnimation>(renderer);
-                tilesAnimation[{entity.x, entity.y}]->start();
+                tilesAnimations[{entity.x, entity.y}] = std::make_unique<GrassAnimation>(renderer);
+                tilesAnimations[{entity.x, entity.y}]->start();
             }
             else
             {
@@ -753,11 +847,6 @@ std::unique_ptr<Scene> MapScene::nextScene()
 std::pair<size_t, size_t> MapScene::currentPlayerPosition() const
 {
     return {Game::instance()->data.player.x, Game::instance()->data.player.y};
-}
-
-bool MapScene::entitiesShouldFreeze() const
-{
-    return openMenu || battleIntro;
 }
 
 void MapScene::changeWeather(Map::Weather weather)

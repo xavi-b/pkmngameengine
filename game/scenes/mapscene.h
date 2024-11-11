@@ -3,6 +3,7 @@
 
 #include "animations/battleintroanimation.h"
 #include "animations/fadeanimation.h"
+#include "animations/map/dooranimation.h"
 #include "animations/map/mapanimation.h"
 #include "entity.h"
 #include "map.h"
@@ -35,7 +36,9 @@ public:
     virtual void drawNight();
 
     virtual void    initPlayerPosition(int x, int y, Entity::Direction direction = Entity::Direction::NONE);
-    virtual void    move(Entity& entity);
+    virtual void    initMovingPlayerPosition(int x, int y, Entity::Direction direction);
+    void            stop(Entity& entity);
+    virtual void    move(Entity& entity, bool force = false);
     virtual Entity* entityAt(size_t x, size_t y, size_t l);
     virtual Entity* entityPreviousAt(size_t x, size_t y, size_t l);
 
@@ -49,8 +52,6 @@ public:
     virtual std::unique_ptr<Scene> nextScene() override;
 
     std::pair<size_t, size_t> currentPlayerPosition() const;
-
-    virtual bool entitiesShouldFreeze() const;
 
     void changeWeather(Map::Weather weather);
 
@@ -69,7 +70,9 @@ protected:
     std::unique_ptr<FadeAnimation>                               fadeInAnimation;
     std::unique_ptr<FadeAnimation>                               fadeOutAnimation;
     std::unique_ptr<WeatherAnimation>                            weatherAnimation;
-    std::map<std::pair<int, int>, std::unique_ptr<MapAnimation>> tilesAnimation;
+    std::map<std::pair<int, int>, std::unique_ptr<MapAnimation>> tilesAnimations;
+    std::pair<int, int>                                          doorPosition;
+    std::unique_ptr<DoorAnimation>                               doorAnimation;
 
     bool                  openMenu = false;
     std::unique_ptr<Menu> menu;

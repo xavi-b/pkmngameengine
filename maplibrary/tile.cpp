@@ -29,6 +29,16 @@ void Tile::setAnimated(bool newAnimated)
     animated = newAnimated;
 }
 
+bool Tile::isDoor() const
+{
+    return door;
+}
+
+void Tile::setDoor(bool newDoor)
+{
+    door = newDoor;
+}
+
 void tag_invoke(js::value_from_tag, js::value& jv, Tile::TilePtr const& o)
 {
     if (o && !o->spritePath.empty())
@@ -37,7 +47,8 @@ void tag_invoke(js::value_from_tag, js::value& jv, Tile::TilePtr const& o)
             {"spritePath", o->spritePath},
             {"col",        o->col       },
             {"row",        o->row       },
-            {"animated",   o->animated  }
+            {"animated",   o->animated  },
+            {"door",       o->door      }
         };
     }
     else
@@ -62,6 +73,8 @@ Tile::TilePtr tag_invoke(js::value_to_tag<Tile::TilePtr>, js::value const& jv)
                                            js::value_to<size_t>(obj.at("row")));
         if (obj.contains("animated"))
             tile->setAnimated(js::value_to<bool>(obj.at("animated")));
+        if (obj.contains("door"))
+            tile->setDoor(js::value_to<bool>(obj.at("door")));
         return tile;
     }
 }

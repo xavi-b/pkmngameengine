@@ -59,9 +59,8 @@ std::unique_ptr<Scene> House1Scene::nextScene()
     {
         if (goToScene == "Town1")
         {
-            // TODO
             auto scene = std::make_unique<Town1Scene>(renderer);
-            scene->initPlayerPosition(8, 12, Entity::Direction::DOWN);
+            scene->initMovingPlayerPosition(8, 12, Entity::Direction::DOWN);
             return scene;
         }
     }

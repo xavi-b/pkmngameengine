@@ -27,32 +27,46 @@ void Town1Scene::update(Inputs const* inputs)
 {
     MapScene::update(inputs);
 
+    auto& player = Game::instance()->data.player;
+    if (doorAnimation)
+    {
+        if (player.x != doorPosition.first || player.y != doorPosition.second)
+        {
+            if (goToScene == "House1")
+            {
+                player.direction = Entity::Direction::UP;
+                move(player, true);
+            }
+        }
+        else
+        {
+            if (playerSprite->getAccumulatedTicks() == 0)
+                stop(player);
+        }
+
+        if (doorAnimation->isFinished())
+        {
+            if (!fadeOutAnimation->isStarted())
+            {
+                fadeOutAnimation->reset();
+                fadeOutAnimation->start();
+            }
+        }
+    }
+
     auto& entity = *(entities.begin()->first.get());
     auto& sprite = *(entities.begin()->second.get());
     if (sprite.getAccumulatedTicks() == 0)
     {
-        if (entitiesShouldFreeze())
+        if (entity.x == 18)
         {
-            entity.direction = Entity::Direction::NONE;
-            entity.previousY = entity.y;
-            entity.previousX = entity.x;
+            entity.direction = Entity::Direction::LEFT;
         }
-        else
+        else if (entity.x == 11)
         {
-            entity.direction = entity.previousDirection;
-            if (entity.x == 18)
-            {
-                entity.direction = Entity::Direction::LEFT;
-            }
-            else if (entity.x == 11)
-            {
-                entity.direction = Entity::Direction::RIGHT;
-            }
-            entity.previousDirection = entity.direction;
-            entity.previousY         = entity.y;
-            entity.previousX         = entity.x;
-            move(entity);
+            entity.direction = Entity::Direction::RIGHT;
         }
+        move(entity);
     }
 }
 
@@ -81,18 +95,19 @@ bool Town1Scene::manageEvents()
         }
     }
 
-    // TODO
     if (event && event->getId() == "House1")
     {
         if (player.direction == Entity::Direction::UP)
         {
-            if (!fadeOutAnimation->isStarted())
+            if (!doorAnimation)
             {
-                fadeOutAnimation->reset();
-                fadeOutAnimation->start();
-                goToScene = "House1";
-                return true;
+                doorAnimation = std::make_unique<DoorAnimation>(renderer);
+                doorAnimation->start();
+                doorPosition = {player.x, player.y - 1};
+                goToScene    = "House1";
             }
+
+            return true;
         }
     }
 
@@ -121,7 +136,6 @@ std::unique_ptr<Scene> Town1Scene::nextScene()
 
         if (goToScene == "House1")
         {
-            // TODO
             auto scene = std::make_unique<House1Scene>(renderer);
             scene->initPlayerPosition(1, 7, Entity::Direction::UP);
             return scene;

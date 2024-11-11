@@ -285,6 +285,12 @@ void MapperWidget::processMouseEvent(QMouseEvent* event)
                 if (tile)
                     tile->setAnimated(!tile->isAnimated());
             }
+            else if (event->modifiers() & Qt::AltModifier)
+            {
+                auto& tile = (*layer.get())(col, row);
+                if (tile)
+                    tile->setDoor(!tile->isDoor());
+            }
             else
             {
                 QRect rect = data.second;
@@ -375,6 +381,16 @@ void MapperWidget::paintEvent(QPaintEvent* event)
                             painter.setOpacity(opacity);
                             painter.drawRect(
                                 QRect(QPoint(origin.x() + 2, origin.y() + 2), QSize(selSize - 4, selSize - 4)));
+                            painter.restore();
+                        }
+
+                        if (tile->isDoor())
+                        {
+                            painter.save();
+                            painter.setPen(QPen(Qt::red, 2, Qt::DashLine));
+                            painter.setOpacity(opacity);
+                            painter.drawRect(
+                                QRect(QPoint(origin.x() + 4, origin.y() + 4), QSize(selSize - 8, selSize - 8)));
                             painter.restore();
                         }
                     }

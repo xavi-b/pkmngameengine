@@ -20,6 +20,8 @@ public:
 
     bool isAnimated() const;
     void setAnimated(bool newAnimated);
+    bool isDoor() const;
+    void setDoor(bool newDoor);
 
     friend void    tag_invoke(js::value_from_tag, js::value& jv, TilePtr const& o);
     friend TilePtr tag_invoke(js::value_to_tag<TilePtr>, js::value const& jv);
@@ -29,6 +31,7 @@ private:
     int         col      = 0;
     int         row      = 0;
     bool        animated = false;
+    bool        door     = false;
 };
 
 #endif // TILE_H
