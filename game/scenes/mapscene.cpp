@@ -555,104 +555,25 @@ void MapScene::move(Entity& entity, bool force)
     entity.previousX = entity.x;
     entity.previousY = entity.y;
 
-    for (size_t l = 0; l < map->getLevels().size(); ++l)
+    if (entity.direction == Entity::Direction::UP)
     {
-        auto& level = map->getLevels()[l];
-
-        if (l != entity.l)
-            continue;
-
-        auto& groundLayer = level->getTileLayers()[static_cast<size_t>(TileLayer::Type::GROUND)];
-        auto& solidLayer  = level->getTileLayers()[static_cast<size_t>(TileLayer::Type::SOLID)];
-
-        if (entity.direction == Entity::Direction::UP)
-        {
-            if (entity.y > 0)
-            {
-                if (force)
-                {
-                    entity.y--;
-                }
-                else
-                {
-                    auto& solidTile = (*solidLayer.get())(entity.x, entity.y - 1);
-                    if (!solidTile && !entityAt(entity.x, entity.y - 1, l))
-                    {
-                        auto& groundTile = (*groundLayer.get())(entity.x, entity.y - 1);
-                        if (groundTile && !groundTile->isDoor())
-                        {
-                            entity.y--;
-                        }
-                    }
-                }
-            }
-        }
-        else if (entity.direction == Entity::Direction::DOWN)
-        {
-            if (entity.y < int(map->getNRow() - 1))
-            {
-                if (force)
-                {
-                    entity.y++;
-                }
-                else
-                {
-                    auto& solidTile = (*solidLayer.get())(entity.x, entity.y + 1);
-                    if (!solidTile && !entityAt(entity.x, entity.y + 1, l))
-                    {
-                        auto& groundTile = (*groundLayer.get())(entity.x, entity.y + 1);
-                        if (groundTile && !groundTile->isDoor())
-                        {
-                            entity.y++;
-                        }
-                    }
-                }
-            }
-        }
-        else if (entity.direction == Entity::Direction::LEFT)
-        {
-            if (entity.x > 0)
-            {
-                if (force)
-                {
-                    entity.x--;
-                }
-                else
-                {
-                    auto& solidTile = (*solidLayer.get())(entity.x - 1, entity.y);
-                    if (!solidTile && !entityAt(entity.x - 1, entity.y, l))
-                    {
-                        auto& groundTile = (*groundLayer.get())(entity.x - 1, entity.y);
-                        if (groundTile && !groundTile->isDoor())
-                        {
-                            entity.x--;
-                        }
-                    }
-                }
-            }
-        }
-        else if (entity.direction == Entity::Direction::RIGHT)
-        {
-            if (entity.x < int(map->getNCol() - 1))
-            {
-                if (force)
-                {
-                    entity.x++;
-                }
-                else
-                {
-                    auto& solidTile = (*solidLayer.get())(entity.x + 1, entity.y);
-                    if (!solidTile && !entityAt(entity.x + 1, entity.y, l))
-                    {
-                        auto& groundTile = (*groundLayer.get())(entity.x + 1, entity.y);
-                        if (groundTile && !groundTile->isDoor())
-                        {
-                            entity.x++;
-                        }
-                    }
-                }
-            }
-        }
+        if (entity.y > 0 && canMove(entity.x, entity.y - 1, entity.l, force))
+            entity.y--;
+    }
+    else if (entity.direction == Entity::Direction::DOWN)
+    {
+        if (entity.y < int(map->getNRow() - 1) && canMove(entity.x, entity.y + 1, entity.l, force))
+            entity.y++;
+    }
+    else if (entity.direction == Entity::Direction::LEFT)
+    {
+        if (entity.x > 0 && canMove(entity.x - 1, entity.y, entity.l, force))
+            entity.x--;
+    }
+    else if (entity.direction == Entity::Direction::RIGHT)
+    {
+        if (entity.x < int(map->getNCol() - 1) && canMove(entity.x + 1, entity.y, entity.l, force))
+            entity.x++;
     }
 
     if (entity.x != entity.previousX || entity.y != entity.previousY)
@@ -677,7 +598,7 @@ void MapScene::move(Entity& entity, bool force)
     }
 }
 
-Entity* MapScene::entityAt(size_t x, size_t y, size_t l)
+Entity* MapScene::entityAt(size_t x, size_t y, size_t l) const
 {
     if (x > map->getNCol())
         return nullptr;
@@ -702,7 +623,7 @@ Entity* MapScene::entityAt(size_t x, size_t y, size_t l)
     return {};
 }
 
-Entity* MapScene::entityPreviousAt(size_t x, size_t y, size_t l)
+Entity* MapScene::entityPreviousAt(size_t x, size_t y, size_t l) const
 {
     if (x > map->getNCol())
         return nullptr;
@@ -725,6 +646,40 @@ Entity* MapScene::entityPreviousAt(size_t x, size_t y, size_t l)
         return &player;
 
     return {};
+}
+
+bool MapScene::canMove(size_t x, size_t y, size_t l, bool force) const
+{
+    if (force)
+        return true;
+
+    if (entityAt(x, y, l))
+        return false;
+
+    auto& level = map->getLevels()[l];
+
+    auto& solidLayer = level->getTileLayers()[static_cast<size_t>(TileLayer::Type::SOLID)];
+    auto& solidTile  = (*solidLayer.get())(x, y);
+    if (solidTile)
+        return false;
+
+    auto& groundLayer = level->getTileLayers()[static_cast<size_t>(TileLayer::Type::GROUND)];
+    auto& groundTile  = (*groundLayer.get())(x, y);
+    if (!groundTile)
+        return false;
+
+    if (groundTile->isDoor())
+        return false;
+
+    auto& specialTileLayer = level->getSpecialTileLayer();
+    auto& specialTile      = (*specialTileLayer.get())(x, y);
+    if (specialTile)
+    {
+        if (*(specialTile.get()) == WATER && !surfing)
+            return false;
+    }
+
+    return true;
 }
 
 bool MapScene::manageEvents()

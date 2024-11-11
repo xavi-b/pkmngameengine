@@ -40,8 +40,9 @@ public:
     void            initClosingDoor(int x, int y);
     void            stop(Entity& entity);
     virtual void    move(Entity& entity, bool force = false);
-    virtual Entity* entityAt(size_t x, size_t y, size_t l);
-    virtual Entity* entityPreviousAt(size_t x, size_t y, size_t l);
+    virtual Entity* entityAt(size_t x, size_t y, size_t l) const;
+    virtual Entity* entityPreviousAt(size_t x, size_t y, size_t l) const;
+    virtual bool    canMove(size_t x, size_t y, size_t l, bool force) const;
 
     virtual bool                                  manageEvents();
     virtual bool                                  manageEncounters();
@@ -81,6 +82,7 @@ protected:
     std::unique_ptr<Menu> menu;
     bool                  openPkmns = false;
     bool                  openBag   = false;
+    bool                  surfing   = false;
 
     std::string goToScene = "";
 };
