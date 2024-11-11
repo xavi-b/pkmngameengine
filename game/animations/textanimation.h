@@ -14,7 +14,7 @@ public:
     virtual void draw(Fps const* fps, RenderSizes rs) override;
     virtual void forceEnd() override;
 
-    std::string currentText() const;
+    std::string currentText(Fps const* fps) const;
 
 private:
     static constexpr int NbCharPerTick = 4;

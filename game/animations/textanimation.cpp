@@ -36,7 +36,7 @@ void TextAnimation::forceEnd()
     Animation::forceEnd();
 }
 
-std::string TextAnimation::currentText() const
+std::string TextAnimation::currentText(Fps const* fps) const
 {
-    return text.substr(0, accumulatedTicks * NbCharPerTick);
+    return text.substr(0, (accumulatedTicks + fps->tickPercentage()) * NbCharPerTick);
 }

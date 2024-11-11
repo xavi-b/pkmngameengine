@@ -54,7 +54,7 @@ void TextSpeech::update(Inputs const* inputs)
     }
 }
 
-void TextSpeech::draw(Fps const* /*fps*/, RenderSizes rs)
+void TextSpeech::draw(Fps const* fps, RenderSizes rs)
 {
     int borderSize     = TextSpeech::TextBoxBorderSize;
     int dstBorderSizeX = borderSize * rs.ww / rs.aw;
@@ -81,7 +81,7 @@ void TextSpeech::draw(Fps const* /*fps*/, RenderSizes rs)
     if (currentAnimation < animations.size())
         RenderUtils::drawGreyTextWithIntroWrapped(renderer,
                                                   rs,
-                                                  animations[currentAnimation]->currentText(),
+                                                  animations[currentAnimation]->currentText(fps),
                                                   {3, 86, 252, 255},
                                                   {79, 199, 255, 255},
                                                   fontSize,

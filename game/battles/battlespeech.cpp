@@ -56,7 +56,7 @@ void BattleSpeech::update(Inputs const* inputs)
     }
 }
 
-void BattleSpeech::draw(Fps const* /*fps*/, RenderSizes rs)
+void BattleSpeech::draw(Fps const* fps, RenderSizes rs)
 {
     int borderSize     = TextSpeech::TextBoxBorderSize;
     int dstBorderSizeX = borderSize * rs.ww / rs.aw;
@@ -83,7 +83,7 @@ void BattleSpeech::draw(Fps const* /*fps*/, RenderSizes rs)
     if (currentAnimation < animations.size())
         RenderUtils::drawGreyTextWithIntroWrapped(renderer,
                                                   rs,
-                                                  animations[currentAnimation]->currentText(),
+                                                  animations[currentAnimation]->currentText(fps),
                                                   {},
                                                   {},
                                                   fontSize,
