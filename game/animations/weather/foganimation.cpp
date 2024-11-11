@@ -4,14 +4,16 @@
 
 #include <SDL_image.h>
 
-FogAnimation::FogAnimation(SDL_Renderer* renderer) : WeatherAnimation(renderer)
+FogAnimation::FogAnimation(SDL_Renderer* renderer, bool night) : WeatherAnimation(renderer, night)
 {
     SDL_Surface* fog1Surface = IMG_Load("resources/Graphics/Weather/fog_tile.png");
-    SDL_Texture* fog1Texture = SDL_CreateTextureFromSurface(renderer, fog1Surface);
+    SDL_Texture* fog1Texture =
+        RenderUtils::texture(renderer, SDL_CreateTextureFromSurface(renderer, fog1Surface), night);
     fog1                     = {fog1Surface, fog1Texture};
     SDL_Surface* fog2Surface = IMG_Load("resources/Graphics/Weather/fog_tile_2.png");
-    SDL_Texture* fog2Texture = SDL_CreateTextureFromSurface(renderer, fog2Surface);
-    fog2                     = {fog2Surface, fog2Texture};
+    SDL_Texture* fog2Texture =
+        RenderUtils::texture(renderer, SDL_CreateTextureFromSurface(renderer, fog2Surface), night);
+    fog2 = {fog2Surface, fog2Texture};
 }
 
 FogAnimation::~FogAnimation()

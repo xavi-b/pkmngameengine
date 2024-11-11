@@ -4,12 +4,12 @@
 
 #include <SDL_image.h>
 
-RainAnimation::RainAnimation(SDL_Renderer* renderer) : WeatherAnimation(renderer)
+RainAnimation::RainAnimation(SDL_Renderer* renderer, bool night) : WeatherAnimation(renderer, night)
 {
     for (size_t i = 1; i <= 3; ++i)
     {
         SDL_Surface* surface = IMG_Load(("resources/Graphics/Weather/rain_" + std::to_string(i) + ".png").c_str());
-        SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+        SDL_Texture* texture = RenderUtils::texture(renderer, SDL_CreateTextureFromSurface(renderer, surface), night);
         rains.emplace(surface, texture);
     }
 }

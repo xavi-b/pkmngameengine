@@ -4,10 +4,10 @@
 
 #include <SDL_image.h>
 
-GrassAnimation::GrassAnimation(SDL_Renderer* renderer) : MapAnimation(renderer)
+GrassAnimation::GrassAnimation(SDL_Renderer* renderer, bool night) : MapAnimation(renderer, night)
 {
     surface = IMG_Load("resources/Graphics/Animations/Overworld dust and grass.png");
-    texture = SDL_CreateTextureFromSurface(renderer, surface);
+    texture = RenderUtils::texture(renderer, SDL_CreateTextureFromSurface(renderer, surface), night);
 
     ticksDuration = speed * nSprites;
 }

@@ -6,7 +6,7 @@
 class WeatherAnimation : public Animation
 {
 public:
-    WeatherAnimation(SDL_Renderer* renderer);
+    WeatherAnimation(SDL_Renderer* renderer, bool night);
 
     virtual bool isFinished() const;
 
@@ -15,6 +15,7 @@ public:
 
 protected:
     float ticksDuration = 32;
+    bool  night         = false;
 };
 
 #endif // WEATHERANIMATION_H

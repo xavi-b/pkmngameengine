@@ -6,7 +6,7 @@
 class MapAnimation : public Animation
 {
 public:
-    MapAnimation(SDL_Renderer* renderer);
+    MapAnimation(SDL_Renderer* renderer, bool night);
 
     virtual bool isFinished() const;
 
@@ -14,6 +14,7 @@ public:
 
 protected:
     float    ticksDuration = 32;
+    bool     night         = false;
     SDL_Rect dstRect;
 };
 

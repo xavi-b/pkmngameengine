@@ -1,6 +1,6 @@
 #include "weatheranimation.h"
 
-WeatherAnimation::WeatherAnimation(SDL_Renderer* renderer) : Animation(renderer)
+WeatherAnimation::WeatherAnimation(SDL_Renderer* renderer, bool night) : Animation(renderer), night(night)
 {
 }
 

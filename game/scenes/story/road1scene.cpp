@@ -9,6 +9,7 @@ Road1Scene::Road1Scene(SDL_Renderer* renderer) : MapScene(renderer, "resources/m
 
 void Road1Scene::init()
 {
+    MapScene::init();
 }
 
 void Road1Scene::draw(Fps const* fps, RenderSizes rs)
@@ -59,4 +60,9 @@ std::unique_ptr<Scene> Road1Scene::nextScene()
         }
     }
     return nullptr;
+}
+
+bool Road1Scene::shouldShowNightTextures() const
+{
+    return Game::instance()->isNight();
 }

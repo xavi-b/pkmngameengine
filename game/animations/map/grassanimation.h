@@ -6,7 +6,7 @@
 class GrassAnimation : public MapAnimation
 {
 public:
-    GrassAnimation(SDL_Renderer* renderer);
+    GrassAnimation(SDL_Renderer* renderer, bool night);
     ~GrassAnimation();
 
     virtual void start() override;

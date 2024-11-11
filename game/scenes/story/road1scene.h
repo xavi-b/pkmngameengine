@@ -19,6 +19,8 @@ public:
     virtual std::string name() override;
 
     virtual std::unique_ptr<Scene> nextScene() override;
+
+    virtual bool shouldShowNightTextures() const override;
 };
 
 #endif // ROAD1SCENE_H

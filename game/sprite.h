@@ -13,7 +13,7 @@ public:
     Sprite(SDL_Renderer* renderer);
     ~Sprite();
 
-    bool load(std::string const& spritePath);
+    bool load(std::string const& spritePath, bool night);
 
     void forceSpriteDirection(Entity::Direction direction);
 

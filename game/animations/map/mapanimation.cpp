@@ -1,6 +1,6 @@
 #include "mapanimation.h"
 
-MapAnimation::MapAnimation(SDL_Renderer* renderer) : Animation(renderer)
+MapAnimation::MapAnimation(SDL_Renderer* renderer, bool night) : Animation(renderer), night(night)
 {
 }
 

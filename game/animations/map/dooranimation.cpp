@@ -4,7 +4,7 @@
 
 #include <SDL_image.h>
 
-DoorAnimation::DoorAnimation(SDL_Renderer* renderer) : MapAnimation(renderer)
+DoorAnimation::DoorAnimation(SDL_Renderer* renderer, bool night) : MapAnimation(renderer, night)
 {
 }
 

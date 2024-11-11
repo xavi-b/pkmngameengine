@@ -9,7 +9,7 @@
 class RainAnimation : public WeatherAnimation
 {
 public:
-    RainAnimation(SDL_Renderer* renderer);
+    RainAnimation(SDL_Renderer* renderer, bool night);
     ~RainAnimation();
 
     virtual std::string getStartingText() const override;

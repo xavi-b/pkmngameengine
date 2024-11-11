@@ -1,5 +1,7 @@
 #include "renderutils.h"
 
+#include "layers/tilelayer.h"
+
 #include <iostream>
 
 RenderUtils* RenderUtils::instance()
@@ -378,6 +380,55 @@ void RenderUtils::drawBorderImage(SDL_Renderer* renderer,
     dstRect.w = dstPx;
     dstRect.h = dstPy;
     SDL_RenderCopy(renderer, texture, &srcRect, &dstRect);
+}
+
+SDL_Texture* RenderUtils::texture(SDL_Renderer* renderer, SDL_Texture* baseTexture, bool night)
+{
+    if (!night)
+        return baseTexture;
+
+    SDL_Rect srcRect;
+    SDL_QueryTexture(baseTexture, NULL, NULL, &srcRect.w, &srcRect.h);
+
+    SDL_Texture* formattedTexure =
+        SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, srcRect.w, srcRect.h);
+    SDL_SetTextureBlendMode(formattedTexure, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderTarget(renderer, formattedTexure);
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+    SDL_RenderClear(renderer);
+    SDL_RenderCopy(renderer, baseTexture, NULL, NULL);
+
+    SDL_BlendMode blendMode = SDL_ComposeCustomBlendMode(SDL_BLENDFACTOR_DST_ALPHA,
+                                                         SDL_BLENDFACTOR_ONE_MINUS_DST_ALPHA,
+                                                         SDL_BLENDOPERATION_ADD,
+                                                         SDL_BLENDFACTOR_DST_ALPHA,
+                                                         SDL_BLENDFACTOR_ONE_MINUS_DST_ALPHA,
+                                                         SDL_BLENDOPERATION_ADD);
+
+    SDL_SetRenderDrawBlendMode(renderer, blendMode);
+    SDL_SetRenderDrawColor(renderer,
+                           TileLayer::NightColor[0],
+                           TileLayer::NightColor[1],
+                           TileLayer::NightColor[2],
+                           TileLayer::NightColor[3]);
+    SDL_RenderFillRect(renderer, NULL);
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
+
+    SDL_BlendMode texureBlendMode = SDL_ComposeCustomBlendMode(SDL_BLENDFACTOR_ONE_MINUS_DST_ALPHA,
+                                                               SDL_BLENDFACTOR_DST_ALPHA,
+                                                               SDL_BLENDOPERATION_ADD,
+                                                               SDL_BLENDFACTOR_ONE,
+                                                               SDL_BLENDFACTOR_ZERO,
+                                                               SDL_BLENDOPERATION_ADD);
+    SDL_SetTextureBlendMode(baseTexture, texureBlendMode);
+    SDL_RenderCopy(renderer, baseTexture, NULL, NULL);
+
+    SDL_SetRenderTarget(renderer, NULL);
+    SDL_DestroyTexture(baseTexture);
+    SDL_SetTextureBlendMode(formattedTexure, SDL_BLENDMODE_BLEND);
+
+    return formattedTexure;
 }
 
 RenderUtils::RenderUtils()

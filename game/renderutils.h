@@ -99,6 +99,8 @@ public:
                                 int           px,
                                 int           py);
 
+    static SDL_Texture* texture(SDL_Renderer* renderer, SDL_Texture* baseTexture, bool night);
+
 private:
     RenderUtils();
     ~RenderUtils();

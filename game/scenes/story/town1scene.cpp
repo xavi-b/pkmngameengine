@@ -6,6 +6,8 @@
 
 Town1Scene::Town1Scene(SDL_Renderer* renderer) : MapScene(renderer, "resources/maps/town1.pkmap")
 {
+    changeWeather(Map::Weather::RAIN);
+
     auto entity               = std::make_unique<Entity>();
     entity->x                 = 11;
     entity->y                 = 10;
@@ -14,13 +16,13 @@ Town1Scene::Town1Scene(SDL_Renderer* renderer) : MapScene(renderer, "resources/m
     entity->direction         = Entity::Direction::RIGHT;
     entity->previousDirection = Entity::Direction::RIGHT;
     auto entitySprite         = std::make_unique<Sprite>(renderer);
-    entitySprite->load("resources/Graphics/Characters/NPC 01.png");
+    entitySprite->load("resources/Graphics/Characters/NPC 01.png", shouldShowNightTextures());
     entities.emplace(std::move(entity), std::move(entitySprite));
 }
 
 void Town1Scene::init()
 {
-    changeWeather(Map::Weather::RAIN);
+    MapScene::init();
 }
 
 void Town1Scene::update(Inputs const* inputs)
@@ -101,10 +103,10 @@ bool Town1Scene::manageEvents()
         {
             if (!doorOpeningAnimation)
             {
-                doorOpeningAnimation = std::make_unique<DoorAnimation>(renderer);
+                doorOpeningAnimation = std::make_unique<DoorAnimation>(renderer, shouldShowNightTextures());
                 doorOpeningAnimation->start();
                 doorOpeningPosition = {player.x, player.y - 1};
-                goToScene    = "House1";
+                goToScene           = "House1";
             }
 
             return true;
@@ -143,4 +145,9 @@ std::unique_ptr<Scene> Town1Scene::nextScene()
     }
 
     return nullptr;
+}
+
+bool Town1Scene::shouldShowNightTextures() const
+{
+    return Game::instance()->isNight();
 }

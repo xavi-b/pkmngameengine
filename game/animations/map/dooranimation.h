@@ -6,7 +6,7 @@
 class DoorAnimation : public MapAnimation
 {
 public:
-    DoorAnimation(SDL_Renderer* renderer);
+    DoorAnimation(SDL_Renderer* renderer, bool night);
     ~DoorAnimation();
 
     virtual void start() override;

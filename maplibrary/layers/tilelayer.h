@@ -11,7 +11,7 @@
 class TileLayer : public Layer<Tile::TilePtr>
 {
 public:
-    static constexpr std::array<unsigned char, 4> NightColor = {14, 13, 91, 127};
+    static constexpr std::array<unsigned char, 4> NightColor = {14, 13, 91, 175};
 
     enum class Type
     {
