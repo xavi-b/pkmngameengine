@@ -28,9 +28,9 @@ void Town1Scene::update(Inputs const* inputs)
     MapScene::update(inputs);
 
     auto& player = Game::instance()->data.player;
-    if (doorAnimation)
+    if (doorOpeningAnimation)
     {
-        if (player.x != doorPosition.first || player.y != doorPosition.second)
+        if (player.x != doorOpeningPosition.first || player.y != doorOpeningPosition.second)
         {
             if (goToScene == "House1")
             {
@@ -44,7 +44,7 @@ void Town1Scene::update(Inputs const* inputs)
                 stop(player);
         }
 
-        if (doorAnimation->isFinished())
+        if (doorOpeningAnimation->isFinished())
         {
             if (!fadeOutAnimation->isStarted())
             {
@@ -99,11 +99,11 @@ bool Town1Scene::manageEvents()
     {
         if (player.direction == Entity::Direction::UP)
         {
-            if (!doorAnimation)
+            if (!doorOpeningAnimation)
             {
-                doorAnimation = std::make_unique<DoorAnimation>(renderer);
-                doorAnimation->start();
-                doorPosition = {player.x, player.y - 1};
+                doorOpeningAnimation = std::make_unique<DoorAnimation>(renderer);
+                doorOpeningAnimation->start();
+                doorOpeningPosition = {player.x, player.y - 1};
                 goToScene    = "House1";
             }
 

@@ -61,6 +61,7 @@ std::unique_ptr<Scene> House1Scene::nextScene()
         {
             auto scene = std::make_unique<Town1Scene>(renderer);
             scene->initMovingPlayerPosition(8, 12, Entity::Direction::DOWN);
+            scene->initClosingDoor(8, 11);
             return scene;
         }
     }

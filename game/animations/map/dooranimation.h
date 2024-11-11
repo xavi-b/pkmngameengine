@@ -16,6 +16,7 @@ public:
 
     void setSprite(std::pair<SDL_Surface*, SDL_Texture*> sprite);
     void setSourceRect(SDL_Rect const& srcRect);
+    void setInverted(bool newInverted);
 
 private:
     SDL_Surface* surface;
@@ -25,6 +26,8 @@ private:
     int speed    = 2;
     int nSprites = 0;
     int ticks    = 0;
+
+    bool inverted = false;
 };
 
 #endif // DOORANIMATION_H

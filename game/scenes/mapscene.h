@@ -37,6 +37,7 @@ public:
 
     virtual void    initPlayerPosition(int x, int y, Entity::Direction direction = Entity::Direction::NONE);
     virtual void    initMovingPlayerPosition(int x, int y, Entity::Direction direction);
+    void            initClosingDoor(int x, int y);
     void            stop(Entity& entity);
     virtual void    move(Entity& entity, bool force = false);
     virtual Entity* entityAt(size_t x, size_t y, size_t l);
@@ -71,8 +72,10 @@ protected:
     std::unique_ptr<FadeAnimation>                               fadeOutAnimation;
     std::unique_ptr<WeatherAnimation>                            weatherAnimation;
     std::map<std::pair<int, int>, std::unique_ptr<MapAnimation>> tilesAnimations;
-    std::pair<int, int>                                          doorPosition;
-    std::unique_ptr<DoorAnimation>                               doorAnimation;
+    std::pair<int, int>                                          doorOpeningPosition;
+    std::unique_ptr<DoorAnimation>                               doorOpeningAnimation;
+    std::pair<int, int>                                          doorClosingPosition;
+    std::unique_ptr<DoorAnimation>                               doorClosingAnimation;
 
     bool                  openMenu = false;
     std::unique_ptr<Menu> menu;

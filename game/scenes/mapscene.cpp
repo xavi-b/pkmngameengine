@@ -77,16 +77,29 @@ void MapScene::update(Inputs const* inputs)
         fadeInAnimation->incrementTicks();
     }
 
+    if (fadeInAnimation->isFinished())
+    {
+        if (doorClosingAnimation && !doorClosingAnimation->isStarted())
+        {
+            doorClosingAnimation->start();
+        }
+    }
+
     if (fadeOutAnimation->isStarted() && !fadeOutAnimation->isFinished())
     {
         fadeOutAnimation->incrementTicks();
         return;
     }
 
-    if (doorAnimation && doorAnimation->isStarted() && !doorAnimation->isFinished())
+    if (doorOpeningAnimation && doorOpeningAnimation->isStarted() && !doorOpeningAnimation->isFinished())
     {
-        doorAnimation->incrementTicks();
+        doorOpeningAnimation->incrementTicks();
         return;
+    }
+
+    if (doorClosingAnimation && doorClosingAnimation->isStarted() && !doorClosingAnimation->isFinished())
+    {
+        doorClosingAnimation->incrementTicks();
     }
 
     if (battleIntro && !battleIntro->isFinished())
@@ -293,16 +306,25 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
                     {
                         if (tile)
                         {
-                            if (tile->isDoor() && doorAnimation && doorPosition == std::pair<int, int>{i, j})
+                            SDL_RenderCopy(renderer, sprites[path].second, &srcRect, &dstRect);
+
+                            if (tile->isDoor())
                             {
-                                doorAnimation->setSprite(sprites[path]);
-                                doorAnimation->setSourceRect(srcRect);
-                                doorAnimation->setDestinationRect(dstRect);
-                                doorAnimation->draw(fps, rs);
-                            }
-                            else
-                            {
-                                SDL_RenderCopy(renderer, sprites[path].second, &srcRect, &dstRect);
+                                if (doorClosingAnimation && doorClosingPosition == std::pair<int, int>{i, j})
+                                {
+                                    doorClosingAnimation->setSprite(sprites[path]);
+                                    doorClosingAnimation->setSourceRect(srcRect);
+                                    doorClosingAnimation->setDestinationRect(dstRect);
+                                    doorClosingAnimation->draw(fps, rs);
+                                }
+
+                                if (doorOpeningAnimation && doorOpeningPosition == std::pair<int, int>{i, j})
+                                {
+                                    doorOpeningAnimation->setSprite(sprites[path]);
+                                    doorOpeningAnimation->setSourceRect(srcRect);
+                                    doorOpeningAnimation->setDestinationRect(dstRect);
+                                    doorOpeningAnimation->draw(fps, rs);
+                                }
                             }
                         }
 
@@ -509,6 +531,13 @@ void MapScene::initMovingPlayerPosition(int x, int y, Entity::Direction directio
         break;
     }
     player.direction = direction;
+}
+
+void MapScene::initClosingDoor(int x, int y)
+{
+    doorClosingPosition  = {x, y};
+    doorClosingAnimation = std::make_unique<DoorAnimation>(renderer);
+    doorClosingAnimation->setInverted(true);
 }
 
 void MapScene::stop(Entity& entity)

@@ -38,9 +38,10 @@ bool DoorAnimation::isFinished() const
 void DoorAnimation::draw(Fps const* /*fps*/, RenderSizes /*rs*/)
 {
     SDL_Rect srcRect = this->srcRect;
-    int      addY    = (ticks % nSprites) * MapScene::TilePixelSize;
-    if (srcRect.y < surface->h)
-        srcRect.y += addY;
+    if (!inverted)
+        srcRect.y = (ticks % nSprites) * MapScene::TilePixelSize;
+    else
+        srcRect.y = surface->h - (ticks % nSprites) * MapScene::TilePixelSize - MapScene::TilePixelSize;
     SDL_RenderCopy(renderer, texture, &srcRect, &dstRect);
 }
 
@@ -56,4 +57,9 @@ void DoorAnimation::setSprite(std::pair<SDL_Surface*, SDL_Texture*> sprite)
 void DoorAnimation::setSourceRect(SDL_Rect const& srcRect)
 {
     this->srcRect = srcRect;
+}
+
+void DoorAnimation::setInverted(bool newInverted)
+{
+    inverted = newInverted;
 }
