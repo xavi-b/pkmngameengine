@@ -15,8 +15,6 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
 {
     setWindowTitle("Map Editor");
 
-    createMenus();
-
     QWidget*     w = new QWidget;
     QHBoxLayout* l = new QHBoxLayout;
 
@@ -55,6 +53,8 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
         mapEditor->getMapperViewer()->contentWidget()->setSelectionPixmap(
             imageViewer->contentWidget()->currentSelectionPixmap());
     });
+
+    createMenus();
 }
 
 MainWindow::~MainWindow()
@@ -145,7 +145,7 @@ void MainWindow::createMenus()
         static QStringList imgExt{"png", "jpg"};
 
         QStringList filters;
-        std::transform(std::begin(imgExt), std::end(imgExt), std::back_inserter(filters), [](const QString& b) {
+        std::transform(std::begin(imgExt), std::end(imgExt), std::back_inserter(filters), [](QString const& b) {
             return QString("%1 Image (*.%2);").arg(b.toUpper(), b);
         });
 
@@ -185,6 +185,29 @@ void MainWindow::createMenus()
     exportMenu->addAction(exportAsImageAct);
     fileMenu->addSeparator();
     fileMenu->addAction(quitAct);
+
+    QMenu*   editMenu = menuBar()->addMenu(tr("&Edit"));
+    QAction* undoAct  = new QAction(tr("&Undo"));
+    undoAct->setShortcuts(QKeySequence::Undo);
+    undoAct->setEnabled(false);
+    connect(undoAct, &QAction::triggered, this, [=]() {
+        mapEditor->getMapperViewer()->contentWidget()->commandUndo();
+    });
+    connect(mapEditor->getMapperViewer()->contentWidget(), &MapperWidget::commandsIndexChanged, this, [=]() {
+        undoAct->setEnabled(mapEditor->getMapperViewer()->contentWidget()->getCommandsIndex() > 0);
+    });
+    QAction* redoAct = new QAction(tr("&Redo"));
+    redoAct->setShortcuts(QKeySequence::Redo);
+    redoAct->setEnabled(false);
+    connect(redoAct, &QAction::triggered, this, [=]() {
+        mapEditor->getMapperViewer()->contentWidget()->commandRedo();
+    });
+    connect(mapEditor->getMapperViewer()->contentWidget(), &MapperWidget::commandsIndexChanged, this, [=]() {
+        redoAct->setEnabled(mapEditor->getMapperViewer()->contentWidget()->getCommandsIndex()
+                            < mapEditor->getMapperViewer()->contentWidget()->getCommandsHistorySize());
+    });
+    editMenu->addAction(undoAct);
+    editMenu->addAction(redoAct);
 }
 
 void MainWindow::closeEvent(QCloseEvent* event)

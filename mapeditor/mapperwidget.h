@@ -1,6 +1,7 @@
 #ifndef MAPPERWIDGET_H
 #define MAPPERWIDGET_H
 
+#include "commands/mappercommand.h"
 #include "map.h"
 
 #include <QInputDialog>
@@ -9,6 +10,7 @@
 #include <QPainter>
 #include <QResizeEvent>
 #include <QRubberBand>
+#include <stack>
 
 class MapperWidget : public QWidget
 {
@@ -60,6 +62,14 @@ public:
     bool isGridVisible() const;
     void setGridVisible(bool newGridVisible);
 
+    size_t getCommandsIndex() const;
+    size_t getCommandsHistorySize() const;
+
+    void commandExecute(std::unique_ptr<MapperCommand> cmd);
+    void commandUndo();
+    void commandRedo();
+    void commandClear();
+
 signals:
     void workingLayerIndexChanged(int index);
     void workingLevelIndexChanged(int index);
@@ -73,6 +83,8 @@ signals:
     void reset();
 
     void gridVisibleChanged();
+
+    void commandsIndexChanged();
 
 protected:
     virtual void mousePressEvent(QMouseEvent* event) override;
@@ -107,6 +119,10 @@ private:
     LayerType            layerType          = LayerType::TILES;
     SpecialTileType      specialTileType    = SpecialTileType::GRASS;
     bool                 gridVisible        = true;
+
+    std::vector<std::unique_ptr<MapperCommand>> commandsHistory;
+    size_t                                      commandsIndex    = 0;
+    static constexpr size_t                     MaxCommandsCount = 10;
 };
 
 #endif // MAPPERWIDGET_H

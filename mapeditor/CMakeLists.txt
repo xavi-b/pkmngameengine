@@ -13,25 +13,18 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
-set(PROJECT_SOURCES
-        main.cpp
-        mainwindow.h mainwindow.cpp
-        imageviewer.h imageviewer.cpp
-        imagewidget.h imagewidget.cpp
-        mapperviewer.h mapperviewer.cpp
-        mapperwidget.h mapperwidget.cpp
-        mappereditor.h mappereditor.cpp
-        checkablecombobox.h checkablecombobox.cpp
-        levelsmodel.h levelsmodel.cpp
-        layersmodel.h layersmodel.cpp
-        encounterseditor.h encounterseditor.cpp
-        encountersmodel.h encountersmodel.cpp
-        encounterdialog.h encounterdialog.cpp
-)
-
 qt_add_executable(${MODULE_NAME}
     MANUAL_FINALIZATION
-    ${PROJECT_SOURCES}
+)
+
+# global
+file(GLOB_RECURSE SRC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+file(GLOB_RECURSE INC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
+
+target_sources(${MODULE_NAME}
+   PRIVATE
+       ${SRC_FILES}
+       ${INC_FILES}
 )
 
 # Qt
