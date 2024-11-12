@@ -143,6 +143,12 @@ void MapperWidget::setBelowLevelsOpacity(bool opacity)
     update();
 }
 
+void MapperWidget::setNight(bool newNight)
+{
+    night = newNight;
+    update();
+}
+
 void MapperWidget::setLayerType(LayerType type)
 {
     layerType = type;
@@ -358,6 +364,13 @@ void MapperWidget::paintEvent(QPaintEvent* event)
             if (!layer->isVisible())
                 continue;
 
+            if (layer->getType() == TileLayer::Type::GROUND_LIGHTS || layer->getType() == TileLayer::Type::SOLID_LIGHTS
+                || layer->getType() == TileLayer::Type::OVERLAY_LIGHTS)
+            {
+                if (!night)
+                    continue;
+            }
+
             for (size_t i = 0; i < map->getNCol(); ++i)
             {
                 for (size_t j = 0; j < map->getNRow(); ++j)
@@ -369,10 +382,49 @@ void MapperWidget::paintEvent(QPaintEvent* event)
                         QRect   rect = {QPoint(tile->getCol() * TilePixelSize, tile->getRow() * TilePixelSize),
                                         QSize(TilePixelSize, TilePixelSize)};
                         QString path = tile->getSpritePath().c_str();
-                        if (!pixmaps.contains(path))
-                            pixmaps[path] = QPixmap(path);
-                        painter.setOpacity(opacity);
-                        painter.drawPixmap(QRect(origin, rect.size() * scaleFactor), pixmaps[path], rect);
+                        if (layer->getType() == TileLayer::Type::GROUND_LIGHTS
+                            || layer->getType() == TileLayer::Type::SOLID_LIGHTS
+                            || layer->getType() == TileLayer::Type::OVERLAY_LIGHTS)
+                        {
+                            if (!pixmaps.contains(path))
+                            {
+                                pixmaps[path] = QPixmap(path);
+                            }
+                            painter.setOpacity(opacity);
+                            painter.drawPixmap(QRect(origin, rect.size() * scaleFactor), pixmaps[path], rect);
+                        }
+                        else
+                        {
+                            if (night)
+                            {
+                                if (!nightPixmaps.contains(path))
+                                {
+                                    nightPixmaps[path] = QPixmap(path);
+
+                                    QPainter p;
+
+                                    p.begin(&nightPixmaps[path]);
+                                    p.setCompositionMode(QPainter::CompositionMode_SourceAtop);
+                                    p.fillRect(nightPixmaps[path].rect(),
+                                               QColor(TileLayer::NightColor[0],
+                                                      TileLayer::NightColor[1],
+                                                      TileLayer::NightColor[2],
+                                                      TileLayer::NightColor[3]));
+                                    p.end();
+                                }
+                                painter.setOpacity(opacity);
+                                painter.drawPixmap(QRect(origin, rect.size() * scaleFactor), nightPixmaps[path], rect);
+                            }
+                            else
+                            {
+                                if (!pixmaps.contains(path))
+                                {
+                                    pixmaps[path] = QPixmap(path);
+                                }
+                                painter.setOpacity(opacity);
+                                painter.drawPixmap(QRect(origin, rect.size() * scaleFactor), pixmaps[path], rect);
+                            }
+                        }
 
                         if (tile->isAnimated())
                         {

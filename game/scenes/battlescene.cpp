@@ -373,7 +373,7 @@ void BattleScene::changeWeather(Map::Weather weather)
     {
     // TODO: all weather animations
     default:
-        weatherAnimation = std::make_unique<RainAnimation>(renderer);
+        weatherAnimation = std::make_unique<RainAnimation>(renderer, false);
         break;
     }
     weatherSpeech->setTexts({weatherAnimation->getStartingText()});

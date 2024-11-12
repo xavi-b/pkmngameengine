@@ -47,6 +47,7 @@ public:
     void removeLevel(int index);
 
     void setBelowLevelsOpacity(bool opacity);
+    void setNight(bool newNight);
     void setLayerType(LayerType type);
     void setCurrentSpecialTileType(SpecialTileType type);
 
@@ -93,6 +94,7 @@ private:
     QPair<QString, QRect>  data;
     QPixmap                overlayPixmap;
     QMap<QString, QPixmap> pixmaps;
+    QMap<QString, QPixmap> nightPixmaps;
     QPoint                 origin;
     bool                   pressed             = false;
     bool                   showSelectionPixmap = false;
@@ -101,6 +103,7 @@ private:
     int                  workingLayerIndex  = 0;
     int                  workingLevelIndex  = 0;
     bool                 belowLevelsOpacity = false;
+    bool                 night              = false;
     LayerType            layerType          = LayerType::TILES;
     SpecialTileType      specialTileType    = SpecialTileType::GRASS;
     bool                 gridVisible        = true;

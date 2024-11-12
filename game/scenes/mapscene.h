@@ -29,11 +29,11 @@ public:
     MapScene(SDL_Renderer* renderer, std::string const& mapPath);
     ~MapScene();
 
+    virtual void init() override;
     virtual void update(Inputs const* inputs) override;
     virtual void draw(Fps const* fps, RenderSizes rs) override;
 
     virtual void drawWeather(Fps const* fps, RenderSizes rs);
-    virtual void drawNight();
 
     virtual void    initPlayerPosition(int x, int y, Entity::Direction direction = Entity::Direction::NONE);
     virtual void    initMovingPlayerPosition(int x, int y, Entity::Direction direction);
@@ -57,11 +57,15 @@ public:
 
     void changeWeather(Map::Weather weather);
 
+    virtual bool shouldShowNightTextures() const = 0;
+
 protected:
     std::map<std::string, std::pair<SDL_Surface*, SDL_Texture*>> sprites;
+    std::map<std::string, std::pair<SDL_Surface*, SDL_Texture*>> lightsSprites;
 
     std::unique_ptr<Map>                                       map;
     std::unique_ptr<Sprite>                                    playerSprite;
+    Entity::Direction                                          playerSpriteInitialDirection = Entity::Direction::NONE;
     std::map<std::unique_ptr<Entity>, std::unique_ptr<Sprite>> entities;
 
     Map::Weather weather = Map::Weather::NONE;

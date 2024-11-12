@@ -11,15 +11,19 @@
 class TileLayer : public Layer<Tile::TilePtr>
 {
 public:
-    static constexpr std::array<unsigned char, 4> NightColor = {14, 13, 91, 127};
+    static constexpr std::array<unsigned char, 4> NightColor = {14, 13, 91, 175};
 
-    enum class Type
+    enum Type
     {
         GROUND,
         GROUND_OVERLAY,
+        GROUND_LIGHTS,
         SOLID,
         SOLID_OVERLAY,
-        OVERLAY
+        SOLID_LIGHTS,
+        OVERLAY,
+        OVERLAY_LIGHTS,
+        __SIZE
     };
 
     TileLayer(Type type, size_t nCol, size_t nRow);

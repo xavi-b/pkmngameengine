@@ -19,19 +19,8 @@ MapScene::MapScene(SDL_Renderer* renderer, std::string const& mapPath) : Scene(r
     auto mapPtr = js::value_to<std::unique_ptr<Map>>(js::parse(buffer.str()));
     map.swap(mapPtr);
 
-    playerSprite = std::make_unique<Sprite>(renderer);
-    if (Game::instance()->data.player.getGender() == Player::Gender::BOY)
-        playerSprite->load("resources/Graphics/Characters/boy_run.png");
-    else
-        playerSprite->load("resources/Graphics/Characters/girl_run.png");
-
     menu = std::make_unique<Menu>(renderer);
     menu->init();
-
-    fadeOutAnimation = std::make_unique<FadeAnimation>(renderer, false);
-    fadeInAnimation  = std::make_unique<FadeAnimation>(renderer, true);
-    fadeInAnimation->reset();
-    fadeInAnimation->start();
 }
 
 MapScene::~MapScene()
@@ -43,6 +32,21 @@ MapScene::~MapScene()
         SDL_DestroyTexture(texture);
         SDL_FreeSurface(surface);
     }
+}
+
+void MapScene::init()
+{
+    playerSprite = std::make_unique<Sprite>(renderer);
+    if (Game::instance()->data.player.getGender() == Player::Gender::BOY)
+        playerSprite->load("resources/Graphics/Characters/boy_run.png", shouldShowNightTextures());
+    else
+        playerSprite->load("resources/Graphics/Characters/girl_run.png", shouldShowNightTextures());
+    playerSprite->forceSpriteDirection(playerSpriteInitialDirection);
+
+    fadeOutAnimation = std::make_unique<FadeAnimation>(renderer, false);
+    fadeInAnimation  = std::make_unique<FadeAnimation>(renderer, true);
+    fadeInAnimation->reset();
+    fadeInAnimation->start();
 }
 
 void MapScene::update(Inputs const* inputs)
@@ -251,6 +255,13 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
         {
             auto& layer = level->getTileLayers()[h];
 
+            if (layer->getType() == TileLayer::Type::GROUND_LIGHTS || layer->getType() == TileLayer::Type::SOLID_LIGHTS
+                || layer->getType() == TileLayer::Type::OVERLAY_LIGHTS)
+            {
+                if (!shouldShowNightTextures())
+                    continue;
+            }
+
             for (size_t j = 0; j < map->getNRow(); ++j)
             {
                 for (size_t i = 0; i < map->getNCol(); ++i)
@@ -262,31 +273,55 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
                     if (tile)
                     {
                         path = tile->getSpritePath();
-                        if (!sprites.count(path))
+
+                        if (layer->getType() == TileLayer::Type::GROUND_LIGHTS
+                            || layer->getType() == TileLayer::Type::SOLID_LIGHTS
+                            || layer->getType() == TileLayer::Type::OVERLAY_LIGHTS)
                         {
-                            sprites[path].first  = IMG_Load(path.c_str());
-                            sprites[path].second = SDL_CreateTextureFromSurface(renderer, sprites[path].first);
+                            if (!lightsSprites.count(path))
+                            {
+                                lightsSprites[path].first = IMG_Load(path.c_str());
+                                lightsSprites[path].second =
+                                    SDL_CreateTextureFromSurface(renderer, lightsSprites[path].first);
+                            }
                         }
+                        else
+                        {
+                            if (!sprites.count(path))
+                            {
+                                sprites[path].first = IMG_Load(path.c_str());
+                                sprites[path].second =
+                                    RenderUtils::texture(renderer,
+                                                         SDL_CreateTextureFromSurface(renderer, sprites[path].first),
+                                                         shouldShowNightTextures());
+                            }
+                        }
+
+                        auto& sprite = (layer->getType() == TileLayer::Type::GROUND_LIGHTS
+                                        || layer->getType() == TileLayer::Type::SOLID_LIGHTS
+                                        || layer->getType() == TileLayer::Type::OVERLAY_LIGHTS)
+                                         ? lightsSprites[path]
+                                         : sprites[path];
 
                         srcRect.x = tile->getCol() * TilePixelSize;
                         srcRect.y = tile->getRow() * TilePixelSize;
                         if (tile->isAnimated())
                         {
                             // 1 row animated autotiles
-                            if (sprites[path].first->h == TilePixelSize)
+                            if (sprite.first->h == TilePixelSize)
                             {
-                                int nSprites = sprites[path].first->w / TilePixelSize;
+                                int nSprites = sprite.first->w / TilePixelSize;
                                 int addX     = (fps->next / 192 % nSprites) * TilePixelSize;
-                                if (srcRect.x < sprites[path].first->w)
+                                if (srcRect.x < sprite.first->w)
                                     srcRect.x += addX;
                             }
 
                             // 4 rows animated autotiles
-                            if (sprites[path].first->h == 4 * TilePixelSize)
+                            if (sprite.first->h == 4 * TilePixelSize)
                             {
-                                int nSprites = sprites[path].first->w / TilePixelSize;
+                                int nSprites = sprite.first->w / TilePixelSize;
                                 int addX     = 3 * (fps->next / 128 % (nSprites / 3)) * TilePixelSize;
-                                if (srcRect.x < sprites[path].first->w)
+                                if (srcRect.x < sprite.first->w)
                                     srcRect.x += addX;
                             }
                         }
@@ -297,8 +332,8 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
                     SDL_Rect dstRect;
                     dstRect.x = i * dstTilePixelWidth + playerOffsetX;
                     dstRect.y = j * dstTilePixelHeight + playerOffsetY;
-                    dstRect.w = dstTilePixelWidth + 1;
-                    dstRect.h = dstTilePixelHeight + 1;
+                    dstRect.w = dstTilePixelWidth;
+                    dstRect.h = dstTilePixelHeight;
 
                     // Draw only visible tiles
                     if (dstRect.x >= -dstTilePixelWidth && dstRect.x <= (rs.ww + dstTilePixelWidth)
@@ -306,13 +341,19 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
                     {
                         if (tile)
                         {
-                            SDL_RenderCopy(renderer, sprites[path].second, &srcRect, &dstRect);
+                            auto& sprite = (layer->getType() == TileLayer::Type::GROUND_LIGHTS
+                                            || layer->getType() == TileLayer::Type::SOLID_LIGHTS
+                                            || layer->getType() == TileLayer::Type::OVERLAY_LIGHTS)
+                                             ? lightsSprites[path]
+                                             : sprites[path];
+
+                            SDL_RenderCopy(renderer, sprite.second, &srcRect, &dstRect);
 
                             if (tile->isDoor())
                             {
                                 if (doorClosingAnimation && doorClosingPosition == std::pair<int, int>{i, j})
                                 {
-                                    doorClosingAnimation->setSprite(sprites[path]);
+                                    doorClosingAnimation->setSprite(sprite);
                                     doorClosingAnimation->setSourceRect(srcRect);
                                     doorClosingAnimation->setDestinationRect(dstRect);
                                     doorClosingAnimation->draw(fps, rs);
@@ -320,7 +361,7 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
 
                                 if (doorOpeningAnimation && doorOpeningPosition == std::pair<int, int>{i, j})
                                 {
-                                    doorOpeningAnimation->setSprite(sprites[path]);
+                                    doorOpeningAnimation->setSprite(sprite);
                                     doorOpeningAnimation->setSourceRect(srcRect);
                                     doorOpeningAnimation->setDestinationRect(dstRect);
                                     doorOpeningAnimation->draw(fps, rs);
@@ -372,8 +413,8 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
                         SDL_Rect dstRect;
                         dstRect.x = i * dstTilePixelWidth + playerOffsetX;
                         dstRect.y = j * dstTilePixelHeight + playerOffsetY;
-                        dstRect.w = dstTilePixelWidth + 1;
-                        dstRect.h = dstTilePixelHeight + 1;
+                        dstRect.w = dstTilePixelWidth;
+                        dstRect.h = dstTilePixelHeight;
 
                         // Draw only visible tiles
                         if (dstRect.x >= -dstTilePixelWidth && dstRect.x <= (rs.ww + dstTilePixelWidth)
@@ -407,10 +448,16 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
                                         SDL_Rect dstRect;
                                         dstRect.x = i * dstTilePixelWidth + playerOffsetX;
                                         dstRect.y = j * dstTilePixelHeight + playerOffsetY + dstTilePixelHeight * 2 / 3;
-                                        dstRect.w = dstTilePixelWidth + 1;
-                                        dstRect.h = dstTilePixelHeight + 1 - dstTilePixelHeight * 2 / 3;
+                                        dstRect.w = dstTilePixelWidth;
+                                        dstRect.h = dstTilePixelHeight - dstTilePixelHeight * 2 / 3;
 
-                                        SDL_RenderCopy(renderer, sprites[path].second, &srcRect, &dstRect);
+                                        auto& sprite = (layer->getType() == TileLayer::Type::GROUND_LIGHTS
+                                                        || layer->getType() == TileLayer::Type::SOLID_LIGHTS
+                                                        || layer->getType() == TileLayer::Type::OVERLAY_LIGHTS)
+                                                         ? lightsSprites[path]
+                                                         : sprites[path];
+
+                                        SDL_RenderCopy(renderer, sprite.second, &srcRect, &dstRect);
                                     }
                                 }
 
@@ -444,8 +491,8 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
                         SDL_Rect dstRect;
                         dstRect.x = i * dstTilePixelWidth + playerOffsetX;
                         dstRect.y = j * dstTilePixelHeight + playerOffsetY;
-                        dstRect.w = dstTilePixelWidth + 1;
-                        dstRect.h = dstTilePixelHeight + 1;
+                        dstRect.w = dstTilePixelWidth;
+                        dstRect.h = dstTilePixelHeight;
 
                         // Draw only visible tiles
                         if (dstRect.x >= -dstTilePixelWidth && dstRect.x <= (rs.ww + dstTilePixelWidth)
@@ -462,9 +509,6 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
     }
 
     drawWeather(fps, rs);
-
-    if (Game::instance()->isNight())
-        drawNight();
 
     if (battleIntro)
         battleIntro->draw(fps, rs);
@@ -485,27 +529,15 @@ void MapScene::drawWeather(Fps const* fps, RenderSizes rs)
         weatherAnimation->draw(fps, rs);
 }
 
-void MapScene::drawNight()
-{
-    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-    SDL_SetRenderDrawColor(renderer,
-                           TileLayer::NightColor[0],
-                           TileLayer::NightColor[1],
-                           TileLayer::NightColor[2],
-                           TileLayer::NightColor[3]);
-
-    SDL_RenderFillRect(renderer, NULL);
-}
-
 void MapScene::initPlayerPosition(int x, int y, Entity::Direction direction)
 {
-    auto& player     = Game::instance()->data.player;
-    player.x         = x;
-    player.y         = y;
-    player.previousX = x;
-    player.previousY = y;
-    player.direction = Entity::Direction::NONE;
-    playerSprite->forceSpriteDirection(direction);
+    auto& player                 = Game::instance()->data.player;
+    player.x                     = x;
+    player.y                     = y;
+    player.previousX             = x;
+    player.previousY             = y;
+    player.direction             = Entity::Direction::NONE;
+    playerSpriteInitialDirection = direction;
 }
 
 void MapScene::initMovingPlayerPosition(int x, int y, Entity::Direction direction)
@@ -536,7 +568,7 @@ void MapScene::initMovingPlayerPosition(int x, int y, Entity::Direction directio
 void MapScene::initClosingDoor(int x, int y)
 {
     doorClosingPosition  = {x, y};
-    doorClosingAnimation = std::make_unique<DoorAnimation>(renderer);
+    doorClosingAnimation = std::make_unique<DoorAnimation>(renderer, shouldShowNightTextures());
     doorClosingAnimation->setInverted(true);
 }
 
@@ -587,7 +619,8 @@ void MapScene::move(Entity& entity, bool force)
 
             if (it == tilesAnimations.end())
             {
-                tilesAnimations[{entity.x, entity.y}] = std::make_unique<GrassAnimation>(renderer);
+                tilesAnimations[{entity.x, entity.y}] =
+                    std::make_unique<GrassAnimation>(renderer, shouldShowNightTextures());
                 tilesAnimations[{entity.x, entity.y}]->start();
             }
             else
@@ -850,7 +883,7 @@ void MapScene::changeWeather(Map::Weather weather)
     {
     // TODO: all weather animations
     default:
-        weatherAnimation = std::make_unique<RainAnimation>(renderer);
+        weatherAnimation = std::make_unique<RainAnimation>(renderer, shouldShowNightTextures());
         break;
     }
 }

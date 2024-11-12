@@ -17,7 +17,7 @@ Sprite::~Sprite()
         SDL_FreeSurface(surface);
 }
 
-bool Sprite::load(std::string const& spritePath)
+bool Sprite::load(std::string const& spritePath, bool night)
 {
     if (texture)
         SDL_DestroyTexture(texture);
@@ -28,7 +28,7 @@ bool Sprite::load(std::string const& spritePath)
     if (!surface)
         return false;
 
-    texture = SDL_CreateTextureFromSurface(renderer, surface);
+    texture = RenderUtils::texture(renderer, SDL_CreateTextureFromSurface(renderer, surface), night);
     if (!texture)
         return false;
 

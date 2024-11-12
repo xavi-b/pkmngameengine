@@ -9,6 +9,7 @@ House1Scene::House1Scene(SDL_Renderer* renderer) : MapScene(renderer, "resources
 
 void House1Scene::init()
 {
+    MapScene::init();
 }
 
 void House1Scene::update(Inputs const* inputs)
@@ -67,4 +68,9 @@ std::unique_ptr<Scene> House1Scene::nextScene()
     }
 
     return nullptr;
+}
+
+bool House1Scene::shouldShowNightTextures() const
+{
+    return false;
 }

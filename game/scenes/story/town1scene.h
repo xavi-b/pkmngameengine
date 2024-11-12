@@ -20,6 +20,8 @@ public:
     virtual std::string name() override;
 
     virtual std::unique_ptr<Scene> nextScene() override;
+
+    virtual bool shouldShowNightTextures() const override;
 };
 
 #endif // TOWN1SCENE_H

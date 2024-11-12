@@ -8,7 +8,7 @@ class FogAnimation : public WeatherAnimation
 public:
     static constexpr int TilePixelSize = 128;
 
-    FogAnimation(SDL_Renderer* renderer);
+    FogAnimation(SDL_Renderer* renderer, bool night);
     ~FogAnimation();
 
     virtual std::string getStartingText() const override;
