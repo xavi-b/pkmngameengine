@@ -59,6 +59,9 @@ MapperEditor::MapperEditor(QWidget* parent) : QWidget(parent)
             mapperViewer->contentWidget(),
             &MapperWidget::setBelowLevelsOpacity);
 
+    QCheckBox* nightCheckBox = new QCheckBox(tr("Night mode"));
+    connect(nightCheckBox, &QCheckBox::clicked, mapperViewer->contentWidget(), &MapperWidget::setNight);
+
     QPushButton* removeButton = new QPushButton(tr("Remove"));
     connect(removeButton, &QPushButton::clicked, this, [=]() {
         mapperViewer->contentWidget()->removeLevel(levelSelection->currentIndex());
@@ -123,6 +126,7 @@ MapperEditor::MapperEditor(QWidget* parent) : QWidget(parent)
     levelLayout->addWidget(levelSelection);
     levelLayout->addWidget(removeButton);
     levelLayout->addWidget(belowLevelsCheckBox);
+    levelLayout->addWidget(nightCheckBox);
     levelLayout->addStretch(1);
     l->addLayout(levelLayout);
     layersLayout->addWidget(tileButton);

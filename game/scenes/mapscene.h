@@ -61,6 +61,7 @@ public:
 
 protected:
     std::map<std::string, std::pair<SDL_Surface*, SDL_Texture*>> sprites;
+    std::map<std::string, std::pair<SDL_Surface*, SDL_Texture*>> lightsSprites;
 
     std::unique_ptr<Map>                                       map;
     std::unique_ptr<Sprite>                                    playerSprite;
