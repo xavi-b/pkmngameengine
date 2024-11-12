@@ -1,5 +1,11 @@
 #include "mapperwidget.h"
 
+#include "commands/animatedpropertycommand.h"
+#include "commands/changecommand.h"
+#include "commands/changescommand.h"
+#include "commands/doorpropertycommand.h"
+#include "commands/resetcommand.h"
+
 MapperWidget::MapperWidget(QWidget* parent) : QWidget(parent)
 {
     setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
@@ -54,6 +60,7 @@ void MapperWidget::setWorkingLayerIndex(int index)
     workingLayerIndex = index;
     emit workingLayerIndexChanged(index);
     update();
+    commandClear();
 }
 
 int MapperWidget::getWorkingLevelIndex() const
@@ -69,6 +76,7 @@ void MapperWidget::setWorkingLevelIndex(int index)
     workingLevelIndex = index;
     emit workingLevelIndexChanged(index);
     update();
+    commandClear();
 }
 
 std::vector<std::unique_ptr<Level>>& MapperWidget::getLevels()
@@ -135,6 +143,7 @@ void MapperWidget::removeLevel(int index)
     map->getLevels().erase(map->getLevels().begin() + index);
     emit levelRemoved(index);
     update();
+    commandClear();
 }
 
 void MapperWidget::setBelowLevelsOpacity(bool opacity)
@@ -169,6 +178,7 @@ void MapperWidget::swapMap(std::unique_ptr<Map>&& newMap)
     map.swap(newMap);
     update();
     emit reset();
+    commandClear();
 }
 
 void MapperWidget::setMapWidth(size_t v)
@@ -176,6 +186,7 @@ void MapperWidget::setMapWidth(size_t v)
     map->setNCol(v);
     resize(size());
     update();
+    commandClear();
 }
 
 void MapperWidget::setMapHeight(size_t v)
@@ -183,6 +194,7 @@ void MapperWidget::setMapHeight(size_t v)
     map->setNRow(v);
     resize(size());
     update();
+    commandClear();
 }
 
 void MapperWidget::mousePressEvent(QMouseEvent* event)
@@ -245,7 +257,8 @@ void MapperWidget::processMouseEvent(QMouseEvent* event)
 
         if (event->button() == Qt::RightButton)
         {
-            (*layer.get())(col, row).reset(nullptr);
+            auto& previousTile = (*layer.get())(col, row);
+            commandExecute(std::make_unique<ResetCommand<Event>>(previousTile));
         }
         else if (event->button() == Qt::LeftButton)
         {
@@ -257,8 +270,11 @@ void MapperWidget::processMouseEvent(QMouseEvent* event)
                                                QLineEdit::Normal,
                                                previousEvent ? previousEvent->getId().c_str() : QString());
 
-            auto event = std::make_unique<Event>(id.toStdString());
-            (*layer.get())(col, row).swap(event);
+            if (id != "")
+            {
+                auto event = std::make_unique<Event>(id.toStdString());
+                commandExecute(std::make_unique<ChangeCommand<Event>>(previousEvent, std::move(event)));
+            }
         }
         break;
     }
@@ -267,12 +283,14 @@ void MapperWidget::processMouseEvent(QMouseEvent* event)
 
         if (event->button() == Qt::RightButton)
         {
-            (*layer.get())(col, row).reset(nullptr);
+            auto& previousTile = (*layer.get())(col, row);
+            commandExecute(std::make_unique<ResetCommand<SpecialTileType>>(previousTile));
         }
         else if (event->button() == Qt::LeftButton)
         {
-            auto type = std::make_unique<SpecialTileType>(specialTileType);
-            (*layer.get())(col, row).swap(type);
+            auto& previousType = (*layer.get())(col, row);
+            auto  type         = std::make_unique<SpecialTileType>(specialTileType);
+            commandExecute(std::make_unique<ChangeCommand<SpecialTileType>>(previousType, std::move(type)));
         }
         break;
     }
@@ -281,43 +299,49 @@ void MapperWidget::processMouseEvent(QMouseEvent* event)
 
         if (event->button() == Qt::RightButton)
         {
-            (*layer.get())(col, row).reset(nullptr);
+            auto& previousTile = (*layer.get())(col, row);
+            commandExecute(std::make_unique<ResetCommand<Tile>>(previousTile));
         }
         else if (event->button() == Qt::LeftButton)
         {
             if (event->modifiers() & Qt::ShiftModifier)
             {
                 auto& tile = (*layer.get())(col, row);
-                if (tile)
-                    tile->setAnimated(!tile->isAnimated());
+                commandExecute(std::make_unique<AnimatedPropertyCommand>(tile));
             }
             else if (event->modifiers() & Qt::AltModifier)
             {
                 auto& tile = (*layer.get())(col, row);
-                if (tile)
-                    tile->setDoor(!tile->isDoor());
+                commandExecute(std::make_unique<DoorPropertyCommand>(tile));
             }
             else
             {
                 QRect rect = data.second;
 
-                for (size_t i = 0; i < size_t(rect.width()); ++i)
+                if (!data.first.isEmpty())
                 {
-                    if (col + i >= map->getNCol())
-                        continue;
+                    std::vector<std::unique_ptr<Tile>*> previousTiles;
+                    std::vector<std::unique_ptr<Tile>>  newTiles;
 
-                    for (size_t j = 0; j < size_t(rect.height()); ++j)
+                    for (size_t i = 0; i < size_t(rect.width()); ++i)
                     {
-                        if (row + j >= map->getNRow())
+                        if (col + i >= map->getNCol())
                             continue;
 
-                        if (!data.first.isEmpty())
+                        for (size_t j = 0; j < size_t(rect.height()); ++j)
                         {
-                            std::string spritePath = data.first.toStdString();
-                            auto        tile       = std::make_unique<Tile>(spritePath, rect.x() + i, rect.y() + j);
-                            (*layer.get())(col + i, row + j).swap(tile);
+                            if (row + j >= map->getNRow())
+                                continue;
+
+                            std::string spritePath   = data.first.toStdString();
+                            auto        previousTile = &(*layer.get())(col + i, row + j);
+                            auto        tile         = std::make_unique<Tile>(spritePath, rect.x() + i, rect.y() + j);
+                            previousTiles.push_back(previousTile);
+                            newTiles.push_back(std::move(tile));
                         }
                     }
+
+                    commandExecute(std::make_unique<ChangesCommand<Tile>>(previousTiles, std::move(newTiles)));
                 }
             }
         }
@@ -524,4 +548,60 @@ void MapperWidget::setGridVisible(bool newGridVisible)
         return;
     gridVisible = newGridVisible;
     emit gridVisibleChanged();
+}
+
+size_t MapperWidget::getCommandsIndex() const
+{
+    return commandsIndex;
+}
+
+size_t MapperWidget::getCommandsHistorySize() const
+{
+    return commandsHistory.size();
+}
+
+void MapperWidget::commandExecute(std::unique_ptr<MapperCommand> cmd)
+{
+    commandsHistory.insert(commandsHistory.begin() + commandsIndex, std::move(cmd));
+    commandsHistory.resize(commandsIndex + 1);
+
+    if (commandsHistory.size() >= MaxCommandsCount)
+        commandsHistory.erase(commandsHistory.begin());
+    else
+        commandsIndex++;
+
+    commandsHistory[commandsIndex - 1]->execute();
+
+    emit commandsIndexChanged();
+    update();
+}
+
+void MapperWidget::commandUndo()
+{
+    if (commandsIndex > 0)
+    {
+        commandsHistory[commandsIndex - 1]->undo();
+        commandsIndex--;
+        emit commandsIndexChanged();
+        update();
+    }
+}
+
+void MapperWidget::commandRedo()
+{
+    if (commandsIndex < commandsHistory.size())
+    {
+        commandsHistory[commandsIndex]->execute();
+        commandsIndex++;
+        emit commandsIndexChanged();
+        update();
+    }
+}
+
+void MapperWidget::commandClear()
+{
+    commandsHistory.clear();
+    commandsIndex = 0;
+    emit commandsIndexChanged();
+    update();
 }
