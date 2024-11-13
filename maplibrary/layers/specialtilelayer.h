@@ -25,6 +25,8 @@ using SpecialTileTypePtr = std::unique_ptr<SpecialTileType>;
 void               tag_invoke(js::value_from_tag, js::value& jv, SpecialTileTypePtr const& o);
 SpecialTileTypePtr tag_invoke(js::value_to_tag<SpecialTileTypePtr>, js::value const& jv);
 
+SpecialTileTypePtr clone(SpecialTileTypePtr const& other);
+
 class SpecialTileLayer : public Layer<SpecialTileTypePtr>
 {
 public:

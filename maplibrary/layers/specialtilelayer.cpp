@@ -65,3 +65,8 @@ std::unique_ptr<SpecialTileLayer> tag_invoke(js::value_to_tag<std::unique_ptr<Sp
 
     return o;
 }
+
+SpecialTileTypePtr clone(SpecialTileTypePtr const& other)
+{
+    return SpecialTileTypePtr(new SpecialTileType(*other.get()));
+}

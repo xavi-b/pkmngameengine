@@ -20,6 +20,8 @@ public:
     friend void     tag_invoke(js::value_from_tag, js::value& jv, EventPtr const& o);
     friend EventPtr tag_invoke(js::value_to_tag<EventPtr>, js::value const& jv);
 
+    friend Event::EventPtr clone(Event::EventPtr const& other);
+
 private:
     std::string id;
 };

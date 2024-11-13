@@ -36,3 +36,8 @@ Event::EventPtr tag_invoke(js::value_to_tag<Event::EventPtr>, js::value const& j
     else
         return std::make_unique<Event>(id);
 }
+
+Event::EventPtr clone(Event::EventPtr const& other)
+{
+    return Event::EventPtr(new Event(*other.get()));
+}

@@ -65,6 +65,11 @@ public:
     size_t getCommandsIndex() const;
     size_t getCommandsHistorySize() const;
 
+    void moveContentUp();
+    void moveContentDown();
+    void moveContentLeft();
+    void moveContentRight();
+
     void commandExecute(std::unique_ptr<MapperCommand> cmd);
     void commandUndo();
     void commandRedo();

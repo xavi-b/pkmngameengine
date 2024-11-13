@@ -26,6 +26,8 @@ public:
     friend void    tag_invoke(js::value_from_tag, js::value& jv, TilePtr const& o);
     friend TilePtr tag_invoke(js::value_to_tag<TilePtr>, js::value const& jv);
 
+    friend TilePtr clone(TilePtr const& other);
+
 private:
     std::string spritePath;
     int         col      = 0;

@@ -4,6 +4,7 @@
 #include "commands/changecommand.h"
 #include "commands/changescommand.h"
 #include "commands/doorpropertycommand.h"
+#include "commands/parallelcommand.h"
 #include "commands/resetcommand.h"
 
 MapperWidget::MapperWidget(QWidget* parent) : QWidget(parent)
@@ -558,6 +559,246 @@ size_t MapperWidget::getCommandsIndex() const
 size_t MapperWidget::getCommandsHistorySize() const
 {
     return commandsHistory.size();
+}
+
+void MapperWidget::moveContentUp()
+{
+    std::vector<std::unique_ptr<Tile>*> previousTiles;
+    std::vector<std::unique_ptr<Tile>>  newTiles;
+
+    std::vector<std::unique_ptr<SpecialTileType>*> previousSpecialTiles;
+    std::vector<std::unique_ptr<SpecialTileType>>  newSpecialTiles;
+
+    std::vector<std::unique_ptr<Event>*> previousEvents;
+    std::vector<std::unique_ptr<Event>>  newEvents;
+
+    auto push = [&map = this->map](auto& layer, auto& previousArray, auto& newArray, size_t i, size_t j) {
+        auto previous = &(*layer.get())(i, j);
+        if (j == map->getNRow() - 1)
+        {
+            newArray.push_back(nullptr);
+        }
+        else if (auto& next = (*layer.get())(i, j + 1); next)
+        {
+            auto e = clone(next);
+            newArray.push_back(std::move(e));
+        }
+        else
+        {
+            newArray.push_back(nullptr);
+        }
+        previousArray.push_back(previous);
+    };
+
+    for (size_t l = 0; l < map->getLevels().size(); ++l)
+    {
+        auto& level = map->getLevels()[l];
+
+        for (size_t i = 0; i < map->getNCol(); ++i)
+        {
+            for (size_t j = 0; j < map->getNRow(); ++j)
+            {
+                for (size_t h = 0; h < level->getTileLayers().size(); ++h)
+                {
+                    auto& layer = level->getTileLayers()[h];
+                    push(layer, previousTiles, newTiles, i, j);
+                }
+
+                auto& specialTileLayer = level->getSpecialTileLayer();
+                push(specialTileLayer, previousSpecialTiles, newSpecialTiles, i, j);
+
+                auto& eventLayer = level->getEventLayer();
+                push(eventLayer, previousEvents, newEvents, i, j);
+            }
+        }
+    }
+
+    auto cmd = std::make_unique<ParallelCommand>();
+    cmd->addCommand(std::make_unique<ChangesCommand<Tile>>(previousTiles, std::move(newTiles)));
+    cmd->addCommand(
+        std::make_unique<ChangesCommand<SpecialTileType>>(previousSpecialTiles, std::move(newSpecialTiles)));
+    cmd->addCommand(std::make_unique<ChangesCommand<Event>>(previousEvents, std::move(newEvents)));
+    commandExecute(std::move(cmd));
+}
+
+void MapperWidget::moveContentDown()
+{
+    std::vector<std::unique_ptr<Tile>*> previousTiles;
+    std::vector<std::unique_ptr<Tile>>  newTiles;
+
+    std::vector<std::unique_ptr<SpecialTileType>*> previousSpecialTiles;
+    std::vector<std::unique_ptr<SpecialTileType>>  newSpecialTiles;
+
+    std::vector<std::unique_ptr<Event>*> previousEvents;
+    std::vector<std::unique_ptr<Event>>  newEvents;
+
+    auto push = [](auto& layer, auto& previousArray, auto& newArray, size_t i, size_t j) {
+        auto previous = &(*layer.get())(i, j);
+        if (j == 0)
+        {
+            newArray.push_back(nullptr);
+        }
+        else if (auto& next = (*layer.get())(i, j - 1); next)
+        {
+            auto e = clone(next);
+            newArray.push_back(std::move(e));
+        }
+        else
+        {
+            newArray.push_back(nullptr);
+        }
+        previousArray.push_back(previous);
+    };
+
+    for (size_t l = 0; l < map->getLevels().size(); ++l)
+    {
+        auto& level = map->getLevels()[l];
+
+        for (size_t i = 0; i < map->getNCol(); ++i)
+        {
+            for (size_t j = 0; j < map->getNRow(); ++j)
+            {
+                for (size_t h = 0; h < level->getTileLayers().size(); ++h)
+                {
+                    auto& layer = level->getTileLayers()[h];
+                    push(layer, previousTiles, newTiles, i, j);
+                }
+
+                auto& specialTileLayer = level->getSpecialTileLayer();
+                push(specialTileLayer, previousSpecialTiles, newSpecialTiles, i, j);
+
+                auto& eventLayer = level->getEventLayer();
+                push(eventLayer, previousEvents, newEvents, i, j);
+            }
+        }
+    }
+
+    auto cmd = std::make_unique<ParallelCommand>();
+    cmd->addCommand(std::make_unique<ChangesCommand<Tile>>(previousTiles, std::move(newTiles)));
+    cmd->addCommand(
+        std::make_unique<ChangesCommand<SpecialTileType>>(previousSpecialTiles, std::move(newSpecialTiles)));
+    cmd->addCommand(std::make_unique<ChangesCommand<Event>>(previousEvents, std::move(newEvents)));
+    commandExecute(std::move(cmd));
+}
+
+void MapperWidget::moveContentLeft()
+{
+    std::vector<std::unique_ptr<Tile>*> previousTiles;
+    std::vector<std::unique_ptr<Tile>>  newTiles;
+
+    std::vector<std::unique_ptr<SpecialTileType>*> previousSpecialTiles;
+    std::vector<std::unique_ptr<SpecialTileType>>  newSpecialTiles;
+
+    std::vector<std::unique_ptr<Event>*> previousEvents;
+    std::vector<std::unique_ptr<Event>>  newEvents;
+
+    auto push = [&map = this->map](auto& layer, auto& previousArray, auto& newArray, size_t i, size_t j) {
+        auto previous = &(*layer.get())(i, j);
+        if (i == map->getNCol() - 1)
+        {
+            newArray.push_back(nullptr);
+        }
+        else if (auto& next = (*layer.get())(i + 1, j); next)
+        {
+            auto e = clone(next);
+            newArray.push_back(std::move(e));
+        }
+        else
+        {
+            newArray.push_back(nullptr);
+        }
+        previousArray.push_back(previous);
+    };
+
+    for (size_t l = 0; l < map->getLevels().size(); ++l)
+    {
+        auto& level = map->getLevels()[l];
+
+        for (size_t i = 0; i < map->getNCol(); ++i)
+        {
+            for (size_t j = 0; j < map->getNRow(); ++j)
+            {
+                for (size_t h = 0; h < level->getTileLayers().size(); ++h)
+                {
+                    auto& layer = level->getTileLayers()[h];
+                    push(layer, previousTiles, newTiles, i, j);
+                }
+
+                auto& specialTileLayer = level->getSpecialTileLayer();
+                push(specialTileLayer, previousSpecialTiles, newSpecialTiles, i, j);
+
+                auto& eventLayer = level->getEventLayer();
+                push(eventLayer, previousEvents, newEvents, i, j);
+            }
+        }
+    }
+
+    auto cmd = std::make_unique<ParallelCommand>();
+    cmd->addCommand(std::make_unique<ChangesCommand<Tile>>(previousTiles, std::move(newTiles)));
+    cmd->addCommand(
+        std::make_unique<ChangesCommand<SpecialTileType>>(previousSpecialTiles, std::move(newSpecialTiles)));
+    cmd->addCommand(std::make_unique<ChangesCommand<Event>>(previousEvents, std::move(newEvents)));
+    commandExecute(std::move(cmd));
+}
+
+void MapperWidget::moveContentRight()
+{
+    std::vector<std::unique_ptr<Tile>*> previousTiles;
+    std::vector<std::unique_ptr<Tile>>  newTiles;
+
+    std::vector<std::unique_ptr<SpecialTileType>*> previousSpecialTiles;
+    std::vector<std::unique_ptr<SpecialTileType>>  newSpecialTiles;
+
+    std::vector<std::unique_ptr<Event>*> previousEvents;
+    std::vector<std::unique_ptr<Event>>  newEvents;
+
+    auto push = [](auto& layer, auto& previousArray, auto& newArray, size_t i, size_t j) {
+        auto previous = &(*layer.get())(i, j);
+        if (i == 0)
+        {
+            newArray.push_back(nullptr);
+        }
+        else if (auto& next = (*layer.get())(i - 1, j); next)
+        {
+            auto e = clone(next);
+            newArray.push_back(std::move(e));
+        }
+        else
+        {
+            newArray.push_back(nullptr);
+        }
+        previousArray.push_back(previous);
+    };
+
+    for (size_t l = 0; l < map->getLevels().size(); ++l)
+    {
+        auto& level = map->getLevels()[l];
+
+        for (size_t i = 0; i < map->getNCol(); ++i)
+        {
+            for (size_t j = 0; j < map->getNRow(); ++j)
+            {
+                for (size_t h = 0; h < level->getTileLayers().size(); ++h)
+                {
+                    auto& layer = level->getTileLayers()[h];
+                    push(layer, previousTiles, newTiles, i, j);
+                }
+
+                auto& specialTileLayer = level->getSpecialTileLayer();
+                push(specialTileLayer, previousSpecialTiles, newSpecialTiles, i, j);
+
+                auto& eventLayer = level->getEventLayer();
+                push(eventLayer, previousEvents, newEvents, i, j);
+            }
+        }
+    }
+
+    auto cmd = std::make_unique<ParallelCommand>();
+    cmd->addCommand(std::make_unique<ChangesCommand<Tile>>(previousTiles, std::move(newTiles)));
+    cmd->addCommand(
+        std::make_unique<ChangesCommand<SpecialTileType>>(previousSpecialTiles, std::move(newSpecialTiles)));
+    cmd->addCommand(std::make_unique<ChangesCommand<Event>>(previousEvents, std::move(newEvents)));
+    commandExecute(std::move(cmd));
 }
 
 void MapperWidget::commandExecute(std::unique_ptr<MapperCommand> cmd)

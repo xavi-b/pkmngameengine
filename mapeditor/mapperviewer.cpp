@@ -98,3 +98,41 @@ void MapperViewer::mouseReleaseEvent(QMouseEvent* event)
     setCursor(Qt::ArrowCursor);
     event->accept();
 }
+
+void MapperViewer::keyPressEvent(QKeyEvent* event)
+{
+    if (event->key() == Qt::Key_Escape)
+    {
+        mapperWidget->setSelectionPixmap({});
+        event->accept();
+        return;
+    }
+    else if (event->modifiers() & (Qt::ControlModifier | Qt::ShiftModifier))
+    {
+        if (event->key() == Qt::Key_Up)
+        {
+            mapperWidget->moveContentUp();
+            event->accept();
+            return;
+        }
+        else if (event->key() == Qt::Key_Down)
+        {
+            mapperWidget->moveContentDown();
+            event->accept();
+            return;
+        }
+        else if (event->key() == Qt::Key_Left)
+        {
+            mapperWidget->moveContentLeft();
+            event->accept();
+            return;
+        }
+        else if (event->key() == Qt::Key_Right)
+        {
+            mapperWidget->moveContentRight();
+            event->accept();
+            return;
+        }
+    }
+    event->ignore();
+}

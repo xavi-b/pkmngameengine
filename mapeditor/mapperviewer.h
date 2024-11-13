@@ -30,6 +30,7 @@ protected:
     virtual void mousePressEvent(QMouseEvent* event) override;
     virtual void mouseMoveEvent(QMouseEvent* event) override;
     virtual void mouseReleaseEvent(QMouseEvent* event) override;
+    virtual void keyPressEvent(QKeyEvent* event) override;
 
 private:
     MapperWidget* mapperWidget;

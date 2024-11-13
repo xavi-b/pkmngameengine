@@ -78,3 +78,8 @@ Tile::TilePtr tag_invoke(js::value_to_tag<Tile::TilePtr>, js::value const& jv)
         return tile;
     }
 }
+
+Tile::TilePtr clone(Tile::TilePtr const& other)
+{
+    return Tile::TilePtr(new Tile(*other.get()));
+}
