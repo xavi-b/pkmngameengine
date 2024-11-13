@@ -30,7 +30,9 @@ void Road1Scene::drawAmbientOverlay(Fps const* fps, RenderSizes rs, size_t offse
 {
     fogAnimation->setOffsetX(offsetX);
     fogAnimation->setOffsetY(offsetY);
-    fogAnimation->draw(fps, rs);
+    // TODO temp fogAnimation->draw(fps, rs);
+    (void)fps;
+    (void)rs;
 }
 
 bool Road1Scene::manageEvents()
@@ -38,16 +40,35 @@ bool Road1Scene::manageEvents()
     auto& player = Game::instance()->data.player;
     auto& layer  = map->getLevels()[player.l]->getEventLayer();
     auto& event  = (*layer.get())(player.x, player.y);
-    if (event && event->getId() == "Town1")
+    if (event)
     {
-        if (player.direction == Entity::Direction::LEFT)
+        if (event->getId() == "Town1")
         {
-            if (!fadeOutAnimation->isStarted())
+            if (player.direction == Entity::Direction::LEFT)
             {
-                fadeOutAnimation->reset();
-                fadeOutAnimation->start();
-                goToScene = "Town1";
-                return true;
+                if (!fadeOutAnimation->isStarted())
+                {
+                    fadeOutAnimation->reset();
+                    fadeOutAnimation->start();
+                    goToScene = "Town1";
+                    return true;
+                }
+            }
+        }
+
+        if (event->getId() == "Up1")
+        {
+            if (player.direction == Entity::Direction::UP)
+            {
+                player.l++;
+            }
+        }
+
+        if (event->getId() == "Down1")
+        {
+            if (player.direction == Entity::Direction::DOWN)
+            {
+                player.l--;
             }
         }
     }
@@ -80,5 +101,5 @@ std::unique_ptr<Scene> Road1Scene::nextScene()
 
 bool Road1Scene::shouldShowNightTextures() const
 {
-    return Game::instance()->isNight();
+    return false; // TODO Game::instance()->isNight();
 }
