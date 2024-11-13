@@ -106,6 +106,8 @@ protected:
     virtual void leaveEvent(QEvent* event) override;
 
 private:
+    void moveContent(int x, int y);
+
     static constexpr int TilePixelSize = 32;
 
     QPair<QString, QRect>  data;
