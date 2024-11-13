@@ -488,9 +488,11 @@ void MapperWidget::paintEvent(QPaintEvent* event)
                 auto&  event  = (*eventLayer.get())(i, j);
                 if (event)
                 {
+                    painter.save();
                     painter.setPen(QPen(Qt::red, 2));
                     painter.setOpacity(opacity);
                     painter.drawRect(QRect(QPoint(origin.x() + 2, origin.y() + 2), QSize(selSize - 4, selSize - 4)));
+                    painter.restore();
                 }
             }
         }
@@ -505,6 +507,7 @@ void MapperWidget::paintEvent(QPaintEvent* event)
                 auto&  specialTile = (*specialTileLayer.get())(i, j);
                 if (specialTile)
                 {
+                    painter.save();
                     QRect rect = QRect(QPoint(origin.x() + 2, origin.y() + 2), QSize(selSize - 4, selSize - 4));
                     painter.setPen(QPen(Qt::green, 2));
                     painter.setOpacity(opacity);
@@ -515,6 +518,7 @@ void MapperWidget::paintEvent(QPaintEvent* event)
                     QTextOption o;
                     o.setAlignment(Qt::AlignCenter);
                     painter.drawText(rect, QString::number(*specialTile.get()), o);
+                    painter.restore();
                 }
             }
         }
