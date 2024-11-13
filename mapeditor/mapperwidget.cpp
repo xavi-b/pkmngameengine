@@ -491,7 +491,10 @@ void MapperWidget::paintEvent(QPaintEvent* event)
                     painter.save();
                     painter.setPen(QPen(Qt::red, 2));
                     painter.setOpacity(opacity);
-                    painter.drawRect(QRect(QPoint(origin.x() + 2, origin.y() + 2), QSize(selSize - 4, selSize - 4)));
+                    QRect rect = QRect(QPoint(origin.x() + 2, origin.y() + 2), QSize(selSize - 4, selSize - 4));
+                    painter.drawRect(rect);
+                    painter.drawLine(QLine(rect.topLeft(), rect.bottomRight()));
+                    painter.drawLine(QLine(rect.topRight(), rect.bottomLeft()));
                     painter.restore();
                 }
             }
