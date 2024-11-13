@@ -1,6 +1,7 @@
 #include "road1scene.h"
 
 #include "game.h"
+#include "scenes/story/cave1scene.h"
 #include "scenes/story/town1scene.h"
 
 Road1Scene::Road1Scene(SDL_Renderer* renderer) : MapScene(renderer, "resources/maps/road1.pkmap")
@@ -56,6 +57,20 @@ bool Road1Scene::manageEvents()
             }
         }
 
+        if (event->getId() == "Cave1")
+        {
+            if (player.direction == Entity::Direction::UP)
+            {
+                if (!fadeOutAnimation->isStarted())
+                {
+                    fadeOutAnimation->reset();
+                    fadeOutAnimation->start();
+                    goToScene = "Cave1";
+                    return true;
+                }
+            }
+        }
+
         if (event->getId() == "Up1")
         {
             if (player.direction == Entity::Direction::UP)
@@ -91,9 +106,16 @@ std::unique_ptr<Scene> Road1Scene::nextScene()
     {
         if (goToScene == "Town1")
         {
-            auto town1Scene = std::make_unique<Town1Scene>(renderer);
-            town1Scene->initPlayerPosition(19, 2, Entity::Direction::LEFT);
-            return town1Scene;
+            auto scene = std::make_unique<Town1Scene>(renderer);
+            scene->initPlayerPosition(19, 2, 0, Entity::Direction::LEFT);
+            return scene;
+        }
+
+        if (goToScene == "Cave1")
+        {
+            auto scene = std::make_unique<Cave1Scene>(renderer);
+            scene->initPlayerPosition(6, 7, 0, Entity::Direction::UP);
+            return scene;
         }
     }
     return nullptr;
@@ -101,5 +123,5 @@ std::unique_ptr<Scene> Road1Scene::nextScene()
 
 bool Road1Scene::shouldShowNightTextures() const
 {
-    return false; // TODO Game::instance()->isNight();
+    return Game::instance()->isNight();
 }

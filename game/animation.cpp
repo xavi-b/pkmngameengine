@@ -44,6 +44,11 @@ bool Animation::isFinished() const
     return finished;
 }
 
+bool Animation::isRunning() const
+{
+    return isStarted() && !isFinished();
+}
+
 void Animation::forceEnd()
 {
     finished = true;

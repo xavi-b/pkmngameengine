@@ -47,6 +47,8 @@ void MapScene::init()
     fadeInAnimation  = std::make_unique<FadeAnimation>(renderer, true);
     fadeInAnimation->reset();
     fadeInAnimation->start();
+
+    flashAnimation = std::make_unique<FlashAnimation>(renderer);
 }
 
 void MapScene::update(Inputs const* inputs)
@@ -66,6 +68,11 @@ void MapScene::update(Inputs const* inputs)
         auto& sprite = *(it->second.get());
 
         sprite.setAccumulatedTicks((sprite.getAccumulatedTicks() + 1) % entity.speed);
+    }
+
+    if (flashAnimation->isRunning())
+    {
+        flashAnimation->incrementTicks();
     }
 
     if (weatherAnimation)
@@ -89,19 +96,19 @@ void MapScene::update(Inputs const* inputs)
         }
     }
 
-    if (fadeOutAnimation->isStarted() && !fadeOutAnimation->isFinished())
+    if (fadeOutAnimation->isRunning())
     {
         fadeOutAnimation->incrementTicks();
         return;
     }
 
-    if (doorOpeningAnimation && doorOpeningAnimation->isStarted() && !doorOpeningAnimation->isFinished())
+    if (doorOpeningAnimation && doorOpeningAnimation->isRunning())
     {
         doorOpeningAnimation->incrementTicks();
         return;
     }
 
-    if (doorClosingAnimation && doorClosingAnimation->isStarted() && !doorClosingAnimation->isFinished())
+    if (doorClosingAnimation && doorClosingAnimation->isRunning())
     {
         doorClosingAnimation->incrementTicks();
     }
@@ -518,11 +525,14 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
     if (openMenu)
         menu->draw(fps, rs);
 
-    if (fadeInAnimation->isStarted() && !fadeInAnimation->isFinished())
+    if (fadeInAnimation->isRunning())
         fadeInAnimation->draw(fps, rs);
 
-    if (fadeOutAnimation->isStarted() && !fadeOutAnimation->isFinished())
+    if (fadeOutAnimation->isRunning())
         fadeOutAnimation->draw(fps, rs);
+
+    if (!flash)
+        drawFlashDarkness(fps, rs);
 }
 
 void MapScene::drawAmbientOverlay(Fps const* /*fps*/, RenderSizes /*rs*/, size_t /*offsetX*/, size_t /*offsetY*/)
@@ -535,21 +545,27 @@ void MapScene::drawWeather(Fps const* fps, RenderSizes rs)
         weatherAnimation->draw(fps, rs);
 }
 
-void MapScene::initPlayerPosition(int x, int y, Entity::Direction direction)
+void MapScene::drawFlashDarkness(Fps const* fps, RenderSizes rs)
+{
+    flashAnimation->draw(fps, rs);
+}
+
+void MapScene::initPlayerPosition(size_t x, size_t y, size_t l, Entity::Direction direction)
 {
     auto& player                 = Game::instance()->data.player;
     player.x                     = x;
     player.y                     = y;
     player.previousX             = x;
     player.previousY             = y;
+    player.l                     = l;
     player.direction             = Entity::Direction::NONE;
     playerSpriteInitialDirection = direction;
 }
 
-void MapScene::initMovingPlayerPosition(int x, int y, Entity::Direction direction)
+void MapScene::initMovingPlayerPosition(size_t x, size_t y, size_t l, Entity::Direction direction)
 {
     auto& player = Game::instance()->data.player;
-    initPlayerPosition(x, y, direction);
+    initPlayerPosition(x, y, l, direction);
     switch (direction)
     {
     case Entity::Direction::LEFT:
@@ -571,7 +587,7 @@ void MapScene::initMovingPlayerPosition(int x, int y, Entity::Direction directio
     player.direction = direction;
 }
 
-void MapScene::initClosingDoor(int x, int y)
+void MapScene::initClosingDoor(size_t x, size_t y)
 {
     doorClosingPosition  = {x, y};
     doorClosingAnimation = std::make_unique<DoorAnimation>(renderer, shouldShowNightTextures());
@@ -867,9 +883,10 @@ std::unique_ptr<Scene> MapScene::nextScene()
     return nullptr;
 }
 
-std::pair<size_t, size_t> MapScene::currentPlayerPosition() const
+std::tuple<size_t, size_t, size_t> MapScene::currentPlayerPosition() const
 {
-    return {Game::instance()->data.player.x, Game::instance()->data.player.y};
+    auto const& player = Game::instance()->data.player;
+    return {player.x, player.y, player.l};
 }
 
 void MapScene::changeWeather(Map::Weather weather)
@@ -892,4 +909,19 @@ void MapScene::changeWeather(Map::Weather weather)
         weatherAnimation = std::make_unique<RainAnimation>(renderer, shouldShowNightTextures());
         break;
     }
+}
+
+bool MapScene::turnOnFlash()
+{
+    if (!flash)
+    {
+        if (!flashAnimation->isStarted())
+        {
+            flashAnimation->reset();
+            flashAnimation->start();
+            return true;
+        }
+    }
+
+    return false;
 }

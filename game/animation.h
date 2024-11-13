@@ -19,6 +19,7 @@ public:
     virtual void incrementTicks();
     virtual bool isStarted() const;
     virtual bool isFinished() const;
+    bool         isRunning() const;
     virtual void draw(Fps const* fps, RenderSizes rs) = 0;
     virtual void forceEnd();
 
