@@ -33,6 +33,7 @@ public:
     virtual void update(Inputs const* inputs) override;
     virtual void draw(Fps const* fps, RenderSizes rs) override;
 
+    virtual void drawAmbientOverlay(Fps const* fps, RenderSizes rs, size_t offsetX, size_t offsetY);
     virtual void drawWeather(Fps const* fps, RenderSizes rs);
 
     virtual void    initPlayerPosition(int x, int y, Entity::Direction direction = Entity::Direction::NONE);

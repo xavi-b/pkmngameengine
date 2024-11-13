@@ -10,11 +10,27 @@ Road1Scene::Road1Scene(SDL_Renderer* renderer) : MapScene(renderer, "resources/m
 void Road1Scene::init()
 {
     MapScene::init();
+
+    fogAnimation = std::make_unique<FogAnimation>(renderer, shouldShowNightTextures());
+    fogAnimation->start();
+}
+
+void Road1Scene::update(Inputs const* inputs)
+{
+    fogAnimation->incrementTicks();
+    MapScene::update(inputs);
 }
 
 void Road1Scene::draw(Fps const* fps, RenderSizes rs)
 {
     MapScene::draw(fps, rs);
+}
+
+void Road1Scene::drawAmbientOverlay(Fps const* fps, RenderSizes rs, size_t offsetX, size_t offsetY)
+{
+    fogAnimation->setOffsetX(offsetX);
+    fogAnimation->setOffsetY(offsetY);
+    fogAnimation->draw(fps, rs);
 }
 
 bool Road1Scene::manageEvents()

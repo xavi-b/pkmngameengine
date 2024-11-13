@@ -508,6 +508,8 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
         }
     }
 
+    drawAmbientOverlay(fps, rs, playerOffsetX, playerOffsetY);
+
     drawWeather(fps, rs);
 
     if (battleIntro)
@@ -521,6 +523,10 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
 
     if (fadeOutAnimation->isStarted() && !fadeOutAnimation->isFinished())
         fadeOutAnimation->draw(fps, rs);
+}
+
+void MapScene::drawAmbientOverlay(Fps const* /*fps*/, RenderSizes /*rs*/, size_t /*offsetX*/, size_t /*offsetY*/)
+{
 }
 
 void MapScene::drawWeather(Fps const* fps, RenderSizes rs)

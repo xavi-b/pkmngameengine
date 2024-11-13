@@ -44,26 +44,34 @@ void FogAnimation::incrementTicks()
     WeatherAnimation::incrementTicks();
 }
 
-void FogAnimation::draw(Fps const* fps, RenderSizes rs)
+void FogAnimation::draw(Fps const* /*fps*/, RenderSizes rs)
 {
-    for (int x = -TilePixelSize; x < rs.ww + TilePixelSize; x += TilePixelSize)
+    for (int x = -rs.ww / 2 - TilePixelSize; x < rs.ww + TilePixelSize; x += TilePixelSize)
     {
-        for (int y = 0; y < rs.wh + TilePixelSize; y += TilePixelSize)
+        for (int y = -rs.wh / 2 - TilePixelSize; y < rs.wh + TilePixelSize; y += TilePixelSize)
         {
             SDL_Rect dstRect;
-            dstRect.y = y * rs.wh / rs.ah;
+            dstRect.y = y * rs.wh / rs.ah + offsetY;
             dstRect.w = fog1.first->w * rs.ww / rs.aw;
             dstRect.h = fog1.first->h * rs.wh / rs.ah;
 
-            dstRect.x =
-                (x + ((int(accumulatedTicks) % speed) + fps->tickPercentage()) * fog1.first->w / speed) * rs.ww / rs.aw;
+            dstRect.x = (x + (int(accumulatedTicks) % speed) * fog1.first->w / speed) * rs.ww / rs.aw + offsetX;
             SDL_SetTextureAlphaMod(fog1.second, 127);
             SDL_RenderCopy(renderer, fog1.second, NULL, &dstRect);
 
-            dstRect.x =
-                (x - ((int(accumulatedTicks) % speed) + fps->tickPercentage()) * fog2.first->w / speed) * rs.ww / rs.aw;
+            dstRect.x = (x - (int(accumulatedTicks) % speed) * fog2.first->w / speed) * rs.ww / rs.aw + offsetX;
             SDL_SetTextureAlphaMod(fog2.second, 127);
             SDL_RenderCopy(renderer, fog2.second, NULL, &dstRect);
         }
     }
+}
+
+void FogAnimation::setOffsetX(int newOffsetX)
+{
+    offsetX = newOffsetX;
+}
+
+void FogAnimation::setOffsetY(int newOffsetY)
+{
+    offsetY = newOffsetY;
 }
