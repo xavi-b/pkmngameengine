@@ -5,6 +5,7 @@
 #include "bagscene.h"
 #include "game.h"
 #include "pkmnsscene.h"
+#include "sprites/squaresprite.h"
 #include "sprites/surfsprite.h"
 
 #include <fstream>
@@ -55,6 +56,45 @@ void MapScene::init()
     playerSurfSprite->forceSpriteDirection(playerSpriteInitialDirection);
     surfSprite->forceSpriteDirection(playerSpriteInitialDirection);
 
+    for (size_t l = 0; l < map->getLevels().size(); ++l)
+    {
+        auto& level = map->getLevels()[l];
+        auto& layer = level->getSpecialTileLayer();
+        for (size_t j = 0; j < map->getNRow(); ++j)
+        {
+            for (size_t i = 0; i < map->getNCol(); ++i)
+            {
+                auto& tile = (*layer.get())(i, j);
+                if (tile)
+                {
+                    if (*tile.get() == SpecialTileType::TREE)
+                    {
+                        auto entity       = std::make_unique<Entity>();
+                        entity->x         = i;
+                        entity->y         = j;
+                        entity->previousX = i;
+                        entity->previousY = j;
+                        auto entitySprite = std::make_unique<SquareSprite>(renderer);
+                        entitySprite->load("resources/Graphics/Characters/Object tree 1.png",
+                                           shouldShowNightTextures());
+                        entities.emplace(std::move(entity), std::move(entitySprite));
+                    }
+                    else if (*tile.get() == SpecialTileType::ROCK)
+                    {
+                        auto entity       = std::make_unique<Entity>();
+                        entity->x         = i;
+                        entity->y         = j;
+                        entity->previousX = i;
+                        entity->previousY = j;
+                        auto entitySprite = std::make_unique<SquareSprite>(renderer);
+                        entitySprite->load("resources/Graphics/Characters/Object rock.png", shouldShowNightTextures());
+                        entities.emplace(std::move(entity), std::move(entitySprite));
+                    }
+                }
+            }
+        }
+    }
+
     fadeOutAnimation = std::make_unique<FadeAnimation>(renderer, false);
     fadeInAnimation  = std::make_unique<FadeAnimation>(renderer, true);
     fadeInAnimation->reset();
@@ -70,6 +110,8 @@ void MapScene::update(Inputs const* inputs)
     player.previousSpeed = player.speed;
 
     playerSprite->setAccumulatedTicks((playerSprite->getAccumulatedTicks() + 1) % player.speed);
+    playerSurfSprite->setAccumulatedTicks((playerSprite->getAccumulatedTicks() + 1) % player.speed);
+    surfSprite->setAccumulatedTicks((playerSprite->getAccumulatedTicks() + 1) % player.speed);
 
     if (player.direction == Entity::Direction::NONE && player.speed == Entity::Speed::WALK)
         playerSprite->setAccumulatedTicks(0);
@@ -214,6 +256,34 @@ void MapScene::update(Inputs const* inputs)
             player.surfing   = true;
             player.direction = player.previousDirection;
             move(player);
+            return;
+        }
+
+        if (isEntityFacingTreeTile(player))
+        {
+            auto entity = facedEntity(player);
+            for (auto it = entities.begin(); it != entities.end(); ++it)
+            {
+                if (it->first.get() == entity)
+                {
+                    entities.erase(it->first);
+                    break;
+                }
+            }
+            return;
+        }
+
+        if (isEntityFacingRockTile(player))
+        {
+            auto entity = facedEntity(player);
+            for (auto it = entities.begin(); it != entities.end(); ++it)
+            {
+                if (it->first.get() == entity)
+                {
+                    entities.erase(it->first);
+                    break;
+                }
+            }
             return;
         }
     }
@@ -778,26 +848,52 @@ bool MapScene::canMove(Entity const& entity, size_t x, size_t y, size_t l, bool 
     return true;
 }
 
-bool MapScene::isEntityFacingWaterTile(Entity const& entity) const
+Entity* MapScene::facedEntity(Entity const& entity) const
 {
     if (entity.previousDirection == Entity::Direction::UP)
     {
-        if (isWaterTile(entity.x, entity.y - 1, entity.l))
+        if (auto fe = entityAt(entity.x, entity.y - 1, entity.l))
+            return fe;
+    }
+    else if (entity.previousDirection == Entity::Direction::DOWN)
+    {
+        if (auto fe = entityAt(entity.x, entity.y + 1, entity.l))
+            return fe;
+    }
+    else if (entity.previousDirection == Entity::Direction::LEFT)
+    {
+        if (auto fe = entityAt(entity.x - 1, entity.y, entity.l))
+            return fe;
+    }
+    else if (entity.previousDirection == Entity::Direction::RIGHT)
+    {
+        if (auto fe = entityAt(entity.x + 1, entity.y, entity.l))
+            return fe;
+    }
+
+    return nullptr;
+}
+
+bool MapScene::isEntityFacingTile(Entity const& entity, std::function<bool(size_t, size_t, size_t)> func) const
+{
+    if (entity.previousDirection == Entity::Direction::UP)
+    {
+        if (func(entity.x, entity.y - 1, entity.l))
             return true;
     }
     else if (entity.previousDirection == Entity::Direction::DOWN)
     {
-        if (isWaterTile(entity.x, entity.y + 1, entity.l))
+        if (func(entity.x, entity.y + 1, entity.l))
             return true;
     }
     else if (entity.previousDirection == Entity::Direction::LEFT)
     {
-        if (isWaterTile(entity.x - 1, entity.y, entity.l))
+        if (func(entity.x - 1, entity.y, entity.l))
             return true;
     }
     else if (entity.previousDirection == Entity::Direction::RIGHT)
     {
-        if (isWaterTile(entity.x + 1, entity.y, entity.l))
+        if (func(entity.x + 1, entity.y, entity.l))
             return true;
     }
 
@@ -817,6 +913,57 @@ bool MapScene::isWaterTile(size_t x, size_t y, size_t l) const
     }
 
     return false;
+}
+
+bool MapScene::isEntityFacingWaterTile(Entity const& entity) const
+{
+    return isEntityFacingTile(entity, [this](size_t x, size_t y, size_t l) {
+        return this->isWaterTile(x, y, l);
+    });
+}
+
+bool MapScene::isTreeTile(size_t x, size_t y, size_t l) const
+{
+    auto& level = map->getLevels()[l];
+
+    auto& specialTileLayer = level->getSpecialTileLayer();
+    auto& specialTile      = (*specialTileLayer.get())(x, y);
+    if (specialTile)
+    {
+        if (*(specialTile.get()) == TREE)
+            return true;
+    }
+
+    return false;
+}
+
+bool MapScene::isEntityFacingTreeTile(Entity const& entity) const
+{
+    return isEntityFacingTile(entity, [this](size_t x, size_t y, size_t l) {
+        return this->isTreeTile(x, y, l);
+    });
+}
+
+bool MapScene::isRockTile(size_t x, size_t y, size_t l) const
+{
+    auto& level = map->getLevels()[l];
+
+    auto& specialTileLayer = level->getSpecialTileLayer();
+    auto& specialTile      = (*specialTileLayer.get())(x, y);
+    if (specialTile)
+    {
+        if (*(specialTile.get()) == ROCK)
+            return true;
+    }
+
+    return false;
+}
+
+bool MapScene::isEntityFacingRockTile(Entity const& entity) const
+{
+    return isEntityFacingTile(entity, [this](size_t x, size_t y, size_t l) {
+        return this->isRockTile(x, y, l);
+    });
 }
 
 bool MapScene::manageEvents()

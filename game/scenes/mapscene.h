@@ -49,8 +49,15 @@ public:
     virtual Entity* entityAt(size_t x, size_t y, size_t l) const;
     virtual Entity* entityPreviousAt(size_t x, size_t y, size_t l) const;
     virtual bool    canMove(Entity const& entity, size_t x, size_t y, size_t l, bool force) const;
-    virtual bool    isEntityFacingWaterTile(Entity const& entity) const;
-    virtual bool    isWaterTile(size_t x, size_t y, size_t l) const;
+
+    Entity* facedEntity(Entity const& entity) const;
+    bool    isEntityFacingTile(Entity const& entity, std::function<bool(size_t x, size_t y, size_t l)> func) const;
+    bool    isWaterTile(size_t x, size_t y, size_t l) const;
+    bool    isEntityFacingWaterTile(Entity const& entity) const;
+    bool    isTreeTile(size_t x, size_t y, size_t l) const;
+    bool    isEntityFacingTreeTile(Entity const& entity) const;
+    bool    isRockTile(size_t x, size_t y, size_t l) const;
+    bool    isEntityFacingRockTile(Entity const& entity) const;
 
     virtual bool                                  manageEvents();
     virtual bool                                  manageEncounters();
