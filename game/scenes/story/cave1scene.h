@@ -1,22 +1,19 @@
-#ifndef ROAD1SCENE_H
-#define ROAD1SCENE_H
+#ifndef CAVE1SCENE_H
+#define CAVE1SCENE_H
 
-#include "animations/weather/foganimation.h"
 #include "scenes/mapscene.h"
 
 #include <memory>
 #include <string>
 
-class Road1Scene : public MapScene
+class Cave1Scene : public MapScene
 {
 public:
-    Road1Scene(SDL_Renderer* renderer);
+    Cave1Scene(SDL_Renderer* renderer);
 
     virtual void init() override;
     virtual void update(Inputs const* inputs) override;
     virtual void draw(Fps const* fps, RenderSizes rs) override;
-
-    virtual void drawAmbientOverlay(Fps const* fps, RenderSizes rs, size_t offsetX, size_t offsetY) override;
 
     virtual bool manageEvents() override;
 
@@ -25,9 +22,6 @@ public:
     virtual std::unique_ptr<Scene> nextScene() override;
 
     virtual bool shouldShowNightTextures() const override;
-
-private:
-    std::unique_ptr<FogAnimation> fogAnimation;
 };
 
-#endif // ROAD1SCENE_H
+#endif // CAVE1SCENE_H

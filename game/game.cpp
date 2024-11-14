@@ -193,11 +193,12 @@ void Game::save()
     if (currentMapScene)
     {
         js::object json;
-        json["mapName"]     = currentMapScene->name();
-        auto playerPosition = currentMapScene->currentPlayerPosition();
-        json["playerX"]     = playerPosition.first;
-        json["playerY"]     = playerPosition.second;
-        json["player"]      = js::value_from<Player const&>(data.player);
+        json["mapName"] = currentMapScene->name();
+        auto [x, y, l]  = currentMapScene->currentPlayerPosition();
+        json["playerX"] = x;
+        json["playerY"] = y;
+        json["playerL"] = l;
+        json["player"]  = js::value_from<Player const&>(data.player);
 
         std::string dataPath = Utils::dataDir();
         fs::create_directories(dataPath);
@@ -229,12 +230,15 @@ std::unique_ptr<MapScene> Game::load()
             js::value  json = js::parse(buffer);
             js::object obj  = json.as_object();
 
-            data.player              = js::value_to<Player>(obj.at("player"));
-            size_t      playerX      = js::value_to<size_t>(obj.at("playerX"));
-            size_t      playerY      = js::value_to<size_t>(obj.at("playerY"));
+            data.player    = js::value_to<Player>(obj.at("player"));
+            size_t playerX = js::value_to<size_t>(obj.at("playerX"));
+            size_t playerY = js::value_to<size_t>(obj.at("playerY"));
+            size_t playerL = 0;
+            if (obj.contains("playerL"))
+                playerL = js::value_to<size_t>(obj.at("playerL"));
             std::string mapSceneName = js::value_to<std::string>(obj.at("mapName"));
             auto        mapScene     = mapSceneFactory->fromName(mapSceneName);
-            mapScene->initPlayerPosition(playerX, playerY);
+            mapScene->initPlayerPosition(playerX, playerY, playerL);
 
             return mapScene;
         }

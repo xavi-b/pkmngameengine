@@ -132,14 +132,14 @@ std::unique_ptr<Scene> Town1Scene::nextScene()
         if (goToScene == "Road1")
         {
             auto scene = std::make_unique<Road1Scene>(renderer);
-            scene->initPlayerPosition(0, 2, Entity::Direction::RIGHT);
+            scene->initPlayerPosition(0, 2, 0, Entity::Direction::RIGHT);
             return scene;
         }
 
         if (goToScene == "House1")
         {
             auto scene = std::make_unique<House1Scene>(renderer);
-            scene->initPlayerPosition(1, 7, Entity::Direction::UP);
+            scene->initPlayerPosition(1, 7, 0, Entity::Direction::UP);
             return scene;
         }
     }

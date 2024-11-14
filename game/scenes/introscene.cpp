@@ -156,7 +156,7 @@ std::unique_ptr<Scene> IntroScene::nextScene()
     else if (state == Leave)
     {
         auto scene = std::make_unique<Town1Scene>(renderer);
-        scene->initPlayerPosition(8, 12, Entity::Direction::NONE);
+        scene->initPlayerPosition(8, 12, 0, Entity::Direction::NONE);
         return scene;
     }
     return nullptr;

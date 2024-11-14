@@ -208,6 +208,15 @@ void MainWindow::createMenus()
     });
     editMenu->addAction(undoAct);
     editMenu->addAction(redoAct);
+
+    QMenu*   viewMenu           = menuBar()->addMenu(tr("&View"));
+    QAction* showCoordinatesAct = new QAction(tr("&Show coordinates"));
+    showCoordinatesAct->setShortcut(QKeySequence("Ctrl+G"));
+    showCoordinatesAct->setCheckable(true);
+    connect(showCoordinatesAct, &QAction::triggered, this, [=](bool checked) {
+        mapEditor->getMapperViewer()->contentWidget()->showCoordinates(checked);
+    });
+    viewMenu->addAction(showCoordinatesAct);
 }
 
 void MainWindow::closeEvent(QCloseEvent* event)

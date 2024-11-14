@@ -62,6 +62,8 @@ public:
     bool isGridVisible() const;
     void setGridVisible(bool newGridVisible);
 
+    void showCoordinates(bool show);
+
     size_t getCommandsIndex() const;
     size_t getCommandsHistorySize() const;
 
@@ -119,13 +121,14 @@ private:
     bool                   showSelectionPixmap = false;
 
     std::unique_ptr<Map> map;
-    int                  workingLayerIndex  = 0;
-    int                  workingLevelIndex  = 0;
-    bool                 belowLevelsOpacity = false;
-    bool                 night              = false;
-    LayerType            layerType          = LayerType::TILES;
-    SpecialTileType      specialTileType    = SpecialTileType::GRASS;
-    bool                 gridVisible        = true;
+    int                  workingLayerIndex   = 0;
+    int                  workingLevelIndex   = 0;
+    bool                 belowLevelsOpacity  = false;
+    bool                 night               = false;
+    LayerType            layerType           = LayerType::TILES;
+    SpecialTileType      specialTileType     = SpecialTileType::GRASS;
+    bool                 gridVisible         = true;
+    bool                 mustShowCoordinates = false;
 
     std::vector<std::unique_ptr<MapperCommand>> commandsHistory;
     size_t                                      commandsIndex    = 0;

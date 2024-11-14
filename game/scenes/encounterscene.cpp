@@ -143,7 +143,7 @@ void EncounterScene::draw_START(Fps const* fps, RenderSizes rs)
         firstPkmnSpeech->draw(fps, rs);
     }
 
-    if (eyeAnimation->isStarted() && !eyeAnimation->isFinished())
+    if (eyeAnimation->isRunning())
     {
         eyeAnimation->draw(fps, rs);
     }
@@ -164,7 +164,7 @@ void EncounterScene::update_WEATHER(Inputs const* inputs)
             weatherAnimation->start();
         }
 
-        if (weatherAnimation->isStarted() && !weatherAnimation->isFinished())
+        if (weatherAnimation->isRunning())
         {
             weatherAnimation->incrementTicks();
         }
@@ -188,7 +188,7 @@ void EncounterScene::draw_WEATHER(Fps const* fps, RenderSizes rs)
 {
     if (weatherAnimation)
     {
-        if (weatherAnimation->isStarted() && !weatherAnimation->isFinished())
+        if (weatherAnimation->isRunning())
         {
             weatherAnimation->draw(fps, rs);
         }

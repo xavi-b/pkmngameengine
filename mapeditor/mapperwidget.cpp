@@ -474,6 +474,8 @@ void MapperWidget::paintEvent(QPaintEvent* event)
                     painter.setOpacity(1.0);
                     if (isGridVisible())
                         painter.drawRect(QRect(origin, QSize(selSize - 1, selSize - 1)));
+                    if (mustShowCoordinates)
+                        painter.drawText(origin, QString("%1;%2").arg(i).arg(j));
                 }
             }
         }
@@ -556,6 +558,14 @@ void MapperWidget::setGridVisible(bool newGridVisible)
         return;
     gridVisible = newGridVisible;
     emit gridVisibleChanged();
+}
+
+void MapperWidget::showCoordinates(bool show)
+{
+    if (mustShowCoordinates == show)
+        return;
+    mustShowCoordinates = show;
+    update();
 }
 
 size_t MapperWidget::getCommandsIndex() const

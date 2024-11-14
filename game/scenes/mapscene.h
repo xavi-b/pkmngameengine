@@ -5,6 +5,7 @@
 #include "animations/fadeanimation.h"
 #include "animations/map/dooranimation.h"
 #include "animations/map/mapanimation.h"
+#include "animations/weather/flashanimation.h"
 #include "entity.h"
 #include "map.h"
 #include "menu.h"
@@ -35,10 +36,14 @@ public:
 
     virtual void drawAmbientOverlay(Fps const* fps, RenderSizes rs, size_t offsetX, size_t offsetY);
     virtual void drawWeather(Fps const* fps, RenderSizes rs);
+    virtual void drawFlashDarkness(Fps const* fps, RenderSizes rs);
 
-    virtual void    initPlayerPosition(int x, int y, Entity::Direction direction = Entity::Direction::NONE);
-    virtual void    initMovingPlayerPosition(int x, int y, Entity::Direction direction);
-    void            initClosingDoor(int x, int y);
+    virtual void    initPlayerPosition(size_t            x,
+                                       size_t            y,
+                                       size_t            l,
+                                       Entity::Direction direction = Entity::Direction::NONE);
+    virtual void    initMovingPlayerPosition(size_t x, size_t y, size_t l, Entity::Direction direction);
+    void            initClosingDoor(size_t x, size_t y);
     void            stop(Entity& entity);
     virtual void    move(Entity& entity, bool force = false);
     virtual Entity* entityAt(size_t x, size_t y, size_t l) const;
@@ -54,11 +59,13 @@ public:
 
     virtual std::unique_ptr<Scene> nextScene() override;
 
-    std::pair<size_t, size_t> currentPlayerPosition() const;
+    std::tuple<size_t, size_t, size_t> currentPlayerPosition() const;
 
     void changeWeather(Map::Weather weather);
 
     virtual bool shouldShowNightTextures() const = 0;
+
+    bool turnOnFlash();
 
 protected:
     std::map<std::string, std::pair<SDL_Surface*, SDL_Texture*>> sprites;
@@ -82,12 +89,14 @@ protected:
     std::unique_ptr<DoorAnimation>                               doorOpeningAnimation;
     std::pair<int, int>                                          doorClosingPosition;
     std::unique_ptr<DoorAnimation>                               doorClosingAnimation;
+    std::unique_ptr<FlashAnimation>                              flashAnimation;
 
     bool                  openMenu = false;
     std::unique_ptr<Menu> menu;
     bool                  openPkmns = false;
     bool                  openBag   = false;
     bool                  surfing   = false;
+    bool                  flash     = true;
 
     std::string goToScene = "";
 };
