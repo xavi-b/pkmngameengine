@@ -70,8 +70,21 @@ void Road1Scene::init()
 
 void Road1Scene::update(Inputs const* inputs)
 {
+    auto& player = Game::instance()->data.player;
+
     fogAnimation->incrementTicks();
     MapScene::update(inputs);
+
+    if (inputs->A)
+    {
+        if (auto event = facedEvent(player))
+        {
+            if (event->getId() == "Text1")
+            {
+                // TODO
+            }
+        }
+    }
 
     auto& sprite = *(entities.begin()->second.get());
     if (sprite.getAccumulatedTicks() == 0)

@@ -59,6 +59,9 @@ public:
     bool    isRockTile(size_t x, size_t y, size_t l) const;
     bool    isEntityFacingRockTile(Entity const& entity) const;
 
+    Event* eventAt(size_t x, size_t y, size_t l) const;
+    Event* facedEvent(Entity const& entity) const;
+
     virtual bool                                  manageEvents();
     virtual bool                                  manageEncounters();
     virtual std::unique_ptr<BattleIntroAnimation> manageBattleIntro();

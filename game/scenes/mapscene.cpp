@@ -966,6 +966,50 @@ bool MapScene::isEntityFacingRockTile(Entity const& entity) const
     });
 }
 
+Event* MapScene::eventAt(size_t x, size_t y, size_t l) const
+{
+    if (x > map->getNCol())
+        return nullptr;
+
+    if (y > map->getNRow())
+        return nullptr;
+
+    if (l > map->getLevels().size())
+        return nullptr;
+
+    auto& level = map->getLevels()[l];
+
+    auto& eventLayer = level->getEventLayer();
+    auto& event      = (*eventLayer.get())(x, y);
+    return event.get();
+}
+
+Event* MapScene::facedEvent(Entity const& entity) const
+{
+    if (entity.previousDirection == Entity::Direction::UP)
+    {
+        if (auto fe = eventAt(entity.x, entity.y - 1, entity.l))
+            return fe;
+    }
+    else if (entity.previousDirection == Entity::Direction::DOWN)
+    {
+        if (auto fe = eventAt(entity.x, entity.y + 1, entity.l))
+            return fe;
+    }
+    else if (entity.previousDirection == Entity::Direction::LEFT)
+    {
+        if (auto fe = eventAt(entity.x - 1, entity.y, entity.l))
+            return fe;
+    }
+    else if (entity.previousDirection == Entity::Direction::RIGHT)
+    {
+        if (auto fe = eventAt(entity.x + 1, entity.y, entity.l))
+            return fe;
+    }
+
+    return nullptr;
+}
+
 bool MapScene::manageEvents()
 {
     return false;
