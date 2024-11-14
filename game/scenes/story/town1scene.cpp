@@ -7,6 +7,11 @@
 Town1Scene::Town1Scene(SDL_Renderer* renderer) : MapScene(renderer, "resources/maps/town1.pkmap")
 {
     changeWeather(Map::Weather::RAIN);
+}
+
+void Town1Scene::init()
+{
+    MapScene::init();
 
     auto entity               = std::make_unique<Entity>();
     entity->x                 = 11;
@@ -18,11 +23,6 @@ Town1Scene::Town1Scene(SDL_Renderer* renderer) : MapScene(renderer, "resources/m
     auto entitySprite         = std::make_unique<Sprite>(renderer);
     entitySprite->load("resources/Graphics/Characters/NPC 01.png", shouldShowNightTextures());
     entities.emplace(std::move(entity), std::move(entitySprite));
-}
-
-void Town1Scene::init()
-{
-    MapScene::init();
 }
 
 void Town1Scene::update(Inputs const* inputs)

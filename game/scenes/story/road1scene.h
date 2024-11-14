@@ -28,6 +28,9 @@ public:
 
 private:
     std::unique_ptr<FogAnimation> fogAnimation;
+
+    Entity* childNpc;
+    Entity* ladyNpc;
 };
 
 #endif // ROAD1SCENE_H
