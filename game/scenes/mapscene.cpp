@@ -5,6 +5,7 @@
 #include "bagscene.h"
 #include "game.h"
 #include "pkmnsscene.h"
+#include "sprites/surfsprite.h"
 
 #include <fstream>
 #include <iostream>
@@ -36,12 +37,23 @@ MapScene::~MapScene()
 
 void MapScene::init()
 {
-    playerSprite = std::make_unique<Sprite>(renderer);
+    playerSprite     = std::make_unique<Sprite>(renderer);
+    playerSurfSprite = std::make_unique<Sprite>(renderer);
+    surfSprite       = std::make_unique<SurfSprite>(renderer);
     if (Game::instance()->data.player.getGender() == Player::Gender::BOY)
+    {
         playerSprite->load("resources/Graphics/Characters/boy_run.png", shouldShowNightTextures());
+        playerSurfSprite->load("resources/Graphics/Characters/boy_surf.png", shouldShowNightTextures());
+    }
     else
+    {
         playerSprite->load("resources/Graphics/Characters/girl_run.png", shouldShowNightTextures());
+        playerSurfSprite->load("resources/Graphics/Characters/girl_surf.png", shouldShowNightTextures());
+    }
+    surfSprite->load("resources/Graphics/Characters/base_surf.png", shouldShowNightTextures());
     playerSprite->forceSpriteDirection(playerSpriteInitialDirection);
+    playerSurfSprite->forceSpriteDirection(playerSpriteInitialDirection);
+    surfSprite->forceSpriteDirection(playerSpriteInitialDirection);
 
     fadeOutAnimation = std::make_unique<FadeAnimation>(renderer, false);
     fadeInAnimation  = std::make_unique<FadeAnimation>(renderer, true);
@@ -190,10 +202,21 @@ void MapScene::update(Inputs const* inputs)
         return;
     }
 
-    if (inputs->B)
+    if (inputs->B && !player.surfing)
         player.speed = Entity::Speed::RUN;
     else
         player.speed = Entity::Speed::WALK;
+
+    if (inputs->A)
+    {
+        if (isEntityFacingWaterTile(player))
+        {
+            player.surfing   = true;
+            player.direction = player.previousDirection;
+            move(player);
+            return;
+        }
+    }
 
     if (inputs->start)
     {
@@ -206,22 +229,26 @@ void MapScene::update(Inputs const* inputs)
 
     if (inputs->up)
     {
-        player.direction = Entity::Direction::UP;
+        player.previousDirection = Entity::Direction::UP;
+        player.direction         = Entity::Direction::UP;
         move(player);
     }
     else if (inputs->down)
     {
-        player.direction = Entity::Direction::DOWN;
+        player.previousDirection = Entity::Direction::DOWN;
+        player.direction         = Entity::Direction::DOWN;
         move(player);
     }
     else if (inputs->left)
     {
-        player.direction = Entity::Direction::LEFT;
+        player.previousDirection = Entity::Direction::LEFT;
+        player.direction         = Entity::Direction::LEFT;
         move(player);
     }
     else if (inputs->right)
     {
-        player.direction = Entity::Direction::RIGHT;
+        player.previousDirection = Entity::Direction::RIGHT;
+        player.direction         = Entity::Direction::RIGHT;
         move(player);
     }
     else
@@ -381,7 +408,15 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
                             // Draw player
                             if (player.x == int(i) && player.y == int(j) && player.l == l)
                             {
-                                playerSprite->draw(player, fps, &dstPlayerRect);
+                                if (!player.surfing)
+                                {
+                                    playerSprite->draw(player, fps, rs, dstPlayerRect);
+                                }
+                                else
+                                {
+                                    surfSprite->draw(player, fps, rs, dstPlayerRect);
+                                    playerSurfSprite->draw(player, fps, rs, dstPlayerRect);
+                                }
                             }
 
                             // Draw entities
@@ -406,7 +441,7 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
                                                     - (EntityPixelHeight - TilePixelSize) * rs.wh / rs.ah;
                                     dstEntityRect.w = dstTilePixelWidth + 1;
                                     dstEntityRect.h = EntityPixelHeight * rs.wh / rs.ah + 1;
-                                    sprite.draw(entity, fps, &dstEntityRect);
+                                    sprite.draw(entity, fps, rs, dstEntityRect);
                                 }
                             }
                         }
@@ -560,6 +595,9 @@ void MapScene::initPlayerPosition(size_t x, size_t y, size_t l, Entity::Directio
     player.l                     = l;
     player.direction             = Entity::Direction::NONE;
     playerSpriteInitialDirection = direction;
+
+    if (isWaterTile(x, y, l))
+        player.surfing = true;
 }
 
 void MapScene::initMovingPlayerPosition(size_t x, size_t y, size_t l, Entity::Direction direction)
@@ -611,22 +649,22 @@ void MapScene::move(Entity& entity, bool force)
 
     if (entity.direction == Entity::Direction::UP)
     {
-        if (entity.y > 0 && canMove(entity.x, entity.y - 1, entity.l, force))
+        if (entity.y > 0 && canMove(entity, entity.x, entity.y - 1, entity.l, force))
             entity.y--;
     }
     else if (entity.direction == Entity::Direction::DOWN)
     {
-        if (entity.y < int(map->getNRow() - 1) && canMove(entity.x, entity.y + 1, entity.l, force))
+        if (entity.y < int(map->getNRow() - 1) && canMove(entity, entity.x, entity.y + 1, entity.l, force))
             entity.y++;
     }
     else if (entity.direction == Entity::Direction::LEFT)
     {
-        if (entity.x > 0 && canMove(entity.x - 1, entity.y, entity.l, force))
+        if (entity.x > 0 && canMove(entity, entity.x - 1, entity.y, entity.l, force))
             entity.x--;
     }
     else if (entity.direction == Entity::Direction::RIGHT)
     {
-        if (entity.x < int(map->getNCol() - 1) && canMove(entity.x + 1, entity.y, entity.l, force))
+        if (entity.x < int(map->getNCol() - 1) && canMove(entity, entity.x + 1, entity.y, entity.l, force))
             entity.x++;
     }
 
@@ -635,20 +673,28 @@ void MapScene::move(Entity& entity, bool force)
         auto& level            = map->getLevels()[entity.l];
         auto& specialTileLayer = level->getSpecialTileLayer();
         auto& specialTile      = (*specialTileLayer.get())(entity.x, entity.y);
-        if (specialTile && *(specialTile.get()) == GRASS)
+        if (specialTile)
         {
-            auto it = tilesAnimations.find({entity.x, entity.y});
+            if (*(specialTile.get()) == GRASS)
+            {
+                auto it = tilesAnimations.find({entity.x, entity.y});
 
-            if (it == tilesAnimations.end())
-            {
-                tilesAnimations[{entity.x, entity.y}] =
-                    std::make_unique<GrassAnimation>(renderer, shouldShowNightTextures());
-                tilesAnimations[{entity.x, entity.y}]->start();
+                if (it == tilesAnimations.end())
+                {
+                    tilesAnimations[{entity.x, entity.y}] =
+                        std::make_unique<GrassAnimation>(renderer, shouldShowNightTextures());
+                    tilesAnimations[{entity.x, entity.y}]->start();
+                }
+                else
+                {
+                    it->second->restart();
+                }
             }
-            else
-            {
-                it->second->restart();
-            }
+        }
+
+        if (entity.surfing && (!specialTile || *(specialTile.get()) != WATER))
+        {
+            entity.surfing = false;
         }
     }
 }
@@ -703,7 +749,7 @@ Entity* MapScene::entityPreviousAt(size_t x, size_t y, size_t l) const
     return {};
 }
 
-bool MapScene::canMove(size_t x, size_t y, size_t l, bool force) const
+bool MapScene::canMove(Entity const& entity, size_t x, size_t y, size_t l, bool force) const
 {
     if (force)
         return true;
@@ -726,15 +772,51 @@ bool MapScene::canMove(size_t x, size_t y, size_t l, bool force) const
     if (groundTile->isDoor())
         return false;
 
+    if (isWaterTile(x, y, l) && !entity.surfing)
+        return false;
+
+    return true;
+}
+
+bool MapScene::isEntityFacingWaterTile(Entity const& entity) const
+{
+    if (entity.previousDirection == Entity::Direction::UP)
+    {
+        if (isWaterTile(entity.x, entity.y - 1, entity.l))
+            return true;
+    }
+    else if (entity.previousDirection == Entity::Direction::DOWN)
+    {
+        if (isWaterTile(entity.x, entity.y + 1, entity.l))
+            return true;
+    }
+    else if (entity.previousDirection == Entity::Direction::LEFT)
+    {
+        if (isWaterTile(entity.x - 1, entity.y, entity.l))
+            return true;
+    }
+    else if (entity.previousDirection == Entity::Direction::RIGHT)
+    {
+        if (isWaterTile(entity.x + 1, entity.y, entity.l))
+            return true;
+    }
+
+    return false;
+}
+
+bool MapScene::isWaterTile(size_t x, size_t y, size_t l) const
+{
+    auto& level = map->getLevels()[l];
+
     auto& specialTileLayer = level->getSpecialTileLayer();
     auto& specialTile      = (*specialTileLayer.get())(x, y);
     if (specialTile)
     {
-        if (*(specialTile.get()) == WATER && !surfing)
-            return false;
+        if (*(specialTile.get()) == WATER)
+            return true;
     }
 
-    return true;
+    return false;
 }
 
 bool MapScene::manageEvents()

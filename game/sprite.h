@@ -17,12 +17,12 @@ public:
 
     void forceSpriteDirection(Entity::Direction direction);
 
-    virtual void draw(Entity const& entity, Fps const* fps, SDL_Rect* dstRect);
+    virtual void draw(Entity const& entity, Fps const* fps, RenderSizes rs, SDL_Rect dstRect);
 
     size_t getAccumulatedTicks() const;
     void   setAccumulatedTicks(size_t newAccumulatedTicks);
 
-private:
+protected:
     SDL_Renderer* renderer;
     SDL_Surface*  surface          = NULL;
     SDL_Texture*  texture          = NULL;

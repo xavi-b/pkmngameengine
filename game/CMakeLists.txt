@@ -88,6 +88,16 @@ target_sources(${MODULE_NAME}
        ${INC_FILES}
 )
 
+# sprites
+file(GLOB_RECURSE SRC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/sprites/*.cpp")
+file(GLOB_RECURSE INC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/sprites/*.h")
+
+target_sources(${MODULE_NAME}
+   PRIVATE
+       ${SRC_FILES}
+       ${INC_FILES}
+)
+
 # wav files
 find_program(FFMPEG_PROGRAM ffmpeg)
 if(NOT FFMPEG_PROGRAM)

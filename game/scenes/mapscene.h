@@ -48,7 +48,9 @@ public:
     virtual void    move(Entity& entity, bool force = false);
     virtual Entity* entityAt(size_t x, size_t y, size_t l) const;
     virtual Entity* entityPreviousAt(size_t x, size_t y, size_t l) const;
-    virtual bool    canMove(size_t x, size_t y, size_t l, bool force) const;
+    virtual bool    canMove(Entity const& entity, size_t x, size_t y, size_t l, bool force) const;
+    virtual bool    isEntityFacingWaterTile(Entity const& entity) const;
+    virtual bool    isWaterTile(size_t x, size_t y, size_t l) const;
 
     virtual bool                                  manageEvents();
     virtual bool                                  manageEncounters();
@@ -73,6 +75,8 @@ protected:
 
     std::unique_ptr<Map>                                       map;
     std::unique_ptr<Sprite>                                    playerSprite;
+    std::unique_ptr<Sprite>                                    playerSurfSprite;
+    std::unique_ptr<Sprite>                                    surfSprite;
     Entity::Direction                                          playerSpriteInitialDirection = Entity::Direction::NONE;
     std::map<std::unique_ptr<Entity>, std::unique_ptr<Sprite>> entities;
 
@@ -95,7 +99,6 @@ protected:
     std::unique_ptr<Menu> menu;
     bool                  openPkmns = false;
     bool                  openBag   = false;
-    bool                  surfing   = false;
     bool                  flash     = true;
 
     std::string goToScene = "";

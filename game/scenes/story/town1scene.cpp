@@ -13,14 +13,13 @@ void Town1Scene::init()
 {
     MapScene::init();
 
-    auto entity               = std::make_unique<Entity>();
-    entity->x                 = 11;
-    entity->y                 = 10;
-    entity->previousX         = 11;
-    entity->previousY         = 10;
-    entity->direction         = Entity::Direction::RIGHT;
-    entity->previousDirection = Entity::Direction::RIGHT;
-    auto entitySprite         = std::make_unique<Sprite>(renderer);
+    auto entity       = std::make_unique<Entity>();
+    entity->x         = 11;
+    entity->y         = 10;
+    entity->previousX = 11;
+    entity->previousY = 10;
+    entity->direction = Entity::Direction::RIGHT;
+    auto entitySprite = std::make_unique<Sprite>(renderer);
     entitySprite->load("resources/Graphics/Characters/NPC 01.png", shouldShowNightTextures());
     entities.emplace(std::move(entity), std::move(entitySprite));
 }

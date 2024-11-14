@@ -33,6 +33,7 @@ public:
     int       previousY         = 0;
     Speed     speed             = Speed::WALK;
     Speed     previousSpeed     = Speed::WALK;
+    bool      surfing           = false;
 };
 
 #endif // ENTITY_H

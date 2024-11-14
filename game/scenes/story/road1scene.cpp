@@ -16,56 +16,52 @@ void Road1Scene::init()
     fogAnimation->start();
 
     {
-        auto entity               = std::make_unique<Entity>();
-        childNpc                  = entity.get();
-        entity->x                 = 4;
-        entity->y                 = 6;
-        entity->previousX         = 4;
-        entity->previousY         = 6;
-        entity->direction         = Entity::Direction::RIGHT;
-        entity->previousDirection = Entity::Direction::RIGHT;
-        auto entitySprite         = std::make_unique<Sprite>(renderer);
+        auto entity       = std::make_unique<Entity>();
+        childNpc          = entity.get();
+        entity->x         = 4;
+        entity->y         = 6;
+        entity->previousX = 4;
+        entity->previousY = 6;
+        entity->direction = Entity::Direction::RIGHT;
+        auto entitySprite = std::make_unique<Sprite>(renderer);
         entitySprite->load("resources/Graphics/Characters/NPC 02.png", shouldShowNightTextures());
         entities.emplace(std::move(entity), std::move(entitySprite));
     }
 
     {
-        auto entity               = std::make_unique<Entity>();
-        ladyNpc                   = entity.get();
-        entity->x                 = 0;
-        entity->y                 = 11;
-        entity->previousX         = 0;
-        entity->previousY         = 11;
-        entity->direction         = Entity::Direction::RIGHT;
-        entity->previousDirection = Entity::Direction::RIGHT;
-        auto entitySprite         = std::make_unique<Sprite>(renderer);
+        auto entity       = std::make_unique<Entity>();
+        ladyNpc           = entity.get();
+        entity->x         = 0;
+        entity->y         = 11;
+        entity->previousX = 0;
+        entity->previousY = 11;
+        entity->direction = Entity::Direction::RIGHT;
+        auto entitySprite = std::make_unique<Sprite>(renderer);
         entitySprite->load("resources/Graphics/Characters/NPC 04.png", shouldShowNightTextures());
         entities.emplace(std::move(entity), std::move(entitySprite));
     }
 
     {
-        auto entity               = std::make_unique<Entity>();
-        entity->x                 = 3;
-        entity->y                 = 12;
-        entity->previousX         = 3;
-        entity->previousY         = 12;
-        entity->direction         = Entity::Direction::NONE;
-        entity->previousDirection = Entity::Direction::NONE;
-        auto entitySprite         = std::make_unique<Sprite>(renderer);
+        auto entity       = std::make_unique<Entity>();
+        entity->x         = 3;
+        entity->y         = 12;
+        entity->previousX = 3;
+        entity->previousY = 12;
+        entity->direction = Entity::Direction::NONE;
+        auto entitySprite = std::make_unique<Sprite>(renderer);
         entitySprite->load("resources/Graphics/Characters/NPC 06.png", shouldShowNightTextures());
         entitySprite->forceSpriteDirection(Entity::Direction::RIGHT);
         entities.emplace(std::move(entity), std::move(entitySprite));
     }
 
     {
-        auto entity               = std::make_unique<Entity>();
-        entity->x                 = 4;
-        entity->y                 = 10;
-        entity->previousX         = 4;
-        entity->previousY         = 10;
-        entity->direction         = Entity::Direction::NONE;
-        entity->previousDirection = Entity::Direction::NONE;
-        auto entitySprite         = std::make_unique<Sprite>(renderer);
+        auto entity       = std::make_unique<Entity>();
+        entity->x         = 4;
+        entity->y         = 10;
+        entity->previousX = 4;
+        entity->previousY = 10;
+        entity->direction = Entity::Direction::NONE;
+        auto entitySprite = std::make_unique<Sprite>(renderer);
         entitySprite->load("resources/Graphics/Characters/NPC 07.png", shouldShowNightTextures());
         entitySprite->forceSpriteDirection(Entity::Direction::UP);
         entities.emplace(std::move(entity), std::move(entitySprite));
