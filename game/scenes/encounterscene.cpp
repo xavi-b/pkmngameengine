@@ -27,12 +27,12 @@ void EncounterScene::init()
     boost::format pkmnEncounterText = boost::format(lc::translate("A wild %1% appears !"))
                                     % (encounterPkmn ? encounterPkmn->getDisplayName() : "#ERROR");
     pkmnEncounterSpeech->setTexts({pkmnEncounterText.str()});
-    pkmnEncounterSpeech->init();
+    pkmnEncounterSpeech->start();
 
     boost::format firstPkmnText =
         boost::format(lc::translate("%1% go !")) % (playerPkmn ? playerPkmn->getDisplayName() : "#ERROR");
     firstPkmnSpeech->setTexts({firstPkmnText.str()});
-    firstPkmnSpeech->init();
+    firstPkmnSpeech->start();
 }
 
 void EncounterScene::draw(Fps const* fps, RenderSizes rs)
@@ -175,7 +175,7 @@ void EncounterScene::update_WEATHER(Inputs const* inputs)
         {
             weatherSpeech->setTexts({weatherAnimation->getContinuingText()});
             weatherSpeech->reset();
-            weatherSpeech->init();
+            weatherSpeech->start();
             weatherAnimation->reset();
 
             battleActions->reset();
@@ -534,13 +534,13 @@ void EncounterScene::update_P_RUN(Inputs const* inputs)
     {
         runSpeech = std::make_unique<TextSpeech>(renderer);
         runSpeech->setTexts({lc::translate("Got away safely !")});
-        runSpeech->init();
+        runSpeech->start();
     }
     else
     {
         failedRunSpeech = std::make_unique<TextSpeech>(renderer);
         failedRunSpeech->setTexts({lc::translate("Can't get away !")});
-        failedRunSpeech->init();
+        failedRunSpeech->start();
     }
 }
 
@@ -622,7 +622,7 @@ void EncounterScene::update_O_RUN(Inputs const* inputs)
         boost::format runText = boost::format(lc::translate("Wild %1% fled !"))
                               % (encounterPkmn ? encounterPkmn->getDisplayName() : "#ERROR");
         runSpeech->setTexts({runText.str()});
-        runSpeech->init();
+        runSpeech->start();
     }
 
     runSpeech->update(inputs);

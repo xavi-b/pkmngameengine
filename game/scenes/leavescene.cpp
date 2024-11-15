@@ -9,7 +9,7 @@ LeaveScene::LeaveScene(SDL_Renderer* renderer) : Scene(renderer)
     std::vector<std::string> texts;
     texts.push_back(lc::translate("Quit ?"));
     quitSpeech->setTexts(texts);
-    quitSpeech->init();
+    quitSpeech->start();
     quitQuestion = std::make_unique<TextQuestion>(renderer);
     quitQuestion->setTexts({lc::translate("Yes"), lc::translate("No")});
     quitQuestion->init();

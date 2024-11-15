@@ -18,10 +18,12 @@ TextSpeech::~TextSpeech()
     SDL_FreeSurface(bgSurface);
 }
 
-void TextSpeech::init()
+void TextSpeech::start()
 {
     if (currentAnimation < animations.size())
         animations[currentAnimation]->start();
+
+    started = true;
 }
 
 void TextSpeech::update(Inputs const* inputs)
@@ -90,6 +92,11 @@ void TextSpeech::draw(Fps const* fps, RenderSizes rs)
                                                   rs.aw - (paddingX + borderSize) * 2);
 }
 
+bool TextSpeech::isStarted() const
+{
+    return started;
+}
+
 bool TextSpeech::mayClose() const
 {
     return currentAnimation == (animations.size() - 1)
@@ -103,8 +110,16 @@ bool TextSpeech::shouldClose() const
 
 void TextSpeech::reset()
 {
+    for (auto& animation : animations)
+    {
+        animation->stop();
+        animation->reset();
+        animation->resetFinished();
+    }
+
     currentAnimation = 0;
     close            = false;
+    started          = false;
 }
 
 void TextSpeech::setTexts(std::vector<std::string> const& texts)

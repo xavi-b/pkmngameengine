@@ -40,3 +40,8 @@ std::string TextAnimation::currentText(Fps const* fps) const
 {
     return text.substr(0, (accumulatedTicks + fps->tickPercentage()) * NbCharPerTick);
 }
+
+void TextAnimation::resetFinished()
+{
+    finished = false;
+}

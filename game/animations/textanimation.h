@@ -15,6 +15,7 @@ public:
     virtual void forceEnd() override;
 
     std::string currentText(Fps const* fps) const;
+    void        resetFinished();
 
 private:
     static constexpr int NbCharPerTick = 4;

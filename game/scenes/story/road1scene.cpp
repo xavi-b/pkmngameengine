@@ -66,6 +66,9 @@ void Road1Scene::init()
         entitySprite->forceSpriteDirection(Entity::Direction::UP);
         entities.emplace(std::move(entity), std::move(entitySprite));
     }
+
+    text1Speech = std::make_unique<TextSpeech>(renderer);
+    text1Speech->setTexts({lc::translate("First sign of the game !"), lc::translate("Impressive, right ?")});
 }
 
 void Road1Scene::update(Inputs const* inputs)
@@ -73,18 +76,30 @@ void Road1Scene::update(Inputs const* inputs)
     auto& player = Game::instance()->data.player;
 
     fogAnimation->incrementTicks();
-    MapScene::update(inputs);
 
-    if (inputs->A)
+    if (text1Speech->isStarted() && !text1Speech->shouldClose())
     {
-        if (auto event = facedEvent(player))
+        text1Speech->update(inputs);
+        preventInputs = true;
+    }
+
+    if (!preventInputs)
+    {
+        if (inputs->A)
         {
-            if (event->getId() == "Text1")
+            if (auto event = facedEvent(player))
             {
-                // TODO
+                if (event->getId() == "Text1")
+                {
+                    text1Speech->reset();
+                    text1Speech->start();
+                    preventInputs = true;
+                }
             }
         }
     }
+
+    MapScene::update(inputs);
 
     auto& sprite = *(entities.begin()->second.get());
     if (sprite.getAccumulatedTicks() == 0)
@@ -114,6 +129,11 @@ void Road1Scene::update(Inputs const* inputs)
 void Road1Scene::draw(Fps const* fps, RenderSizes rs)
 {
     MapScene::draw(fps, rs);
+
+    if (text1Speech->isStarted() && !text1Speech->shouldClose())
+    {
+        text1Speech->draw(fps, rs);
+    }
 }
 
 void Road1Scene::drawAmbientOverlay(Fps const* fps, RenderSizes rs, size_t offsetX, size_t offsetY)

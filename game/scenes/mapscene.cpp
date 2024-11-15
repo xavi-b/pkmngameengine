@@ -244,6 +244,12 @@ void MapScene::update(Inputs const* inputs)
         return;
     }
 
+    if (preventInputs)
+    {
+        preventInputs = false;
+        return;
+    }
+
     if (inputs->B && !player.surfing)
         player.speed = Entity::Speed::RUN;
     else

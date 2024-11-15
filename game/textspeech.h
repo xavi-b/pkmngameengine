@@ -15,10 +15,11 @@ public:
     TextSpeech(SDL_Renderer* renderer);
     ~TextSpeech();
 
-    void init();
+    void start();
     void update(Inputs const* inputs);
     void draw(Fps const* fps, RenderSizes rs);
 
+    bool isStarted() const;
     bool mayClose() const;
     bool shouldClose() const;
     void reset();
@@ -31,6 +32,7 @@ private:
     SDL_Texture*  bgTexture;
 
     unsigned int currentAnimation = 0;
+    bool         started          = false;
     bool         close            = false;
 
     std::vector<std::unique_ptr<TextAnimation>> animations;

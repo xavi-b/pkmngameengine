@@ -377,5 +377,5 @@ void BattleScene::changeWeather(Map::Weather weather)
         break;
     }
     weatherSpeech->setTexts({weatherAnimation->getStartingText()});
-    weatherSpeech->init();
+    weatherSpeech->start();
 }

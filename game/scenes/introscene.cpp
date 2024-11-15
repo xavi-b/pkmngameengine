@@ -20,7 +20,6 @@ IntroScene::IntroScene(SDL_Renderer* renderer) : Scene(renderer)
     genderQuestion = std::make_unique<TextQuestion>(renderer);
     genderQuestion->setTexts({lc::translate("Boy"), lc::translate("Girl")});
     outroSpeech = std::make_unique<TextSpeech>(renderer);
-    outroSpeech->setTexts({lc::translate("Welcome then !")});
 
     introAnimation = std::make_unique<IntroAnimation>(renderer);
 }
@@ -33,7 +32,7 @@ IntroScene::~IntroScene()
 
 void IntroScene::init()
 {
-    introSpeech->init();
+    introSpeech->start();
 }
 
 void IntroScene::update(Inputs const* inputs)
@@ -60,7 +59,7 @@ void IntroScene::update(Inputs const* inputs)
             texts.push_back(lc::translate("Prof: So your name is ").str() + Game::instance()->data.player.name);
             texts.push_back(lc::translate("Are you a boy or a girl ?"));
             genderSpeech->setTexts(texts);
-            genderSpeech->init();
+            genderSpeech->start();
             genderSpeech->update(inputs);
             state = GenderSpeech;
         }
@@ -89,7 +88,7 @@ void IntroScene::update(Inputs const* inputs)
                                   .str()
                             + ".");
             outroSpeech->setTexts(texts);
-            outroSpeech->init();
+            outroSpeech->start();
             outroSpeech->update(inputs);
             // TODO temp
             PkmnDef::PkmnDefPtr definition = Game::instance()->data.pkmns.front();
