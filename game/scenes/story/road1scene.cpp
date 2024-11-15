@@ -69,6 +69,9 @@ void Road1Scene::init()
 
     text1Speech = std::make_unique<TextSpeech>(renderer);
     text1Speech->setTexts({lc::translate("First sign of the game !"), lc::translate("Impressive, right ?")});
+
+    childSpeech = std::make_unique<TextSpeech>(renderer);
+    childSpeech->setTexts({lc::translate("First NPC chat of the game !"), lc::translate("Are we cool ?")});
 }
 
 void Road1Scene::update(Inputs const* inputs)
@@ -83,6 +86,12 @@ void Road1Scene::update(Inputs const* inputs)
         preventInputs = true;
     }
 
+    if (childSpeech->isStarted() && !childSpeech->shouldClose())
+    {
+        childSpeech->update(inputs);
+        preventInputs = true;
+    }
+
     if (!preventInputs)
     {
         if (inputs->A)
@@ -93,6 +102,15 @@ void Road1Scene::update(Inputs const* inputs)
                 {
                     text1Speech->reset();
                     text1Speech->start();
+                    preventInputs = true;
+                }
+            }
+            else if (auto entity = facedEntity(player))
+            {
+                if (entity == childNpc)
+                {
+                    childSpeech->reset();
+                    childSpeech->start();
                     preventInputs = true;
                 }
             }
@@ -133,6 +151,11 @@ void Road1Scene::draw(Fps const* fps, RenderSizes rs)
     if (text1Speech->isStarted() && !text1Speech->shouldClose())
     {
         text1Speech->draw(fps, rs);
+    }
+
+    if (childSpeech->isStarted() && !childSpeech->shouldClose())
+    {
+        childSpeech->draw(fps, rs);
     }
 }
 

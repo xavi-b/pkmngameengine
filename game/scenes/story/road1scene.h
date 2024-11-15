@@ -29,6 +29,7 @@ public:
 private:
     std::unique_ptr<FogAnimation> fogAnimation;
     std::unique_ptr<TextSpeech>   text1Speech;
+    std::unique_ptr<TextSpeech>   childSpeech;
 
     Entity* childNpc;
     Entity* ladyNpc;
