@@ -32,6 +32,7 @@ private:
     std::unique_ptr<TextSpeech>   childSpeech;
 
     Entity* childNpc;
+    Sprite* childSprite;
     Entity* ladyNpc;
 };
 

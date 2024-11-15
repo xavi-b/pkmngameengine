@@ -25,6 +25,7 @@ void Road1Scene::init()
         entity->direction = Entity::Direction::RIGHT;
         auto entitySprite = std::make_unique<Sprite>(renderer);
         entitySprite->load("resources/Graphics/Characters/NPC 02.png", shouldShowNightTextures());
+        childSprite = entitySprite.get();
         entities.emplace(std::move(entity), std::move(entitySprite));
     }
 
@@ -109,6 +110,8 @@ void Road1Scene::update(Inputs const* inputs)
             {
                 if (entity == childNpc)
                 {
+                    childSprite->forceSpriteDirection(Entity::getOppositeDirection(player.direction));
+                    childNpc->previousDirection = childNpc->direction;
                     childSpeech->reset();
                     childSpeech->start();
                     preventInputs = true;
@@ -119,28 +122,57 @@ void Road1Scene::update(Inputs const* inputs)
 
     MapScene::update(inputs);
 
-    auto& sprite = *(entities.begin()->second.get());
-    if (sprite.getAccumulatedTicks() == 0)
+    if (childSpeech->isStarted() && !childSpeech->shouldClose())
     {
-        if (childNpc->x == 10)
-        {
-            childNpc->direction = Entity::Direction::LEFT;
-        }
-        else if (childNpc->x == 4)
-        {
-            childNpc->direction = Entity::Direction::RIGHT;
-        }
-        move(*childNpc);
+        if (playerSprite->getAccumulatedTicks() == 0)
+            stop(player);
+    }
 
-        if (ladyNpc->x == 6)
+    for (auto const& pair : entities)
+    {
+        auto entity = pair.first.get();
+        auto sprite = pair.second.get();
+
+        if (sprite->getAccumulatedTicks() == 0)
         {
-            ladyNpc->direction = Entity::Direction::LEFT;
+            if (entity == childNpc)
+            {
+                if (childSpeech->isStarted() && !childSpeech->shouldClose()
+                    && childNpc->direction != Entity::Direction::NONE)
+                {
+                    stop(*childNpc);
+                }
+                else if (!childSpeech->isStarted() || childSpeech->shouldClose())
+                {
+                    if (childNpc->direction == Entity::Direction::NONE)
+                        childNpc->direction = childNpc->previousDirection;
+                    childNpc->previousDirection = Entity::Direction::NONE;
+
+                    if (childNpc->x == 10 || (childNpc->x != 4 && childNpc->direction == Entity::Direction::LEFT))
+                    {
+                        childNpc->direction = Entity::Direction::LEFT;
+                    }
+                    else if (childNpc->x == 4 || (childNpc->x != 10 && childNpc->direction == Entity::Direction::RIGHT))
+                    {
+                        childNpc->direction = Entity::Direction::RIGHT;
+                    }
+                    move(*childNpc);
+                }
+            }
+
+            if (entity == ladyNpc)
+            {
+                if (ladyNpc->x == 6)
+                {
+                    ladyNpc->direction = Entity::Direction::LEFT;
+                }
+                else if (ladyNpc->x == 0)
+                {
+                    ladyNpc->direction = Entity::Direction::RIGHT;
+                }
+                move(*ladyNpc);
+            }
         }
-        else if (ladyNpc->x == 0)
-        {
-            ladyNpc->direction = Entity::Direction::RIGHT;
-        }
-        move(*ladyNpc);
     }
 }
 

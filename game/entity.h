@@ -34,6 +34,9 @@ public:
     Speed     speed             = Speed::WALK;
     Speed     previousSpeed     = Speed::WALK;
     bool      surfing           = false;
+    bool      boulder           = false;
+
+    static Direction getOppositeDirection(Direction direction);
 };
 
 #endif // ENTITY_H

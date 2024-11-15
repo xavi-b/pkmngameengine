@@ -90,6 +90,19 @@ void MapScene::init()
                         entitySprite->load("resources/Graphics/Characters/Object rock.png", shouldShowNightTextures());
                         entities.emplace(std::move(entity), std::move(entitySprite));
                     }
+                    else if (*tile.get() == SpecialTileType::BOULDER)
+                    {
+                        auto entity       = std::make_unique<Entity>();
+                        entity->x         = i;
+                        entity->y         = j;
+                        entity->previousX = i;
+                        entity->previousY = j;
+                        entity->boulder   = true;
+                        auto entitySprite = std::make_unique<SquareSprite>(renderer);
+                        entitySprite->load("resources/Graphics/Characters/Object boulder.png",
+                                           shouldShowNightTextures());
+                        entities.emplace(std::move(entity), std::move(entitySprite));
+                    }
                 }
             }
         }
@@ -122,6 +135,17 @@ void MapScene::update(Inputs const* inputs)
         auto& sprite = *(it->second.get());
 
         sprite.setAccumulatedTicks((sprite.getAccumulatedTicks() + 1) % entity.speed);
+
+        if (entity.direction == Entity::Direction::NONE && entity.speed == Entity::Speed::WALK)
+            sprite.setAccumulatedTicks(0);
+
+        if (entity.boulder)
+        {
+            if (sprite.getAccumulatedTicks() == 0)
+            {
+                stop(entity);
+            }
+        }
     }
 
     if (flashAnimation->isRunning())
@@ -289,6 +313,16 @@ void MapScene::update(Inputs const* inputs)
                     entities.erase(it->first);
                     break;
                 }
+            }
+            return;
+        }
+
+        if (auto entity = facedEntity(player))
+        {
+            if (entity->boulder)
+            {
+                entity->direction = player.previousDirection;
+                move(*entity);
             }
             return;
         }
