@@ -38,7 +38,7 @@ std::string SpecialTileTypeToString(SpecialTileType e)
         return "ROCK";
     case BOULDER:
         return "BOULDER";
-    case CASCADE:
+    case WATERFALL:
         return "CASCADE";
     case __SIZE:
         return "__SIZE";

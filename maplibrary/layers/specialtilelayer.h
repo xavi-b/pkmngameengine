@@ -13,7 +13,7 @@ enum SpecialTileType
     TREE,
     ROCK,
     BOULDER,
-    CASCADE,
+    WATERFALL,
     __SIZE
 };
 

@@ -268,6 +268,17 @@ void MapScene::update(Inputs const* inputs)
         return;
     }
 
+    if (isWaterfallTile(player.x, player.y, player.l)
+        || (player.l > 0 && isWaterfallTile(player.x, player.y, player.l - 1)))
+    {
+        player.surfing   = true;
+        player.direction = player.previousDirection;
+        if (player.direction == Entity::Direction::DOWN && isWaterTile(player.x, player.y + 1, player.l - 1))
+            player.l--;
+        move(player, true);
+        return;
+    }
+
     if (preventInputs)
     {
         preventInputs = false;
@@ -314,6 +325,16 @@ void MapScene::update(Inputs const* inputs)
                     break;
                 }
             }
+            return;
+        }
+
+        if (isEntityFacingWaterfallTile(player))
+        {
+            player.surfing   = true;
+            player.direction = player.previousDirection;
+            if (player.direction == Entity::Direction::UP)
+                player.l++;
+            move(player, true);
             return;
         }
 
@@ -802,7 +823,9 @@ void MapScene::move(Entity& entity, bool force)
             }
         }
 
-        if (entity.surfing && (!specialTile || *(specialTile.get()) != WATER))
+        if (entity.surfing && !isWaterTile(entity.x, entity.y, entity.l)
+            && !isWaterfallTile(entity.x, entity.y, entity.l)
+            && !(entity.l > 0 && isWaterfallTile(entity.x, entity.y, entity.l - 1)))
         {
             entity.surfing = false;
         }
@@ -883,6 +906,9 @@ bool MapScene::canMove(Entity const& entity, size_t x, size_t y, size_t l, bool 
         return false;
 
     if (isWaterTile(x, y, l) && !entity.surfing)
+        return false;
+
+    if (isWaterfallTile(x, y, l))
         return false;
 
     return true;
@@ -1004,6 +1030,35 @@ bool MapScene::isEntityFacingRockTile(Entity const& entity) const
     return isEntityFacingTile(entity, [this](size_t x, size_t y, size_t l) {
         return this->isRockTile(x, y, l);
     });
+}
+
+bool MapScene::isWaterfallTile(size_t x, size_t y, size_t l) const
+{
+    auto& level = map->getLevels()[l];
+
+    auto& specialTileLayer = level->getSpecialTileLayer();
+    auto& specialTile      = (*specialTileLayer.get())(x, y);
+    if (specialTile)
+    {
+        if (*(specialTile.get()) == WATERFALL)
+            return true;
+    }
+
+    return false;
+}
+
+bool MapScene::isEntityFacingWaterfallTile(Entity const& entity) const
+{
+    return isEntityFacingTile(entity,
+                              [this](size_t x, size_t y, size_t l) {
+                                  return this->isWaterfallTile(x, y, l);
+                              })
+        || isEntityFacingTile(entity, [this](size_t x, size_t y, size_t l) {
+               if (l == 0)
+                   return false;
+
+               return this->isWaterfallTile(x, y, l - 1);
+           });
 }
 
 Event* MapScene::eventAt(size_t x, size_t y, size_t l) const
