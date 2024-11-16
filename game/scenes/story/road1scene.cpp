@@ -32,26 +32,13 @@ void Road1Scene::init()
     {
         auto entity       = std::make_unique<Entity>();
         ladyNpc           = entity.get();
-        entity->x         = 0;
-        entity->y         = 11;
-        entity->previousX = 0;
-        entity->previousY = 11;
-        entity->direction = Entity::Direction::RIGHT;
+        entity->x         = 3;
+        entity->y         = 7;
+        entity->previousX = 3;
+        entity->previousY = 7;
+        entity->direction = Entity::Direction::DOWN;
         auto entitySprite = std::make_unique<Sprite>(renderer);
         entitySprite->load("resources/Graphics/Characters/NPC 04.png", shouldShowNightTextures());
-        entities.emplace(std::move(entity), std::move(entitySprite));
-    }
-
-    {
-        auto entity       = std::make_unique<Entity>();
-        entity->x         = 3;
-        entity->y         = 12;
-        entity->previousX = 3;
-        entity->previousY = 12;
-        entity->direction = Entity::Direction::NONE;
-        auto entitySprite = std::make_unique<Sprite>(renderer);
-        entitySprite->load("resources/Graphics/Characters/NPC 06.png", shouldShowNightTextures());
-        entitySprite->forceSpriteDirection(Entity::Direction::RIGHT);
         entities.emplace(std::move(entity), std::move(entitySprite));
     }
 
@@ -162,13 +149,13 @@ void Road1Scene::update(Inputs const* inputs)
 
             if (entity == ladyNpc)
             {
-                if (ladyNpc->x == 6)
+                if (ladyNpc->y == 7)
                 {
-                    ladyNpc->direction = Entity::Direction::LEFT;
+                    ladyNpc->direction = Entity::Direction::DOWN;
                 }
-                else if (ladyNpc->x == 0)
+                else if (ladyNpc->y == 15)
                 {
-                    ladyNpc->direction = Entity::Direction::RIGHT;
+                    ladyNpc->direction = Entity::Direction::UP;
                 }
                 move(*ladyNpc);
             }
@@ -288,4 +275,17 @@ std::unique_ptr<Scene> Road1Scene::nextScene()
 bool Road1Scene::shouldShowNightTextures() const
 {
     return Game::instance()->isNight();
+}
+
+bool Road1Scene::isHighGrass(size_t x, size_t /*y*/, size_t l) const
+{
+    if (l == 0)
+    {
+        if (x < 5)
+        {
+            return true;
+        }
+    }
+
+    return false;
 }

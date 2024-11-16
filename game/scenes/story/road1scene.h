@@ -26,6 +26,8 @@ public:
 
     virtual bool shouldShowNightTextures() const override;
 
+    virtual bool isHighGrass(size_t x, size_t y, size_t l) const override;
+
 private:
     std::unique_ptr<FogAnimation> fogAnimation;
     std::unique_ptr<TextSpeech>   text1Speech;
