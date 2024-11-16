@@ -11,6 +11,9 @@ Dive1Scene::Dive1Scene(SDL_Renderer* renderer) : MapScene(renderer, "resources/m
 void Dive1Scene::init()
 {
     MapScene::init();
+
+    bubblesAnimation = std::make_unique<BubblesAnimation>(renderer, shouldShowNightTextures());
+    bubblesAnimation->start();
 }
 
 void Dive1Scene::update(Inputs const* inputs)
@@ -18,6 +21,8 @@ void Dive1Scene::update(Inputs const* inputs)
     auto& player = Game::instance()->data.player;
 
     MapScene::update(inputs);
+
+    bubblesAnimation->incrementTicks();
 
     if (!preventInputs)
     {
@@ -41,6 +46,13 @@ void Dive1Scene::update(Inputs const* inputs)
 void Dive1Scene::draw(Fps const* fps, RenderSizes rs)
 {
     MapScene::draw(fps, rs);
+}
+
+void Dive1Scene::drawAmbientOverlay(Fps const* fps, RenderSizes rs, size_t offsetX, size_t offsetY)
+{
+    (void)offsetX;
+    (void)offsetY;
+    bubblesAnimation->draw(fps, rs);
 }
 
 bool Dive1Scene::manageEvents()
