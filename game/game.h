@@ -49,8 +49,10 @@ private:
     std::list<std::unique_ptr<Scene>> scenes;
     std::unique_ptr<MapSceneFactory>  mapSceneFactory;
 
-    bool debug   = false;
-    bool running = true;
+    bool debug      = false;
+    bool forcenight = false;
+    bool forceday   = false;
+    bool running    = true;
 
     std::unique_ptr<Fps>    fps;
     std::unique_ptr<Inputs> inputs;

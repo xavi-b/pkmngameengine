@@ -22,7 +22,9 @@ Game::Game(int argc, char* argv[])
     sInstance = this;
 
     po::options_description desc("Allowed options");
-    desc.add_options()("help", "help")("locale", po::value<std::string>(), "locale")("debug", "debug");
+    desc.add_options()("help", "help")("locale", po::value<std::string>(), "locale")("debug", "debug")(
+        "force-night",
+        "force-night")("force-day", "force-day");
 
     po::variables_map vm;
     po::store(po::command_line_parser(argc, argv).options(desc).run(), vm);
@@ -36,6 +38,14 @@ Game::Game(int argc, char* argv[])
     else if (vm.count("debug"))
     {
         debug = true;
+    }
+    else if (vm.count("force-night"))
+    {
+        forcenight = true;
+    }
+    else if (vm.count("force-night"))
+    {
+        forceday = true;
     }
     else if (vm.count("locale"))
     {
@@ -268,6 +278,9 @@ bool Game::isDebug()
 
 bool Game::isDay()
 {
+    if (forceday)
+        return true;
+
     std::time_t t   = std::time(0);
     std::tm*    now = std::localtime(&t);
     return now->tm_hour >= 8 && now->tm_hour < 20;
@@ -275,5 +288,8 @@ bool Game::isDay()
 
 bool Game::isNight()
 {
+    if (forcenight)
+        return true;
+
     return !isDay();
 }
