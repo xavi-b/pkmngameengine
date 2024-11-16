@@ -62,6 +62,7 @@ public:
     bool    isEntityFacingWaterfallTile(Entity const& entity) const;
     bool    isGrassTile(size_t x, size_t y, size_t l) const;
     bool    isTallGrassTile(size_t x, size_t y, size_t l) const;
+    bool    isUnderWaterGrassTile(size_t x, size_t y, size_t l) const;
     bool    isLedgeTile(size_t x, size_t y, size_t l) const;
     bool    isLedgePassable(Entity const& entity, size_t x, size_t y, size_t l) const;
 

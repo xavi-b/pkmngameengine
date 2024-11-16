@@ -1,6 +1,7 @@
 #include "mapscene.h"
 
 #include "animations/map/grassanimation.h"
+#include "animations/map/underwatergrassanimation.h"
 #include "animations/weather/rainanimation.h"
 #include "bagscene.h"
 #include "game.h"
@@ -620,12 +621,18 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
                             && dstRect.y >= -dstTilePixelHeight && dstRect.y <= rs.wh + dstTilePixelHeight)
                         {
                             // Draw grass animated tiles
-                            if (isGrassTile(i, j, l))
+                            if (isGrassTile(i, j, l) || isUnderWaterGrassTile(i, j, l))
                             {
                                 auto it = tilesAnimations.find({i, j});
 
                                 if (it != tilesAnimations.end() && it->second && !it->second->isFinished())
                                 {
+                                    if (isUnderWaterGrassTile(i, j, l))
+                                    {
+                                        dstRect.y -= dstTilePixelHeight;
+                                        dstRect.h += dstTilePixelHeight;
+                                    }
+
                                     it->second->setDestinationRect(dstRect);
                                     it->second->draw(fps, rs);
                                 }
@@ -797,6 +804,22 @@ void MapScene::move(Entity& entity, bool force)
             {
                 tilesAnimations[{entity.x, entity.y}] =
                     std::make_unique<GrassAnimation>(renderer, shouldShowNightTextures());
+                tilesAnimations[{entity.x, entity.y}]->start();
+            }
+            else
+            {
+                it->second->restart();
+            }
+        }
+
+        if (isUnderWaterGrassTile(entity.x, entity.y, entity.l))
+        {
+            auto it = tilesAnimations.find({entity.x, entity.y});
+
+            if (it == tilesAnimations.end())
+            {
+                tilesAnimations[{entity.x, entity.y}] =
+                    std::make_unique<UnderWaterGrassAnimation>(renderer, shouldShowNightTextures());
                 tilesAnimations[{entity.x, entity.y}]->start();
             }
             else
@@ -1073,6 +1096,21 @@ bool MapScene::isTallGrassTile(size_t x, size_t y, size_t l) const
     if (specialTile)
     {
         if (*(specialTile.get()) == TALLGRASS)
+            return true;
+    }
+
+    return false;
+}
+
+bool MapScene::isUnderWaterGrassTile(size_t x, size_t y, size_t l) const
+{
+    auto& level = map->getLevels()[l];
+
+    auto& specialTileLayer = level->getSpecialTileLayer();
+    auto& specialTile      = (*specialTileLayer.get())(x, y);
+    if (specialTile)
+    {
+        if (*(specialTile.get()) == UNDERWATERGRASS)
             return true;
     }
 
