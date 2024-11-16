@@ -81,6 +81,9 @@ public:
 
     bool turnOnFlash();
 
+    bool         isGrassTile(size_t x, size_t y, size_t l) const;
+    virtual bool isHighGrass(size_t x, size_t y, size_t l) const;
+
 protected:
     std::map<std::string, std::pair<SDL_Surface*, SDL_Texture*>> sprites;
     std::map<std::string, std::pair<SDL_Surface*, SDL_Texture*>> lightsSprites;
@@ -115,6 +118,24 @@ protected:
     bool                  preventInputs = false;
 
     std::string goToScene = "";
+
+private:
+    size_t getPlayerOffsetX(Fps const* fps, RenderSizes rs) const;
+    size_t getPlayerOffsetY(Fps const* fps, RenderSizes rs) const;
+    void   drawGrass(Fps const* fps, RenderSizes rs, size_t x, size_t y, size_t l);
+    void   drawHighGrass(SDL_Rect dstRect,
+                         size_t   x,
+                         size_t   y,
+                         size_t   l,
+                         int      entityOffsetX,
+                         int      entityOffsetY,
+                         int      width,
+                         int      height);
+    void   tryDrawingHighGrass(Fps const*    fps,
+                               RenderSizes   rs,
+                               Entity const& entity,
+                               Sprite const& sprite,
+                               SDL_Rect      dstRect);
 };
 
 #endif // MAP_H
