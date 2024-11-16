@@ -29,7 +29,7 @@ void SquareSprite::draw(Entity const& entity, Fps const* fps, RenderSizes rs, SD
     int imageCol = 0;
     if (entity.direction != Entity::Direction::NONE)
     {
-        imageCol = std::floor((accumulatedTicks + fps->tickPercentage()) / entity.speed * 4);
+        imageCol = std::floor((accumulatedTicks + fps->tickPercentage()) / int(entity.speed) * 4);
     }
 
     SDL_Rect srcRect;

@@ -9,7 +9,7 @@ project(${PROJECT_NAME} VERSION ${VERSION} LANGUAGES CXX)
 configure_file(version.h.in version.h @ONLY)
 
 # C++
-set(CMAKE_CXX_STANDARD              17)
+set(CMAKE_CXX_STANDARD              20)
 set(CMAKE_CXX_STANDARD_REQUIRED     ON)
 set(CMAKE_CXX_EXTENSIONS            OFF)
 set(CMAKE_CXX_FLAGS                 "-Wall -Wextra -Wpedantic -pthread")

@@ -25,6 +25,8 @@ void Fps::update()
         next = SDL_GetTicks() + TickDelay;
 
         tick = true;
+
+        accumulatedTicks++;
     }
     else
     {

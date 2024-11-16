@@ -10,6 +10,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <numbers>
 #include <random>
 #include <sstream>
 
@@ -536,13 +537,24 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
                             // Draw player
                             if (player.x == int(i) && player.y == int(j) && player.l == l)
                             {
+                                static constexpr int waterSpeed = 4;
+
+                                int waterMovementOffset =
+                                    std::cos(std::numbers::pi
+                                             * (int(fps->accumulatedTicks) % waterSpeed - (waterSpeed - 1) / 2
+                                                + fps->tickPercentage() - 0.5)
+                                             / (waterSpeed / 2))
+                                    * dstTilePixelHeight / 8;
+
                                 if (diving)
                                 {
+                                    dstPlayerRect.y += waterMovementOffset;
                                     divingSprite->draw(player, fps, rs, dstPlayerRect);
                                     playerSurfSprite->draw(player, fps, rs, dstPlayerRect);
                                 }
                                 else if (player.surfing)
                                 {
+                                    dstPlayerRect.y += waterMovementOffset;
                                     surfSprite->draw(player, fps, rs, dstPlayerRect);
                                     playerSurfSprite->draw(player, fps, rs, dstPlayerRect);
                                 }

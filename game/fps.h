@@ -15,11 +15,12 @@ struct Fps
     Fps(SDL_Renderer* renderer);
     ~Fps();
 
-    size_t previous   = 0;
-    size_t next       = 0;
-    size_t accumulate = 0;
-    size_t value      = 0;
-    bool   tick       = false;
+    size_t previous         = 0;
+    size_t next             = 0;
+    size_t accumulate       = 0;
+    size_t value            = 0;
+    size_t accumulatedTicks = 0;
+    bool   tick             = false;
 
     void update();
     void draw(RenderSizes rs);
