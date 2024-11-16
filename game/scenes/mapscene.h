@@ -93,6 +93,7 @@ protected:
     std::unique_ptr<Sprite>                                    playerSprite;
     std::unique_ptr<Sprite>                                    playerSurfSprite;
     std::unique_ptr<Sprite>                                    surfSprite;
+    std::unique_ptr<Sprite>                                    divingSprite;
     Entity::Direction                                          playerSpriteInitialDirection = Entity::Direction::NONE;
     std::map<std::unique_ptr<Entity>, std::unique_ptr<Sprite>> entities;
 
@@ -116,6 +117,7 @@ protected:
     bool                  openPkmns     = false;
     bool                  openBag       = false;
     bool                  flash         = true;
+    bool                  diving        = false;
     bool                  preventInputs = false;
 
     std::string goToScene = "";

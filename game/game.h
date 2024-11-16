@@ -32,6 +32,7 @@ public:
     bool                      isDebug();
     bool                      isDay();
     bool                      isNight();
+    bool                      isRunning();
 
     GameData data;
 

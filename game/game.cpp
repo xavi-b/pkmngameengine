@@ -293,3 +293,8 @@ bool Game::isNight()
 
     return !isDay();
 }
+
+bool Game::isRunning()
+{
+    return running;
+}

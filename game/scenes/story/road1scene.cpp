@@ -2,6 +2,7 @@
 
 #include "game.h"
 #include "scenes/story/cave1scene.h"
+#include "scenes/story/dive1scene.h"
 #include "scenes/story/town1scene.h"
 
 Road1Scene::Road1Scene(SDL_Renderer* renderer) : MapScene(renderer, "resources/maps/road1.pkmap")
@@ -84,6 +85,18 @@ void Road1Scene::update(Inputs const* inputs)
     {
         if (inputs->A)
         {
+            auto event = eventAt(player.x, player.y, player.l);
+            if (event && event->getId() == "Dive1")
+            {
+                if (!fadeOutAnimation->isStarted())
+                {
+                    fadeOutAnimation->reset();
+                    fadeOutAnimation->start();
+                    goToScene = "Dive1";
+                }
+                return;
+            }
+
             if (auto event = facedEvent(player))
             {
                 if (event->getId() == "Text1")
@@ -222,6 +235,20 @@ bool Road1Scene::manageEvents()
             }
         }
 
+        if (event->getId() == "Dive1")
+        {
+            if (player.direction == Entity::Direction::UP)
+            {
+                if (!fadeOutAnimation->isStarted())
+                {
+                    fadeOutAnimation->reset();
+                    fadeOutAnimation->start();
+                    goToScene = "Dive1";
+                    return true;
+                }
+            }
+        }
+
         if (event->getId() == "Up1")
         {
             if (player.direction == Entity::Direction::UP)
@@ -249,6 +276,8 @@ std::string Road1Scene::name()
 
 std::unique_ptr<Scene> Road1Scene::nextScene()
 {
+    auto& player = Game::instance()->data.player;
+
     auto scene = MapScene::nextScene();
     if (scene)
         return scene;
@@ -266,6 +295,15 @@ std::unique_ptr<Scene> Road1Scene::nextScene()
         {
             auto scene = std::make_unique<Cave1Scene>(renderer);
             scene->initPlayerPosition(6, 7, 0, Entity::Direction::UP);
+            return scene;
+        }
+
+        if (goToScene == "Dive1")
+        {
+            int  offsetX = player.x - 18;
+            int  offsetY = player.y - 18;
+            auto scene   = std::make_unique<Dive1Scene>(renderer);
+            scene->initPlayerPosition(1 + offsetX, 1 + offsetY, 0, player.direction);
             return scene;
         }
     }

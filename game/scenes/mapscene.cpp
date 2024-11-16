@@ -41,20 +41,23 @@ void MapScene::init()
     playerSprite     = std::make_unique<Sprite>(renderer);
     playerSurfSprite = std::make_unique<Sprite>(renderer);
     surfSprite       = std::make_unique<SurfSprite>(renderer);
+    divingSprite     = std::make_unique<SurfSprite>(renderer);
     if (Game::instance()->data.player.getGender() == Player::Gender::BOY)
     {
         playerSprite->load("resources/Graphics/Characters/boy_run.png", shouldShowNightTextures());
-        playerSurfSprite->load("resources/Graphics/Characters/boy_surf.png", shouldShowNightTextures());
+        playerSurfSprite->load("resources/Graphics/Characters/boy_surf.png", diving || shouldShowNightTextures());
     }
     else
     {
         playerSprite->load("resources/Graphics/Characters/girl_run.png", shouldShowNightTextures());
-        playerSurfSprite->load("resources/Graphics/Characters/girl_surf.png", shouldShowNightTextures());
+        playerSurfSprite->load("resources/Graphics/Characters/girl_surf.png", diving || shouldShowNightTextures());
     }
     surfSprite->load("resources/Graphics/Characters/base_surf.png", shouldShowNightTextures());
+    divingSprite->load("resources/Graphics/Characters/base_dive.png", diving || shouldShowNightTextures());
     playerSprite->forceSpriteDirection(playerSpriteInitialDirection);
     playerSurfSprite->forceSpriteDirection(playerSpriteInitialDirection);
     surfSprite->forceSpriteDirection(playerSpriteInitialDirection);
+    divingSprite->forceSpriteDirection(playerSpriteInitialDirection);
 
     for (size_t l = 0; l < map->getLevels().size(); ++l)
     {
@@ -125,6 +128,7 @@ void MapScene::update(Inputs const* inputs)
     playerSprite->setAccumulatedTicks((playerSprite->getAccumulatedTicks() + 1) % player.speed);
     playerSurfSprite->setAccumulatedTicks((playerSprite->getAccumulatedTicks() + 1) % player.speed);
     surfSprite->setAccumulatedTicks((playerSprite->getAccumulatedTicks() + 1) % player.speed);
+    divingSprite->setAccumulatedTicks((playerSprite->getAccumulatedTicks() + 1) % player.speed);
 
     if (player.direction == Entity::Direction::NONE && player.speed == Entity::Speed::WALK)
         playerSprite->setAccumulatedTicks(0);
@@ -239,6 +243,7 @@ void MapScene::update(Inputs const* inputs)
             menu->reset();
         }
 
+        preventInputs = true;
         return;
     }
 
@@ -292,7 +297,7 @@ void MapScene::update(Inputs const* inputs)
 
     if (inputs->A)
     {
-        if (isEntityFacingWaterTile(player))
+        if (!player.surfing && isEntityFacingWaterTile(player))
         {
             player.surfing   = true;
             player.direction = player.previousDirection;
@@ -531,7 +536,12 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
                             // Draw player
                             if (player.x == int(i) && player.y == int(j) && player.l == l)
                             {
-                                if (player.surfing)
+                                if (diving)
+                                {
+                                    divingSprite->draw(player, fps, rs, dstPlayerRect);
+                                    playerSurfSprite->draw(player, fps, rs, dstPlayerRect);
+                                }
+                                else if (player.surfing)
                                 {
                                     surfSprite->draw(player, fps, rs, dstPlayerRect);
                                     playerSurfSprite->draw(player, fps, rs, dstPlayerRect);
@@ -651,6 +661,9 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
 
     drawWeather(fps, rs);
 
+    if (!flash)
+        drawFlashDarkness(fps, rs);
+
     if (battleIntro)
         battleIntro->draw(fps, rs);
 
@@ -662,9 +675,6 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
 
     if (fadeOutAnimation->isRunning())
         fadeOutAnimation->draw(fps, rs);
-
-    if (!flash)
-        drawFlashDarkness(fps, rs);
 }
 
 void MapScene::drawAmbientOverlay(Fps const* /*fps*/, RenderSizes /*rs*/, size_t /*offsetX*/, size_t /*offsetY*/)
@@ -794,13 +804,13 @@ void MapScene::move(Entity& entity, bool force)
 
 Entity* MapScene::entityAt(size_t x, size_t y, size_t l) const
 {
-    if (x > map->getNCol())
+    if (x >= map->getNCol())
         return nullptr;
 
-    if (y > map->getNRow())
+    if (y >= map->getNRow())
         return nullptr;
 
-    if (l > map->getLevels().size())
+    if (l >= map->getLevels().size())
         return nullptr;
 
     for (auto it = entities.begin(); it != entities.end(); ++it)
@@ -819,13 +829,13 @@ Entity* MapScene::entityAt(size_t x, size_t y, size_t l) const
 
 Entity* MapScene::entityPreviousAt(size_t x, size_t y, size_t l) const
 {
-    if (x > map->getNCol())
+    if (x >= map->getNCol())
         return nullptr;
 
-    if (y > map->getNRow())
+    if (y >= map->getNRow())
         return nullptr;
 
-    if (l > map->getLevels().size())
+    if (l >= map->getLevels().size())
         return nullptr;
 
     for (auto it = entities.begin(); it != entities.end(); ++it)
@@ -1093,13 +1103,13 @@ bool MapScene::isLedgePassable(Entity const& entity, size_t x, size_t y, size_t 
 
 Event* MapScene::eventAt(size_t x, size_t y, size_t l) const
 {
-    if (x > map->getNCol())
+    if (x >= map->getNCol())
         return nullptr;
 
-    if (y > map->getNRow())
+    if (y >= map->getNRow())
         return nullptr;
 
-    if (l > map->getLevels().size())
+    if (l >= map->getLevels().size())
         return nullptr;
 
     auto& level = map->getLevels()[l];
