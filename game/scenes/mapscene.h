@@ -60,6 +60,10 @@ public:
     bool    isEntityFacingRockTile(Entity const& entity) const;
     bool    isWaterfallTile(size_t x, size_t y, size_t l) const;
     bool    isEntityFacingWaterfallTile(Entity const& entity) const;
+    bool    isGrassTile(size_t x, size_t y, size_t l) const;
+    bool    isTallGrassTile(size_t x, size_t y, size_t l) const;
+    bool    isLedgeTile(size_t x, size_t y, size_t l) const;
+    bool    isLedgePassable(Entity const& entity, size_t x, size_t y, size_t l) const;
 
     Event* eventAt(size_t x, size_t y, size_t l) const;
     Event* facedEvent(Entity const& entity) const;
@@ -80,9 +84,6 @@ public:
     virtual bool shouldShowNightTextures() const = 0;
 
     bool turnOnFlash();
-
-    bool         isGrassTile(size_t x, size_t y, size_t l) const;
-    virtual bool isHighGrass(size_t x, size_t y, size_t l) const;
 
 protected:
     std::map<std::string, std::pair<SDL_Surface*, SDL_Texture*>> sprites;
@@ -123,7 +124,7 @@ private:
     size_t getPlayerOffsetX(Fps const* fps, RenderSizes rs) const;
     size_t getPlayerOffsetY(Fps const* fps, RenderSizes rs) const;
     void   drawGrass(Fps const* fps, RenderSizes rs, size_t x, size_t y, size_t l);
-    void   drawHighGrass(SDL_Rect dstRect,
+    void   drawTallGrass(SDL_Rect dstRect,
                          size_t   x,
                          size_t   y,
                          size_t   l,

@@ -1,7 +1,7 @@
 #ifndef ENTITY_H
 #define ENTITY_H
 
-#include <memory>
+#include <string>
 
 class Entity
 {
@@ -36,7 +36,8 @@ public:
     bool      surfing           = false;
     bool      boulder           = false;
 
-    static Direction getOppositeDirection(Direction direction);
+    static Direction   getOppositeDirection(Direction direction);
+    static std::string getDirectionString(Direction direction);
 };
 
 #endif // ENTITY_H

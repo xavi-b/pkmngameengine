@@ -20,3 +20,20 @@ Entity::Direction Entity::getOppositeDirection(Direction direction)
         return Direction::UP;
     }
 }
+
+std::string Entity::getDirectionString(Direction direction)
+{
+    switch (direction)
+    {
+    case Direction::LEFT:
+        return "LEFT";
+    case Direction::RIGHT:
+        return "RIGHT";
+    case Direction::UP:
+        return "UP";
+    case Direction::DOWN:
+    case Direction::NONE:
+    default:
+        return "DOWN";
+    }
+}

@@ -14,6 +14,13 @@ enum SpecialTileType
     ROCK,
     BOULDER,
     WATERFALL,
+    LEDGE,
+    SAND,
+    TALLGRASS,
+    UNDERWATERGRASS,
+    SOOTGRASS,
+    ICE,
+    BREAKABLEGROUND,
     __SIZE
 };
 

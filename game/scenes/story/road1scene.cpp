@@ -276,16 +276,3 @@ bool Road1Scene::shouldShowNightTextures() const
 {
     return Game::instance()->isNight();
 }
-
-bool Road1Scene::isHighGrass(size_t x, size_t /*y*/, size_t l) const
-{
-    if (l == 0)
-    {
-        if (x < 5)
-        {
-            return true;
-        }
-    }
-
-    return false;
-}

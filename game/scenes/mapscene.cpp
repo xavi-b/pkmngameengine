@@ -542,14 +542,9 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
 
                                     tryDrawingHighGrass(fps, rs, player, *playerSprite, dstPlayerRect);
 
-                                    if (isGrassTile(player.previousX, player.previousY, player.l))
-                                    {
-                                        if (player.speed == Entity::WALK)
-                                        {
-                                            if (!isHighGrass(player.previousX, player.previousY, l))
-                                                drawGrass(fps, rs, player.previousX, player.previousY, l);
-                                        }
-                                    }
+                                    if (isGrassTile(player.previousX, player.previousY, player.l)
+                                        && player.speed == Entity::WALK)
+                                        drawGrass(fps, rs, player.previousX, player.previousY, l);
                                 }
                             }
 
@@ -579,14 +574,9 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
 
                                     tryDrawingHighGrass(fps, rs, entity, sprite, dstEntityRect);
 
-                                    if (isGrassTile(entity.previousX, entity.previousY, entity.l))
-                                    {
-                                        if (entity.speed == Entity::WALK)
-                                        {
-                                            if (!isHighGrass(entity.previousX, entity.previousY, l))
-                                                drawGrass(fps, rs, entity.previousX, entity.previousY, l);
-                                        }
-                                    }
+                                    if (isGrassTile(entity.previousX, entity.previousY, entity.l)
+                                        && entity.speed == Entity::WALK)
+                                        drawGrass(fps, rs, entity.previousX, entity.previousY, l);
                                 }
                             }
                         }
@@ -610,15 +600,12 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
                             // Draw grass animated tiles
                             if (isGrassTile(i, j, l))
                             {
-                                if (!isHighGrass(i, j, l))
-                                {
-                                    auto it = tilesAnimations.find({i, j});
+                                auto it = tilesAnimations.find({i, j});
 
-                                    if (it != tilesAnimations.end() && it->second && !it->second->isFinished())
-                                    {
-                                        it->second->setDestinationRect(dstRect);
-                                        it->second->draw(fps, rs);
-                                    }
+                                if (it != tilesAnimations.end() && it->second && !it->second->isFinished())
+                                {
+                                    it->second->setDestinationRect(dstRect);
+                                    it->second->draw(fps, rs);
                                 }
                             }
                         }
@@ -884,11 +871,11 @@ bool MapScene::canMove(Entity const& entity, size_t x, size_t y, size_t l, bool 
     if (isWaterfallTile(x, y, l))
         return false;
 
-    if (isGrassTile(x, y, l))
-    {
-        if (isHighGrass(x, y, l) && entity.speed != Entity::WALK)
-            return false;
-    }
+    if (isTallGrassTile(x, y, l) && entity.speed != Entity::WALK)
+        return false;
+
+    if (isLedgeTile(x, y, l) && !isLedgePassable(entity, x, y, l))
+        return false;
 
     return true;
 }
@@ -1038,6 +1025,70 @@ bool MapScene::isEntityFacingWaterfallTile(Entity const& entity) const
 
                return this->isWaterfallTile(x, y, l - 1);
            });
+}
+
+bool MapScene::isGrassTile(size_t x, size_t y, size_t l) const
+{
+    auto& level = map->getLevels()[l];
+
+    auto& specialTileLayer = level->getSpecialTileLayer();
+    auto& specialTile      = (*specialTileLayer.get())(x, y);
+    if (specialTile)
+    {
+        if (*(specialTile.get()) == GRASS)
+            return true;
+    }
+
+    return false;
+}
+
+bool MapScene::isTallGrassTile(size_t x, size_t y, size_t l) const
+{
+    auto& level = map->getLevels()[l];
+
+    auto& specialTileLayer = level->getSpecialTileLayer();
+    auto& specialTile      = (*specialTileLayer.get())(x, y);
+    if (specialTile)
+    {
+        if (*(specialTile.get()) == TALLGRASS)
+            return true;
+    }
+
+    return false;
+}
+
+bool MapScene::isLedgeTile(size_t x, size_t y, size_t l) const
+{
+    auto& level = map->getLevels()[l];
+
+    auto& specialTileLayer = level->getSpecialTileLayer();
+    auto& specialTile      = (*specialTileLayer.get())(x, y);
+    if (specialTile)
+    {
+        if (*(specialTile.get()) == LEDGE)
+            return true;
+    }
+
+    return false;
+}
+
+bool MapScene::isLedgePassable(Entity const& entity, size_t x, size_t y, size_t l) const
+{
+    auto& level = map->getLevels()[l];
+
+    auto& specialTileLayer = level->getSpecialTileLayer();
+    auto& specialTile      = (*specialTileLayer.get())(x, y);
+    if (specialTile && *(specialTile.get()) == LEDGE)
+    {
+        auto& eventLayer = level->getEventLayer();
+        auto& event      = (*eventLayer.get())(x, y);
+        if (event && event->getId() == Entity::getDirectionString(entity.direction))
+        {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 Event* MapScene::eventAt(size_t x, size_t y, size_t l) const
@@ -1267,26 +1318,6 @@ bool MapScene::turnOnFlash()
     return false;
 }
 
-bool MapScene::isGrassTile(size_t x, size_t y, size_t l) const
-{
-    auto& level = map->getLevels()[l];
-
-    auto& specialTileLayer = level->getSpecialTileLayer();
-    auto& specialTile      = (*specialTileLayer.get())(x, y);
-    if (specialTile)
-    {
-        if (*(specialTile.get()) == GRASS)
-            return true;
-    }
-
-    return false;
-}
-
-bool MapScene::isHighGrass(size_t /*x*/, size_t /*y*/, size_t /*l*/) const
-{
-    return false;
-}
-
 size_t MapScene::getPlayerOffsetX(Fps const* fps, RenderSizes rs) const
 {
     auto const& player = Game::instance()->data.player;
@@ -1351,7 +1382,7 @@ void MapScene::drawGrass(Fps const* fps, RenderSizes rs, size_t x, size_t y, siz
     }
 }
 
-void MapScene::drawHighGrass(SDL_Rect dstRect,
+void MapScene::drawTallGrass(SDL_Rect dstRect,
                              size_t   x,
                              size_t   y,
                              size_t   l,
@@ -1415,8 +1446,8 @@ void MapScene::tryDrawingHighGrass(Fps const*    fps,
 
     if (entity.x == entity.previousX && entity.y == entity.previousY)
     {
-        if (isGrassTile(entity.x, entity.y, entity.l) && isHighGrass(entity.x, entity.y, entity.l))
-            drawHighGrass(dstRect, entity.x, entity.y, entity.l, 0, 0, TilePixelSize, TilePixelSize);
+        if (isTallGrassTile(entity.x, entity.y, entity.l))
+            drawTallGrass(dstRect, entity.x, entity.y, entity.l, 0, 0, TilePixelSize, TilePixelSize);
 
         return;
     }
@@ -1426,11 +1457,11 @@ void MapScene::tryDrawingHighGrass(Fps const*    fps,
 
     if (entity.y != entity.previousY && entity.direction == Entity::Direction::UP)
     {
-        if (isGrassTile(entity.x, entity.y, entity.l) && isHighGrass(entity.x, entity.y, entity.l))
+        if (isTallGrassTile(entity.x, entity.y, entity.l))
         {
             SDL_Rect dstRect1 = dstRect;
             dstRect1.h        = entityOffset * dstTilePixelHeight;
-            drawHighGrass(dstRect1,
+            drawTallGrass(dstRect1,
                           entity.x,
                           entity.y,
                           entity.l,
@@ -1442,7 +1473,7 @@ void MapScene::tryDrawingHighGrass(Fps const*    fps,
             SDL_Rect dstRect2 = dstRect;
             dstRect2.y += entityOffset * dstTilePixelHeight;
             dstRect2.h = (1.0 - entityOffset) * dstTilePixelHeight;
-            drawHighGrass(dstRect2,
+            drawTallGrass(dstRect2,
                           entity.x,
                           entity.y + 1,
                           entity.l,
@@ -1451,13 +1482,12 @@ void MapScene::tryDrawingHighGrass(Fps const*    fps,
                           TilePixelSize,
                           (1.0 - entityOffset) * TilePixelSize);
         }
-        else if (!isGrassTile(entity.x, entity.y, entity.l) && isGrassTile(entity.x, entity.y + 1, entity.l)
-                 && isHighGrass(entity.x, entity.y + 1, entity.l))
+        else if (!isTallGrassTile(entity.x, entity.y, entity.l) && isTallGrassTile(entity.x, entity.y + 1, entity.l))
         {
             SDL_Rect dstRect1 = dstRect;
             dstRect1.y += entityOffset * dstTilePixelHeight;
             dstRect1.h = (1.0 - entityOffset) * dstTilePixelHeight;
-            drawHighGrass(dstRect1,
+            drawTallGrass(dstRect1,
                           entity.x,
                           entity.y + 1,
                           entity.l,
@@ -1471,18 +1501,18 @@ void MapScene::tryDrawingHighGrass(Fps const*    fps,
 
     if (entity.y != entity.previousY && entity.direction == Entity::Direction::DOWN)
     {
-        if (isGrassTile(entity.x, entity.y, entity.l) && isHighGrass(entity.x, entity.y, entity.l))
+        if (isTallGrassTile(entity.x, entity.y, entity.l))
         {
             SDL_Rect dstRect1 = dstRect;
             dstRect1.y += (1.0 - entityOffset) * dstTilePixelHeight;
             dstRect1.h = entityOffset * dstTilePixelHeight;
-            drawHighGrass(dstRect1, entity.x, entity.y, entity.l, 0, 0, TilePixelSize, entityOffset * TilePixelSize);
+            drawTallGrass(dstRect1, entity.x, entity.y, entity.l, 0, 0, TilePixelSize, entityOffset * TilePixelSize);
 
-            if (isGrassTile(entity.x, entity.y - 1, entity.l) && isHighGrass(entity.x, entity.y - 1, entity.l))
+            if (isTallGrassTile(entity.x, entity.y - 1, entity.l))
             {
                 SDL_Rect dstRect2 = dstRect;
                 dstRect2.h        = (1.0 - entityOffset) * dstTilePixelHeight;
-                drawHighGrass(dstRect2,
+                drawTallGrass(dstRect2,
                               entity.x,
                               entity.y - 1,
                               entity.l,
@@ -1492,17 +1522,16 @@ void MapScene::tryDrawingHighGrass(Fps const*    fps,
                               (1.0 - entityOffset) * TilePixelSize);
             }
         }
-        else if (!isGrassTile(entity.x, entity.y, entity.l) && isGrassTile(entity.x, entity.y - 1, entity.l)
-                 && isHighGrass(entity.x, entity.y - 1, entity.l))
+        else if (!isTallGrassTile(entity.x, entity.y, entity.l) && isTallGrassTile(entity.x, entity.y - 1, entity.l))
         {
             SDL_Rect dstRect1 = dstRect;
             dstRect1.y += (1.0 - entityOffset) * dstTilePixelHeight;
             dstRect1.h = entityOffset * dstTilePixelHeight;
-            drawHighGrass(dstRect1, entity.x, entity.y, entity.l, 0, 0, TilePixelSize, entityOffset * TilePixelSize);
+            drawTallGrass(dstRect1, entity.x, entity.y, entity.l, 0, 0, TilePixelSize, entityOffset * TilePixelSize);
 
             SDL_Rect dstRect2 = dstRect;
             dstRect2.h        = (1.0 - entityOffset) * dstTilePixelHeight;
-            drawHighGrass(dstRect2,
+            drawTallGrass(dstRect2,
                           entity.x,
                           entity.y - 1,
                           entity.l,
@@ -1516,13 +1545,13 @@ void MapScene::tryDrawingHighGrass(Fps const*    fps,
 
     if (entity.x != entity.previousX && entity.direction == Entity::Direction::RIGHT)
     {
-        if (isGrassTile(entity.x, entity.y, entity.l) && isHighGrass(entity.x, entity.y, entity.l))
+        if (isTallGrassTile(entity.x, entity.y, entity.l))
         {
-            if (isGrassTile(entity.x - 1, entity.y, entity.l) && isHighGrass(entity.x - 1, entity.y, entity.l))
+            if (isTallGrassTile(entity.x - 1, entity.y, entity.l))
             {
                 SDL_Rect dstRect1 = dstRect;
                 dstRect1.w        = (1.0 - entityOffset) * dstTilePixelWidth;
-                drawHighGrass(dstRect1,
+                drawTallGrass(dstRect1,
                               entity.x - 1,
                               entity.y,
                               entity.l,
@@ -1535,14 +1564,13 @@ void MapScene::tryDrawingHighGrass(Fps const*    fps,
             SDL_Rect dstRect2 = dstRect;
             dstRect2.x += (1.0 - entityOffset) * dstTilePixelWidth;
             dstRect2.w = entityOffset * dstTilePixelWidth;
-            drawHighGrass(dstRect2, entity.x, entity.y, entity.l, 0, 0, entityOffset * TilePixelSize, TilePixelSize);
+            drawTallGrass(dstRect2, entity.x, entity.y, entity.l, 0, 0, entityOffset * TilePixelSize, TilePixelSize);
         }
-        else if (!isGrassTile(entity.x, entity.y, entity.l) && isGrassTile(entity.x - 1, entity.y, entity.l)
-                 && isHighGrass(entity.x - 1, entity.y, entity.l))
+        else if (!isTallGrassTile(entity.x, entity.y, entity.l) && isTallGrassTile(entity.x - 1, entity.y, entity.l))
         {
             SDL_Rect dstRect1 = dstRect;
             dstRect1.w        = (1.0 - entityOffset) * dstTilePixelWidth;
-            drawHighGrass(dstRect1,
+            drawTallGrass(dstRect1,
                           entity.x - 1,
                           entity.y,
                           entity.l,
@@ -1556,14 +1584,14 @@ void MapScene::tryDrawingHighGrass(Fps const*    fps,
 
     if (entity.x != entity.previousX && entity.direction == Entity::Direction::LEFT)
     {
-        if (isGrassTile(entity.x, entity.y, entity.l) && isHighGrass(entity.x, entity.y, entity.l))
+        if (isTallGrassTile(entity.x, entity.y, entity.l))
         {
-            if (isGrassTile(entity.x + 1, entity.y, entity.l) && isHighGrass(entity.x + 1, entity.y, entity.l))
+            if (isTallGrassTile(entity.x + 1, entity.y, entity.l))
             {
                 SDL_Rect dstRect1 = dstRect;
                 dstRect1.x += entityOffset * dstTilePixelWidth;
                 dstRect1.w = (1.0 - entityOffset) * dstTilePixelWidth;
-                drawHighGrass(dstRect1,
+                drawTallGrass(dstRect1,
                               entity.x + 1,
                               entity.y,
                               entity.l,
@@ -1575,7 +1603,7 @@ void MapScene::tryDrawingHighGrass(Fps const*    fps,
 
             SDL_Rect dstRect2 = dstRect;
             dstRect2.w        = entityOffset * dstTilePixelWidth;
-            drawHighGrass(dstRect2,
+            drawTallGrass(dstRect2,
                           entity.x,
                           entity.y,
                           entity.l,
@@ -1584,13 +1612,12 @@ void MapScene::tryDrawingHighGrass(Fps const*    fps,
                           entityOffset * TilePixelSize,
                           TilePixelSize);
         }
-        else if (!isGrassTile(entity.x, entity.y, entity.l) && isGrassTile(entity.x + 1, entity.y, entity.l)
-                 && isHighGrass(entity.x + 1, entity.y, entity.l))
+        else if (!isTallGrassTile(entity.x, entity.y, entity.l) && isTallGrassTile(entity.x + 1, entity.y, entity.l))
         {
             SDL_Rect dstRect1 = dstRect;
             dstRect1.x += entityOffset * dstTilePixelWidth;
             dstRect1.w = (1.0 - entityOffset) * dstTilePixelWidth;
-            drawHighGrass(dstRect1,
+            drawTallGrass(dstRect1,
                           entity.x + 1,
                           entity.y,
                           entity.l,

@@ -39,7 +39,21 @@ std::string SpecialTileTypeToString(SpecialTileType e)
     case BOULDER:
         return "BOULDER";
     case WATERFALL:
-        return "CASCADE";
+        return "WATERFALL";
+    case LEDGE:
+        return "LEDGE";
+    case SAND:
+        return "SAND";
+    case TALLGRASS:
+        return "TALLGRASS";
+    case UNDERWATERGRASS:
+        return "UNDERWATERGRASS";
+    case SOOTGRASS:
+        return "SOOTGRASS";
+    case ICE:
+        return "ICE";
+    case BREAKABLEGROUND:
+        return "BREAKABLEGROUND";
     case __SIZE:
         return "__SIZE";
     }
