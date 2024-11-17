@@ -183,12 +183,14 @@ void MapScene::update(Inputs const* inputs)
     if (fadeOutAnimation->isRunning())
     {
         fadeOutAnimation->incrementTicks();
+        preventInputs = true;
         return;
     }
 
     if (doorOpeningAnimation && doorOpeningAnimation->isRunning())
     {
         doorOpeningAnimation->incrementTicks();
+        preventInputs = true;
         return;
     }
 
@@ -200,6 +202,7 @@ void MapScene::update(Inputs const* inputs)
     if (battleIntro && !battleIntro->isFinished())
     {
         battleIntro->incrementTicks();
+        preventInputs = true;
         return;
     }
 
@@ -264,6 +267,7 @@ void MapScene::update(Inputs const* inputs)
     if (event)
     {
         stop(player);
+        preventInputs = true;
         return;
     }
 
@@ -272,6 +276,7 @@ void MapScene::update(Inputs const* inputs)
         stop(player);
         battleIntro = manageBattleIntro();
         battleIntro->start();
+        preventInputs = true;
         return;
     }
 
@@ -283,6 +288,7 @@ void MapScene::update(Inputs const* inputs)
         if (player.direction == Entity::Direction::DOWN && isWaterTile(player.x, player.y + 1, player.l - 1))
             player.l--;
         move(player, true);
+        preventInputs = true;
         return;
     }
 
