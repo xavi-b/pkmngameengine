@@ -4,33 +4,9 @@
 
 #include <SDL_image.h>
 
-UnderWaterGrassAnimation::UnderWaterGrassAnimation(SDL_Renderer* renderer, bool night) : MapAnimation(renderer, night)
+UnderWaterGrassAnimation::UnderWaterGrassAnimation(SDL_Renderer* renderer, bool night)
+    : TileAnimation(renderer, "resources/Graphics/Animations/underwater_bubbles.png", night)
 {
-    surface = IMG_Load("resources/Graphics/Animations/underwater_bubbles.png");
-    texture = RenderUtils::texture(renderer, SDL_CreateTextureFromSurface(renderer, surface), night);
-
-    ticksDuration = speed * nSprites;
-}
-
-UnderWaterGrassAnimation::~UnderWaterGrassAnimation()
-{
-    SDL_DestroyTexture(texture);
-    SDL_FreeSurface(surface);
-}
-
-void UnderWaterGrassAnimation::start()
-{
-    MapAnimation::start();
-
-    ticks = 0;
-}
-
-void UnderWaterGrassAnimation::incrementTicks()
-{
-    MapAnimation::incrementTicks();
-
-    if (int(accumulatedTicks) % speed == 0)
-        ticks++;
 }
 
 void UnderWaterGrassAnimation::draw(Fps const* /*fps*/, RenderSizes /*rs*/)

@@ -23,6 +23,7 @@ public:
     };
 
     Entity();
+    virtual ~Entity();
 
     Direction direction         = Direction::NONE;
     Direction previousDirection = Direction::NONE;

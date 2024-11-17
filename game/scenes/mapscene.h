@@ -6,12 +6,12 @@
 #include "animations/map/dooranimation.h"
 #include "animations/map/mapanimation.h"
 #include "animations/weather/flashanimation.h"
+#include "animations/weather/weatheranimation.h"
 #include "entity.h"
 #include "map.h"
 #include "menu.h"
 #include "pkmn.h"
 #include "scene.h"
-#include "scenes/encounterscene.h"
 #include "sprite.h"
 #include "utils.h"
 
@@ -19,7 +19,6 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <vector>
 
 class MapScene : public Scene
 {

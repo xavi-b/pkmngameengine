@@ -4,6 +4,10 @@ Entity::Entity()
 {
 }
 
+Entity::~Entity()
+{
+}
+
 Entity::Direction Entity::getOppositeDirection(Direction direction)
 {
     switch (direction)

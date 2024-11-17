@@ -4,8 +4,11 @@
 #include "animations/map/underwatergrassanimation.h"
 #include "animations/weather/rainanimation.h"
 #include "bagscene.h"
+#include "entities/erasableentity.h"
 #include "game.h"
 #include "pkmnsscene.h"
+#include "scenes/encounterscene.h"
+#include "sprites/erasablesprite.h"
 #include "sprites/squaresprite.h"
 #include "sprites/surfsprite.h"
 
@@ -74,24 +77,24 @@ void MapScene::init()
                 {
                     if (*tile.get() == SpecialTileType::TREE)
                     {
-                        auto entity       = std::make_unique<Entity>();
+                        auto entity       = std::make_unique<ErasableEntity>();
                         entity->x         = i;
                         entity->y         = j;
                         entity->previousX = i;
                         entity->previousY = j;
-                        auto entitySprite = std::make_unique<SquareSprite>(renderer);
+                        auto entitySprite = std::make_unique<ErasableSprite>(renderer);
                         entitySprite->load("resources/Graphics/Characters/Object tree 1.png",
                                            shouldShowNightTextures());
                         entities.emplace(std::move(entity), std::move(entitySprite));
                     }
                     else if (*tile.get() == SpecialTileType::ROCK)
                     {
-                        auto entity       = std::make_unique<Entity>();
+                        auto entity       = std::make_unique<ErasableEntity>();
                         entity->x         = i;
                         entity->y         = j;
                         entity->previousX = i;
                         entity->previousY = j;
-                        auto entitySprite = std::make_unique<SquareSprite>(renderer);
+                        auto entitySprite = std::make_unique<ErasableSprite>(renderer);
                         entitySprite->load("resources/Graphics/Characters/Object rock.png", shouldShowNightTextures());
                         entities.emplace(std::move(entity), std::move(entitySprite));
                     }
@@ -137,20 +140,29 @@ void MapScene::update(Inputs const* inputs)
 
     for (auto it = entities.begin(); it != entities.end(); ++it)
     {
-        auto& entity = *(it->first.get());
-        auto& sprite = *(it->second.get());
+        auto entity = it->first.get();
+        auto sprite = it->second.get();
 
-        sprite.setAccumulatedTicks((sprite.getAccumulatedTicks() + 1) % entity.speed);
+        sprite->setAccumulatedTicks((sprite->getAccumulatedTicks() + 1) % entity->speed);
 
-        if (entity.direction == Entity::Direction::NONE && entity.speed == Entity::Speed::WALK)
-            sprite.setAccumulatedTicks(0);
+        if (entity->direction == Entity::Direction::NONE && entity->speed == Entity::Speed::WALK)
+            sprite->setAccumulatedTicks(0);
 
-        if (entity.boulder)
+        if (entity->boulder)
         {
-            if (sprite.getAccumulatedTicks() == 0)
+            if (sprite->getAccumulatedTicks() == 0)
             {
-                stop(entity);
+                stop(*entity);
             }
+        }
+
+        auto erasableEntity = dynamic_cast<ErasableEntity*>(entity);
+        if (erasableEntity)
+        {
+            sprite->setAccumulatedTicks(erasableEntity->eraseTicks());
+            erasableEntity->incrementEraseTicks();
+            if (erasableEntity->erased())
+                it = entities.erase(it);
         }
     }
 
@@ -315,29 +327,17 @@ void MapScene::update(Inputs const* inputs)
 
         if (isEntityFacingTreeTile(player))
         {
-            auto entity = facedEntity(player);
-            for (auto it = entities.begin(); it != entities.end(); ++it)
-            {
-                if (it->first.get() == entity)
-                {
-                    entities.erase(it->first);
-                    break;
-                }
-            }
+            auto erasableEntity = dynamic_cast<ErasableEntity*>(facedEntity(player));
+            if (erasableEntity)
+                erasableEntity->startErase();
             return;
         }
 
         if (isEntityFacingRockTile(player))
         {
-            auto entity = facedEntity(player);
-            for (auto it = entities.begin(); it != entities.end(); ++it)
-            {
-                if (it->first.get() == entity)
-                {
-                    entities.erase(it->first);
-                    break;
-                }
-            }
+            auto erasableEntity = dynamic_cast<ErasableEntity*>(facedEntity(player));
+            if (erasableEntity)
+                erasableEntity->startErase();
             return;
         }
 

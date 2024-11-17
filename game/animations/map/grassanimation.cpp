@@ -4,33 +4,12 @@
 
 #include <SDL_image.h>
 
-GrassAnimation::GrassAnimation(SDL_Renderer* renderer, bool night) : MapAnimation(renderer, night)
+GrassAnimation::GrassAnimation(SDL_Renderer* renderer, bool night)
+    : TileAnimation(renderer, "resources/Graphics/Animations/Overworld dust and grass.png", night)
 {
-    surface = IMG_Load("resources/Graphics/Animations/Overworld dust and grass.png");
-    texture = RenderUtils::texture(renderer, SDL_CreateTextureFromSurface(renderer, surface), night);
-
-    ticksDuration = speed * nSprites;
-}
-
-GrassAnimation::~GrassAnimation()
-{
-    SDL_DestroyTexture(texture);
-    SDL_FreeSurface(surface);
-}
-
-void GrassAnimation::start()
-{
-    MapAnimation::start();
-
-    ticks = 0;
-}
-
-void GrassAnimation::incrementTicks()
-{
-    MapAnimation::incrementTicks();
-
-    if (int(accumulatedTicks) % speed == 0)
-        ticks++;
+    speed            = 2;
+    spriteStartIndex = 3;
+    nSprites         = 3;
 }
 
 void GrassAnimation::draw(Fps const* /*fps*/, RenderSizes /*rs*/)

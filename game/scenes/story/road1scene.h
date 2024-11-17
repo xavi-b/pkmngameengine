@@ -3,6 +3,7 @@
 
 #include "animations/weather/foganimation.h"
 #include "scenes/mapscene.h"
+#include "textspeech.h"
 
 #include <memory>
 #include <string>
