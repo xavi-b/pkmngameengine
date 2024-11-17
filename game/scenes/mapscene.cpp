@@ -1,6 +1,7 @@
 #include "mapscene.h"
 
 #include "animations/map/grassanimation.h"
+#include "animations/map/groundanimation.h"
 #include "animations/map/underwatergrassanimation.h"
 #include "animations/weather/rainanimation.h"
 #include "bagscene.h"
@@ -236,6 +237,41 @@ void MapScene::update(Inputs const* inputs)
         else
         {
             stairsEntranceAnimation.release();
+        }
+    }
+
+    if (ledgeAnimation && ledgeAnimation->isStarted())
+    {
+        if (!ledgeAnimation->isFinished())
+        {
+            if (playerSprite->getAccumulatedTicks() == 0)
+                incrementLedgeJump(player);
+
+            ledgeAnimation->incrementTicks();
+            preventInputs = true;
+            return;
+        }
+        else
+        {
+            if (playerSprite->getAccumulatedTicks() == 0)
+                finishLedgeJump(player);
+
+            auto it = tilesAnimations.find({player.x, player.y});
+
+            if (it == tilesAnimations.end())
+            {
+                if (isNormalTile(player.x, player.y, player.l))
+                    tilesAnimations[{player.x, player.y}] =
+                        std::make_unique<GroundAnimation>(renderer, shouldShowNightTextures());
+                else if (isGrassTile(player.x, player.y, player.l))
+                    tilesAnimations[{player.x, player.y}] =
+                        std::make_unique<GrassAnimation>(renderer, shouldShowNightTextures());
+                tilesAnimations[{player.x, player.y}]->start();
+            }
+            else
+            {
+                it->second->restart();
+            }
         }
     }
 
@@ -608,22 +644,19 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
                             continue;
                         }
 
-                        // Draw grass animated tiles
-                        if (isGrassTile(i, j, l) || isUnderWaterGrassTile(i, j, l))
+                        // Draw animated tiles
+                        auto it = tilesAnimations.find({i, j});
+
+                        if (it != tilesAnimations.end() && it->second && !it->second->isFinished())
                         {
-                            auto it = tilesAnimations.find({i, j});
-
-                            if (it != tilesAnimations.end() && it->second && !it->second->isFinished())
+                            if (isUnderWaterGrassTile(i, j, l))
                             {
-                                if (isUnderWaterGrassTile(i, j, l))
-                                {
-                                    dstRect.y -= dstTilePixelHeight;
-                                    dstRect.h += dstTilePixelHeight;
-                                }
-
-                                it->second->setDestinationRect(dstRect);
-                                it->second->draw(fps, rs);
+                                dstRect.y -= dstTilePixelHeight;
+                                dstRect.h += dstTilePixelHeight;
                             }
+
+                            it->second->setDestinationRect(dstRect);
+                            it->second->draw(fps, rs);
                         }
                     }
                 }
@@ -722,6 +755,12 @@ void MapScene::drawPlayer(Fps const* fps, RenderSizes rs, SDL_Rect dstPlayerRect
         stairsEntranceAnimation->setEntitySprite(&player, playerSprite.get());
         stairsEntranceAnimation->setDestinationRect(dstPlayerRect);
         stairsEntranceAnimation->draw(fps, rs);
+    }
+    else if (ledgeAnimation && ledgeAnimation->isRunning())
+    {
+        ledgeAnimation->setEntitySprite(&player, playerSprite.get());
+        ledgeAnimation->setDestinationRect(dstPlayerRect);
+        ledgeAnimation->draw(fps, rs);
     }
     else
     {
@@ -834,6 +873,29 @@ void MapScene::initStairsEntrance(StairsAnimation::Direction direction)
     stairsEntranceAnimation->start();
 }
 
+void MapScene::startLedgeJump(Entity& entity)
+{
+    ledgeAnimation = std::make_unique<LedgeAnimation>(renderer, entity.direction, shouldShowNightTextures());
+    ledgeAnimation->setStartingPosition(entity.x, entity.y);
+    ledgeAnimation->start();
+    incrementLedgeJump(entity);
+}
+
+void MapScene::incrementLedgeJump(Entity& entity)
+{
+    entity.direction = ledgeAnimation->getDirection();
+    if (ledgeAnimation->getFinishPosition() != std::pair{entity.x, entity.y})
+        move(entity, true);
+    else
+        stop(entity);
+}
+
+void MapScene::finishLedgeJump(Entity& entity)
+{
+    ledgeAnimation.release();
+    stop(entity);
+}
+
 void MapScene::stop(Entity& entity)
 {
     entity.direction = Entity::Direction::NONE;
@@ -852,22 +914,62 @@ void MapScene::move(Entity& entity, bool force)
     if (entity.direction == Entity::Direction::UP)
     {
         if (entity.y > 0 && canMove(entity, entity.x, entity.y - 1, entity.l, force))
-            entity.y--;
+        {
+            if (!force && isLedgeTile(entity.x, entity.y - 1, entity.l)
+                && isLedgePassable(entity, entity.x, entity.y - 1, entity.l))
+            {
+                startLedgeJump(entity);
+            }
+            else
+            {
+                entity.y--;
+            }
+        }
     }
     else if (entity.direction == Entity::Direction::DOWN)
     {
         if (entity.y < int(map->getNRow() - 1) && canMove(entity, entity.x, entity.y + 1, entity.l, force))
-            entity.y++;
+        {
+            if (!force && isLedgeTile(entity.x, entity.y + 1, entity.l)
+                && isLedgePassable(entity, entity.x, entity.y + 1, entity.l))
+            {
+                startLedgeJump(entity);
+            }
+            else
+            {
+                entity.y++;
+            }
+        }
     }
     else if (entity.direction == Entity::Direction::LEFT)
     {
         if (entity.x > 0 && canMove(entity, entity.x - 1, entity.y, entity.l, force))
-            entity.x--;
+        {
+            if (!force && isLedgeTile(entity.x - 1, entity.y, entity.l)
+                && isLedgePassable(entity, entity.x - 1, entity.y, entity.l))
+            {
+                startLedgeJump(entity);
+            }
+            else
+            {
+                entity.x--;
+            }
+        }
     }
     else if (entity.direction == Entity::Direction::RIGHT)
     {
         if (entity.x < int(map->getNCol() - 1) && canMove(entity, entity.x + 1, entity.y, entity.l, force))
-            entity.x++;
+        {
+            if (!force && isLedgeTile(entity.x + 1, entity.y, entity.l)
+                && isLedgePassable(entity, entity.x + 1, entity.y, entity.l))
+            {
+                startLedgeJump(entity);
+            }
+            else
+            {
+                entity.x++;
+            }
+        }
     }
 
     if (entity.x != entity.previousX || entity.y != entity.previousY)
@@ -995,8 +1097,13 @@ bool MapScene::canMove(Entity const& entity, size_t x, size_t y, size_t l, bool 
     if (isTallGrassTile(x, y, l) && entity.speed != Entity::WALK)
         return false;
 
-    if (isLedgeTile(x, y, l) && !isLedgePassable(entity, x, y, l))
-        return false;
+    if (isLedgeTile(x, y, l))
+    {
+        if (!isPlayerEntity(entity))
+            return false;
+        if (!isLedgePassable(entity, x, y, l))
+            return false;
+    }
 
     return true;
 }
@@ -1049,6 +1156,18 @@ bool MapScene::isEntityFacingTile(Entity const& entity, std::function<bool(size_
         if (func(entity.x + 1, entity.y, entity.l))
             return true;
     }
+
+    return false;
+}
+
+bool MapScene::isNormalTile(size_t x, size_t y, size_t l) const
+{
+    auto& level = map->getLevels()[l];
+
+    auto& specialTileLayer = level->getSpecialTileLayer();
+    auto& specialTile      = (*specialTileLayer.get())(x, y);
+    if (!specialTile)
+        return true;
 
     return false;
 }
@@ -1295,6 +1414,18 @@ Event* MapScene::facedPreviousEvent(Entity const& entity) const
     }
 
     return nullptr;
+}
+
+bool MapScene::isPlayerEntity(Entity const* entity) const
+{
+    auto const& player = Game::instance()->data.player;
+    return entity == &player;
+}
+
+bool MapScene::isPlayerEntity(Entity const& entity) const
+{
+    auto const& player = Game::instance()->data.player;
+    return &entity == &player;
 }
 
 bool MapScene::manageEvents()

@@ -54,8 +54,3 @@ void StairsAnimation::setEntitySprite(Entity* entity, Sprite* sprite)
     this->entity = entity;
     this->sprite = sprite;
 }
-
-void StairsAnimation::setInverted(bool newInverted)
-{
-    inverted = newInverted;
-}

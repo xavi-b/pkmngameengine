@@ -22,13 +22,10 @@ public:
     virtual void draw(Fps const* fps, RenderSizes rs) override;
 
     void setEntitySprite(Entity* entity, Sprite* sprite);
-    void setInverted(bool newInverted);
 
 private:
     Entity* entity = nullptr;
     Sprite* sprite = nullptr;
-
-    bool inverted = false;
 
     Direction direction = ToUpstairs;
 };
