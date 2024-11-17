@@ -4,6 +4,7 @@
 #include "animations/battleintroanimation.h"
 #include "animations/fadeanimation.h"
 #include "animations/map/dooranimation.h"
+#include "animations/map/ledgeanimation.h"
 #include "animations/map/mapanimation.h"
 #include "animations/map/stairsanimation.h"
 #include "animations/weather/flashanimation.h"
@@ -54,6 +55,9 @@ public:
     virtual void    initMovingPlayerPosition(size_t x, size_t y, size_t l, Entity::Direction direction);
     void            initClosingDoor(size_t x, size_t y);
     void            initStairsEntrance(StairsAnimation::Direction direction);
+    void            startLedgeJump(Entity& entity);
+    void            incrementLedgeJump(Entity& entity);
+    void            finishLedgeJump(Entity& entity);
     void            stop(Entity& entity);
     virtual void    move(Entity& entity, bool force = false);
     virtual Entity* entityAt(size_t x, size_t y, size_t l) const;
@@ -79,6 +83,9 @@ public:
     Event* eventAt(size_t x, size_t y, size_t l) const;
     Event* facedEvent(Entity const& entity) const;
     Event* facedPreviousEvent(Entity const& entity) const;
+
+    bool isPlayerEntity(Entity const* entity) const;
+    bool isPlayerEntity(Entity const& entity) const;
 
     virtual bool                                  manageEvents();
     virtual bool                                  manageEncounters();
@@ -126,6 +133,7 @@ protected:
     std::unique_ptr<StairsAnimation>                             stairsExitAnimation;
     std::pair<int, int>                                          stairsExitPosition;
     std::unique_ptr<StairsAnimation>                             stairsEntranceAnimation;
+    std::unique_ptr<LedgeAnimation>                              ledgeAnimation;
 
     bool                  openMenu = false;
     std::unique_ptr<Menu> menu;
