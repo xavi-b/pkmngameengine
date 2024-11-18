@@ -15,6 +15,27 @@ void Cave1Scene::init()
 
 void Cave1Scene::update(Inputs const* inputs)
 {
+    auto& player = Game::instance()->data.player;
+
+    if (!preventInputs)
+    {
+        if (auto event = facedPreviousEvent(player))
+        {
+            if (event->getId() == "Road1")
+            {
+                if (player.direction == Entity::Direction::DOWN)
+                {
+                    if (!fadeOutAnimation->isStarted())
+                    {
+                        fadeOutAnimation->reset();
+                        fadeOutAnimation->start();
+                        goToScene = "Road1";
+                    }
+                }
+            }
+        }
+    }
+
     MapScene::update(inputs);
 }
 
@@ -30,20 +51,6 @@ bool Cave1Scene::manageEvents()
     auto& event  = (*layer.get())(player.x, player.y);
     if (event)
     {
-        if (event->getId() == "Road1")
-        {
-            if (player.direction == Entity::Direction::DOWN)
-            {
-                if (!fadeOutAnimation->isStarted())
-                {
-                    fadeOutAnimation->reset();
-                    fadeOutAnimation->start();
-                    goToScene = "Road1";
-                    return true;
-                }
-            }
-        }
-
         if (event->getId() == "TurnOnFlash")
         {
             if (turnOnFlash())

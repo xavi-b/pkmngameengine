@@ -31,19 +31,8 @@ void Town1Scene::update(Inputs const* inputs)
     auto& player = Game::instance()->data.player;
     if (doorOpeningAnimation)
     {
-        if (player.x != doorOpeningPosition.first || player.y != doorOpeningPosition.second)
-        {
-            if (goToScene == "House1")
-            {
-                player.direction = Entity::Direction::UP;
-                move(player, true);
-            }
-        }
-        else
-        {
-            if (playerSprite->getAccumulatedTicks() == 0)
-                stop(player);
-        }
+        if (playerSprite->getAccumulatedTicks() == 0)
+            stop(player);
 
         if (doorOpeningAnimation->isFinished())
         {
@@ -69,6 +58,28 @@ void Town1Scene::update(Inputs const* inputs)
         }
         move(entity);
     }
+
+    if (!preventInputs)
+    {
+        if (auto event = facedPreviousEvent(player))
+        {
+            if (event->getId() == "House1")
+            {
+                if (player.direction == Entity::Direction::UP)
+                {
+                    if (!doorOpeningAnimation)
+                    {
+                        doorOpeningAnimation = std::make_unique<DoorAnimation>(renderer, shouldShowNightTextures());
+                        doorOpeningAnimation->start();
+                        doorOpeningPosition = {player.x, player.y - 1};
+                        goToScene           = "House1";
+                        player.direction    = Entity::Direction::UP;
+                        move(player, true);
+                    }
+                }
+            }
+        }
+    }
 }
 
 void Town1Scene::draw(Fps const* fps, RenderSizes rs)
@@ -93,22 +104,6 @@ bool Town1Scene::manageEvents()
                 goToScene = "Road1";
                 return true;
             }
-        }
-    }
-
-    if (event && event->getId() == "House1")
-    {
-        if (player.direction == Entity::Direction::UP)
-        {
-            if (!doorOpeningAnimation)
-            {
-                doorOpeningAnimation = std::make_unique<DoorAnimation>(renderer, shouldShowNightTextures());
-                doorOpeningAnimation->start();
-                doorOpeningPosition = {player.x, player.y - 1};
-                goToScene           = "House1";
-            }
-
-            return true;
         }
     }
 

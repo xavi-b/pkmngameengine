@@ -69,6 +69,19 @@ void House1Scene::update(Inputs const* inputs)
                     move(player, true);
                 }
             }
+
+            if (event->getId() == "Town1")
+            {
+                if (player.direction == Entity::Direction::DOWN)
+                {
+                    if (!fadeOutAnimation->isStarted())
+                    {
+                        fadeOutAnimation->reset();
+                        fadeOutAnimation->start();
+                        goToScene = "Town1";
+                    }
+                }
+            }
         }
     }
 }
@@ -80,24 +93,6 @@ void House1Scene::draw(Fps const* fps, RenderSizes rs)
 
 bool House1Scene::manageEvents()
 {
-    auto& player = Game::instance()->data.player;
-    auto& layer  = map->getLevels()[player.l]->getEventLayer();
-    auto& event  = (*layer.get())(player.x, player.y);
-
-    if (event && event->getId() == "Town1")
-    {
-        if (player.direction == Entity::Direction::DOWN)
-        {
-            if (!fadeOutAnimation->isStarted())
-            {
-                fadeOutAnimation->reset();
-                fadeOutAnimation->start();
-                goToScene = "Town1";
-                return true;
-            }
-        }
-    }
-
     return MapScene::manageEvents();
 }
 

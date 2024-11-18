@@ -174,6 +174,25 @@ void Road1Scene::update(Inputs const* inputs)
             }
         }
     }
+
+    if (!preventInputs)
+    {
+        if (auto event = facedPreviousEvent(player))
+        {
+            if (event->getId() == "Cave1")
+            {
+                if (player.direction == Entity::Direction::UP)
+                {
+                    if (!fadeOutAnimation->isStarted())
+                    {
+                        fadeOutAnimation->reset();
+                        fadeOutAnimation->start();
+                        goToScene = "Cave1";
+                    }
+                }
+            }
+        }
+    }
 }
 
 void Road1Scene::draw(Fps const* fps, RenderSizes rs)
@@ -216,20 +235,6 @@ bool Road1Scene::manageEvents()
                     fadeOutAnimation->reset();
                     fadeOutAnimation->start();
                     goToScene = "Town1";
-                    return true;
-                }
-            }
-        }
-
-        if (event->getId() == "Cave1")
-        {
-            if (player.direction == Entity::Direction::UP)
-            {
-                if (!fadeOutAnimation->isStarted())
-                {
-                    fadeOutAnimation->reset();
-                    fadeOutAnimation->start();
-                    goToScene = "Cave1";
                     return true;
                 }
             }
