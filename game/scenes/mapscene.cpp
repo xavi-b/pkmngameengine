@@ -179,7 +179,7 @@ void MapScene::update(Inputs const* inputs)
         weatherAnimation->incrementTicks();
     }
 
-    if (fadeInAnimation->isStarted())
+    if (fadeInAnimation->isRunning())
     {
         fadeInAnimation->incrementTicks();
     }
@@ -209,6 +209,34 @@ void MapScene::update(Inputs const* inputs)
     if (doorClosingAnimation && doorClosingAnimation->isRunning())
     {
         doorClosingAnimation->incrementTicks();
+    }
+
+    if (stairsExitAnimation && stairsExitAnimation->isRunning())
+    {
+        stairsExitAnimation->incrementTicks();
+        preventInputs = true;
+
+        if (!fadeOutAnimation->isStarted())
+        {
+            fadeOutAnimation->reset();
+            fadeOutAnimation->start();
+        }
+
+        return;
+    }
+
+    if (stairsEntranceAnimation && stairsEntranceAnimation->isStarted())
+    {
+        if (!stairsEntranceAnimation->isFinished())
+        {
+            stairsEntranceAnimation->incrementTicks();
+            preventInputs = true;
+            return;
+        }
+        else
+        {
+            stairsEntranceAnimation.release();
+        }
     }
 
     if (battleIntro && !battleIntro->isFinished())
@@ -436,6 +464,20 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
             {
                 for (size_t i = 0; i < map->getNCol(); ++i)
                 {
+
+                    SDL_Rect dstRect;
+                    dstRect.x = i * dstTilePixelWidth + playerOffsetX;
+                    dstRect.y = j * dstTilePixelHeight + playerOffsetY;
+                    dstRect.w = dstTilePixelWidth;
+                    dstRect.h = dstTilePixelHeight;
+
+                    // Draw only visible tiles
+                    if (!(dstRect.x >= -dstTilePixelWidth && dstRect.x <= (rs.ww + dstTilePixelWidth)
+                          && dstRect.y >= -dstTilePixelHeight && dstRect.y <= rs.wh + dstTilePixelHeight))
+                    {
+                        continue;
+                    }
+
                     std::string path;
                     SDL_Rect    srcRect;
 
@@ -499,114 +541,51 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
                         srcRect.h = TilePixelSize;
                     }
 
-                    SDL_Rect dstRect;
-                    dstRect.x = i * dstTilePixelWidth + playerOffsetX;
-                    dstRect.y = j * dstTilePixelHeight + playerOffsetY;
-                    dstRect.w = dstTilePixelWidth;
-                    dstRect.h = dstTilePixelHeight;
-
-                    // Draw only visible tiles
-                    if (dstRect.x >= -dstTilePixelWidth && dstRect.x <= (rs.ww + dstTilePixelWidth)
-                        && dstRect.y >= -dstTilePixelHeight && dstRect.y <= rs.wh + dstTilePixelHeight)
+                    if (tile)
                     {
-                        if (tile)
+                        auto const& sprite = (layer->getType() == TileLayer::Type::GROUND_LIGHTS
+                                              || layer->getType() == TileLayer::Type::SOLID_LIGHTS
+                                              || layer->getType() == TileLayer::Type::OVERLAY_LIGHTS)
+                                               ? lightsSprites[path]
+                                               : sprites[path];
+                        drawTile(fps, rs, tile, i, j, sprite, srcRect, dstRect);
+                    }
+
+                    if (layer->getType() == TileLayer::Type::SOLID_OVERLAY)
+                    {
+                        // Draw player
+                        if (player.x == int(i) && player.y == int(j) && player.l == l)
                         {
-                            auto& sprite = (layer->getType() == TileLayer::Type::GROUND_LIGHTS
-                                            || layer->getType() == TileLayer::Type::SOLID_LIGHTS
-                                            || layer->getType() == TileLayer::Type::OVERLAY_LIGHTS)
-                                             ? lightsSprites[path]
-                                             : sprites[path];
-
-                            SDL_RenderCopy(renderer, sprite.second, &srcRect, &dstRect);
-
-                            if (tile->isDoor())
-                            {
-                                if (doorClosingAnimation && doorClosingPosition == std::pair<int, int>{i, j})
-                                {
-                                    doorClosingAnimation->setSprite(sprite);
-                                    doorClosingAnimation->setSourceRect(srcRect);
-                                    doorClosingAnimation->setDestinationRect(dstRect);
-                                    doorClosingAnimation->draw(fps, rs);
-                                }
-
-                                if (doorOpeningAnimation && doorOpeningPosition == std::pair<int, int>{i, j})
-                                {
-                                    doorOpeningAnimation->setSprite(sprite);
-                                    doorOpeningAnimation->setSourceRect(srcRect);
-                                    doorOpeningAnimation->setDestinationRect(dstRect);
-                                    doorOpeningAnimation->draw(fps, rs);
-                                }
-                            }
+                            drawPlayer(fps, rs, dstPlayerRect);
                         }
 
-                        if (layer->getType() == TileLayer::Type::SOLID_OVERLAY)
+                        // Draw entities
+                        for (auto it = entities.begin(); it != entities.end(); ++it)
                         {
-                            // Draw player
-                            if (player.x == int(i) && player.y == int(j) && player.l == l)
+                            auto const& entity = *(it->first.get());
+                            auto&       sprite = *(it->second.get());
+                            if (entity.l == l && entity.previousX == int(i) && entity.previousY == int(j))
                             {
-                                static constexpr int waterSpeed = 4;
+                                int entityOffsetX = (entity.x - entity.previousX)
+                                                  * (sprite.getAccumulatedTicks() + fps->tickPercentage())
+                                                  / ((entity.speed + entity.previousSpeed) / 2.0) * dstTilePixelWidth;
+                                int entityOffsetY = (entity.y - entity.previousY)
+                                                  * (sprite.getAccumulatedTicks() + fps->tickPercentage())
+                                                  / ((entity.speed + entity.previousSpeed) / 2.0) * dstTilePixelHeight;
 
-                                int waterMovementOffset =
-                                    std::cos(std::numbers::pi
-                                             * (int(fps->accumulatedTicks) % waterSpeed - (waterSpeed - 1) / 2
-                                                + fps->tickPercentage() - 0.5)
-                                             / (waterSpeed / 2))
-                                    * dstTilePixelHeight / 8;
+                                SDL_Rect dstEntityRect;
+                                dstEntityRect.x = i * dstTilePixelWidth + playerOffsetX + entityOffsetX;
+                                dstEntityRect.y = j * dstTilePixelHeight + playerOffsetY + entityOffsetY
+                                                - (EntityPixelHeight - TilePixelSize) * rs.wh / rs.ah;
+                                dstEntityRect.w = dstTilePixelWidth + 1;
+                                dstEntityRect.h = EntityPixelHeight * rs.wh / rs.ah + 1;
+                                sprite.draw(entity, fps, rs, dstEntityRect);
 
-                                if (diving)
-                                {
-                                    dstPlayerRect.y += waterMovementOffset;
-                                    divingSprite->draw(player, fps, rs, dstPlayerRect);
-                                    playerSurfSprite->draw(player, fps, rs, dstPlayerRect);
-                                }
-                                else if (player.surfing)
-                                {
-                                    dstPlayerRect.y += waterMovementOffset;
-                                    surfSprite->draw(player, fps, rs, dstPlayerRect);
-                                    playerSurfSprite->draw(player, fps, rs, dstPlayerRect);
-                                }
-                                else
-                                {
-                                    playerSprite->draw(player, fps, rs, dstPlayerRect);
+                                tryDrawingHighGrass(fps, rs, entity, sprite, dstEntityRect);
 
-                                    tryDrawingHighGrass(fps, rs, player, *playerSprite, dstPlayerRect);
-
-                                    if (isGrassTile(player.previousX, player.previousY, player.l)
-                                        && player.speed == Entity::WALK)
-                                        drawGrass(fps, rs, player.previousX, player.previousY, l);
-                                }
-                            }
-
-                            // Draw entities
-                            for (auto it = entities.begin(); it != entities.end(); ++it)
-                            {
-                                auto const& entity = *(it->first.get());
-                                auto&       sprite = *(it->second.get());
-                                if (entity.l == l && entity.previousX == int(i) && entity.previousY == int(j))
-                                {
-                                    int entityOffsetX = (entity.x - entity.previousX)
-                                                      * (sprite.getAccumulatedTicks() + fps->tickPercentage())
-                                                      / ((entity.speed + entity.previousSpeed) / 2.0)
-                                                      * dstTilePixelWidth;
-                                    int entityOffsetY = (entity.y - entity.previousY)
-                                                      * (sprite.getAccumulatedTicks() + fps->tickPercentage())
-                                                      / ((entity.speed + entity.previousSpeed) / 2.0)
-                                                      * dstTilePixelHeight;
-
-                                    SDL_Rect dstEntityRect;
-                                    dstEntityRect.x = i * dstTilePixelWidth + playerOffsetX + entityOffsetX;
-                                    dstEntityRect.y = j * dstTilePixelHeight + playerOffsetY + entityOffsetY
-                                                    - (EntityPixelHeight - TilePixelSize) * rs.wh / rs.ah;
-                                    dstEntityRect.w = dstTilePixelWidth + 1;
-                                    dstEntityRect.h = EntityPixelHeight * rs.wh / rs.ah + 1;
-                                    sprite.draw(entity, fps, rs, dstEntityRect);
-
-                                    tryDrawingHighGrass(fps, rs, entity, sprite, dstEntityRect);
-
-                                    if (isGrassTile(entity.previousX, entity.previousY, entity.l)
-                                        && entity.speed == Entity::WALK)
-                                        drawGrass(fps, rs, entity.previousX, entity.previousY, l);
-                                }
+                                if (isGrassTile(entity.previousX, entity.previousY, entity.l)
+                                    && entity.speed == Entity::WALK)
+                                    drawGrass(fps, rs, entity.previousX, entity.previousY, l);
                             }
                         }
                     }
@@ -623,25 +602,27 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
                         dstRect.h = dstTilePixelHeight;
 
                         // Draw only visible tiles
-                        if (dstRect.x >= -dstTilePixelWidth && dstRect.x <= (rs.ww + dstTilePixelWidth)
-                            && dstRect.y >= -dstTilePixelHeight && dstRect.y <= rs.wh + dstTilePixelHeight)
+                        if (!(dstRect.x >= -dstTilePixelWidth && dstRect.x <= (rs.ww + dstTilePixelWidth)
+                              && dstRect.y >= -dstTilePixelHeight && dstRect.y <= rs.wh + dstTilePixelHeight))
                         {
-                            // Draw grass animated tiles
-                            if (isGrassTile(i, j, l) || isUnderWaterGrassTile(i, j, l))
+                            continue;
+                        }
+
+                        // Draw grass animated tiles
+                        if (isGrassTile(i, j, l) || isUnderWaterGrassTile(i, j, l))
+                        {
+                            auto it = tilesAnimations.find({i, j});
+
+                            if (it != tilesAnimations.end() && it->second && !it->second->isFinished())
                             {
-                                auto it = tilesAnimations.find({i, j});
-
-                                if (it != tilesAnimations.end() && it->second && !it->second->isFinished())
+                                if (isUnderWaterGrassTile(i, j, l))
                                 {
-                                    if (isUnderWaterGrassTile(i, j, l))
-                                    {
-                                        dstRect.y -= dstTilePixelHeight;
-                                        dstRect.h += dstTilePixelHeight;
-                                    }
-
-                                    it->second->setDestinationRect(dstRect);
-                                    it->second->draw(fps, rs);
+                                    dstRect.y -= dstTilePixelHeight;
+                                    dstRect.h += dstTilePixelHeight;
                                 }
+
+                                it->second->setDestinationRect(dstRect);
+                                it->second->draw(fps, rs);
                             }
                         }
                     }
@@ -669,11 +650,13 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
                         dstRect.h = dstTilePixelHeight;
 
                         // Draw only visible tiles
-                        if (dstRect.x >= -dstTilePixelWidth && dstRect.x <= (rs.ww + dstTilePixelWidth)
-                            && dstRect.y >= -dstTilePixelHeight && dstRect.y <= rs.wh + dstTilePixelHeight)
+                        if (!(dstRect.x >= -dstTilePixelWidth && dstRect.x <= (rs.ww + dstTilePixelWidth)
+                              && dstRect.y >= -dstTilePixelHeight && dstRect.y <= rs.wh + dstTilePixelHeight))
                         {
-                            SDL_RenderDrawRect(renderer, &dstRect);
+                            continue;
                         }
+
+                        SDL_RenderDrawRect(renderer, &dstRect);
                     }
                 }
             }
@@ -700,6 +683,87 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
 
     if (fadeOutAnimation->isRunning())
         fadeOutAnimation->draw(fps, rs);
+}
+
+void MapScene::drawPlayer(Fps const* fps, RenderSizes rs, SDL_Rect dstPlayerRect)
+{
+    static constexpr int waterSpeed = 4;
+
+    auto& player = Game::instance()->data.player;
+
+    int dstTilePixelHeight = TilePixelSize * rs.wh / rs.ah;
+
+    int waterMovementOffset =
+        std::cos(std::numbers::pi
+                 * (int(fps->accumulatedTicks) % waterSpeed - (waterSpeed - 1) / 2 + fps->tickPercentage() - 0.5)
+                 / (waterSpeed / 2))
+        * dstTilePixelHeight / 8;
+
+    if (diving)
+    {
+        dstPlayerRect.y += waterMovementOffset;
+        divingSprite->draw(player, fps, rs, dstPlayerRect);
+        playerSurfSprite->draw(player, fps, rs, dstPlayerRect);
+    }
+    else if (player.surfing)
+    {
+        dstPlayerRect.y += waterMovementOffset;
+        surfSprite->draw(player, fps, rs, dstPlayerRect);
+        playerSurfSprite->draw(player, fps, rs, dstPlayerRect);
+    }
+    else if (stairsExitAnimation && stairsExitAnimation->isStarted())
+    {
+        stairsExitAnimation->setEntitySprite(&player, playerSprite.get());
+        stairsExitAnimation->setDestinationRect(dstPlayerRect);
+        stairsExitAnimation->draw(fps, rs);
+    }
+    else if (stairsEntranceAnimation && stairsEntranceAnimation->isRunning())
+    {
+        stairsEntranceAnimation->setEntitySprite(&player, playerSprite.get());
+        stairsEntranceAnimation->setDestinationRect(dstPlayerRect);
+        stairsEntranceAnimation->draw(fps, rs);
+    }
+    else
+    {
+        playerSprite->draw(player, fps, rs, dstPlayerRect);
+
+        tryDrawingHighGrass(fps, rs, player, *playerSprite, dstPlayerRect);
+
+        if (isGrassTile(player.previousX, player.previousY, player.l) && player.speed == Entity::WALK)
+            drawGrass(fps, rs, player.previousX, player.previousY, player.l);
+    }
+}
+
+void MapScene::drawTile(Fps const*                                   fps,
+                        RenderSizes                                  rs,
+                        Tile::TilePtr const&                         tile,
+                        size_t                                       i,
+                        size_t                                       j,
+                        std::pair<SDL_Surface*, SDL_Texture*> const& sprite,
+                        SDL_Rect                                     srcRect,
+                        SDL_Rect                                     dstRect)
+{
+
+    SDL_RenderCopy(renderer, sprite.second, &srcRect, &dstRect);
+
+    if (tile->isDoor())
+    {
+        if (doorClosingAnimation && doorClosingPosition == std::pair<int, int>{i, j})
+        {
+            doorClosingAnimation->setSprite(sprite);
+            doorClosingAnimation->setSourceRect(srcRect);
+            doorClosingAnimation->setDestinationRect(dstRect);
+            doorClosingAnimation->draw(fps, rs);
+        }
+
+        if (doorOpeningAnimation && doorOpeningPosition == std::pair<int, int>{i, j})
+        {
+            doorOpeningAnimation->setSprite(sprite);
+            doorOpeningAnimation->setSourceRect(srcRect);
+            doorOpeningAnimation->setDestinationRect(dstRect);
+            doorOpeningAnimation->draw(fps, rs);
+        }
+    }
 }
 
 void MapScene::drawAmbientOverlay(Fps const* /*fps*/, RenderSizes /*rs*/, size_t /*offsetX*/, size_t /*offsetY*/)
@@ -762,6 +826,12 @@ void MapScene::initClosingDoor(size_t x, size_t y)
     doorClosingPosition  = {x, y};
     doorClosingAnimation = std::make_unique<DoorAnimation>(renderer, shouldShowNightTextures());
     doorClosingAnimation->setInverted(true);
+}
+
+void MapScene::initStairsEntrance(StairsAnimation::Direction direction)
+{
+    stairsEntranceAnimation = std::make_unique<StairsAnimation>(renderer, direction, shouldShowNightTextures());
+    stairsEntranceAnimation->start();
 }
 
 void MapScene::stop(Entity& entity)
@@ -1195,6 +1265,32 @@ Event* MapScene::facedEvent(Entity const& entity) const
     else if (entity.previousDirection == Entity::Direction::RIGHT)
     {
         if (auto fe = eventAt(entity.x + 1, entity.y, entity.l))
+            return fe;
+    }
+
+    return nullptr;
+}
+
+Event* MapScene::facedPreviousEvent(Entity const& entity) const
+{
+    if (entity.previousDirection == Entity::Direction::UP)
+    {
+        if (auto fe = eventAt(entity.previousX, entity.previousY - 1, entity.l))
+            return fe;
+    }
+    else if (entity.previousDirection == Entity::Direction::DOWN)
+    {
+        if (auto fe = eventAt(entity.previousX, entity.previousY + 1, entity.l))
+            return fe;
+    }
+    else if (entity.previousDirection == Entity::Direction::LEFT)
+    {
+        if (auto fe = eventAt(entity.previousX - 1, entity.previousY, entity.l))
+            return fe;
+    }
+    else if (entity.previousDirection == Entity::Direction::RIGHT)
+    {
+        if (auto fe = eventAt(entity.previousX + 1, entity.previousY, entity.l))
             return fe;
     }
 

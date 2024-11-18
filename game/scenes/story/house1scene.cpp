@@ -1,5 +1,6 @@
 #include "house1scene.h"
 
+#include "animations/map/stairsanimation.h"
 #include "game.h"
 #include "scenes/story/town1scene.h"
 
@@ -15,6 +16,61 @@ void House1Scene::init()
 void House1Scene::update(Inputs const* inputs)
 {
     MapScene::update(inputs);
+
+    auto& player = Game::instance()->data.player;
+
+    if (stairsExitAnimation)
+    {
+        if (player.x == stairsExitPosition.first && player.y == stairsExitPosition.second)
+        {
+            if (playerSprite->getAccumulatedTicks() == 0)
+                stop(player);
+        }
+    }
+
+    if (stairsEntranceAnimation && !stairsEntranceAnimation->isFinished())
+    {
+        if (playerSprite->getAccumulatedTicks() == 0)
+            stop(player);
+    }
+
+    if (!preventInputs)
+    {
+        if (auto event = facedPreviousEvent(player))
+        {
+            if (event->getId() == "UpStairsEntrance")
+            {
+                if (!stairsExitAnimation)
+                {
+                    stairsExitAnimation = std::make_unique<StairsAnimation>(renderer,
+                                                                            StairsAnimation::ToUpstairs,
+                                                                            shouldShowNightTextures());
+                    stairsExitAnimation->start();
+                    stairsExitPosition = {player.x + 1, player.y};
+                    preventInputs      = true;
+                    goToScene          = "UpStairsEntrance";
+                    player.direction   = Entity::Direction::RIGHT;
+                    move(player, true);
+                }
+            }
+
+            if (event->getId() == "DownStairsEntrance")
+            {
+                if (!stairsExitAnimation)
+                {
+                    stairsExitAnimation = std::make_unique<StairsAnimation>(renderer,
+                                                                            StairsAnimation::ToDownstairs,
+                                                                            shouldShowNightTextures());
+                    stairsExitAnimation->start();
+                    stairsExitPosition = {player.x + 1, player.y};
+                    preventInputs      = true;
+                    goToScene          = "DownStairsEntrance";
+                    player.direction   = Entity::Direction::RIGHT;
+                    move(player, true);
+                }
+            }
+        }
+    }
 }
 
 void House1Scene::draw(Fps const* fps, RenderSizes rs)
@@ -63,6 +119,22 @@ std::unique_ptr<Scene> House1Scene::nextScene()
             auto scene = std::make_unique<Town1Scene>(renderer);
             scene->initMovingPlayerPosition(8, 12, 0, Entity::Direction::DOWN);
             scene->initClosingDoor(8, 11);
+            return scene;
+        }
+
+        if (goToScene == "UpStairsEntrance")
+        {
+            auto scene = std::make_unique<House1Scene>(renderer);
+            scene->initMovingPlayerPosition(22, 4, 0, Entity::Direction::RIGHT);
+            scene->initStairsEntrance(StairsAnimation::FromUpstairs);
+            return scene;
+        }
+
+        if (goToScene == "DownStairsEntrance")
+        {
+            auto scene = std::make_unique<House1Scene>(renderer);
+            scene->initMovingPlayerPosition(15, 4, 0, Entity::Direction::RIGHT);
+            scene->initStairsEntrance(StairsAnimation::FromDownstairs);
             return scene;
         }
     }

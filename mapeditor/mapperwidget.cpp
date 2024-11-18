@@ -475,7 +475,7 @@ void MapperWidget::paintEvent(QPaintEvent* event)
                     if (isGridVisible())
                         painter.drawRect(QRect(origin, QSize(selSize - 1, selSize - 1)));
                     if (mustShowCoordinates)
-                        painter.drawText(origin, QString("%1;%2").arg(i).arg(j));
+                        painter.drawText(origin + QPoint{selSize / 4, selSize / 2}, QString("%1;%2").arg(i).arg(j));
                 }
             }
         }

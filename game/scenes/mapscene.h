@@ -5,6 +5,7 @@
 #include "animations/fadeanimation.h"
 #include "animations/map/dooranimation.h"
 #include "animations/map/mapanimation.h"
+#include "animations/map/stairsanimation.h"
 #include "animations/weather/flashanimation.h"
 #include "animations/weather/weatheranimation.h"
 #include "entity.h"
@@ -32,6 +33,15 @@ public:
     virtual void init() override;
     virtual void update(Inputs const* inputs) override;
     virtual void draw(Fps const* fps, RenderSizes rs) override;
+    void         drawPlayer(Fps const* fps, RenderSizes rs, SDL_Rect dstPlayerRect);
+    void         drawTile(Fps const*                                   fps,
+                          RenderSizes                                  rs,
+                          Tile::TilePtr const&                         tile,
+                          size_t                                       i,
+                          size_t                                       j,
+                          std::pair<SDL_Surface*, SDL_Texture*> const& sprite,
+                          SDL_Rect                                     srcRect,
+                          SDL_Rect                                     dstRect);
 
     virtual void drawAmbientOverlay(Fps const* fps, RenderSizes rs, size_t offsetX, size_t offsetY);
     virtual void drawWeather(Fps const* fps, RenderSizes rs);
@@ -43,6 +53,7 @@ public:
                                        Entity::Direction direction = Entity::Direction::NONE);
     virtual void    initMovingPlayerPosition(size_t x, size_t y, size_t l, Entity::Direction direction);
     void            initClosingDoor(size_t x, size_t y);
+    void            initStairsEntrance(StairsAnimation::Direction direction);
     void            stop(Entity& entity);
     virtual void    move(Entity& entity, bool force = false);
     virtual Entity* entityAt(size_t x, size_t y, size_t l) const;
@@ -67,6 +78,7 @@ public:
 
     Event* eventAt(size_t x, size_t y, size_t l) const;
     Event* facedEvent(Entity const& entity) const;
+    Event* facedPreviousEvent(Entity const& entity) const;
 
     virtual bool                                  manageEvents();
     virtual bool                                  manageEncounters();
@@ -111,6 +123,9 @@ protected:
     std::pair<int, int>                                          doorClosingPosition;
     std::unique_ptr<DoorAnimation>                               doorClosingAnimation;
     std::unique_ptr<FlashAnimation>                              flashAnimation;
+    std::unique_ptr<StairsAnimation>                             stairsExitAnimation;
+    std::pair<int, int>                                          stairsExitPosition;
+    std::unique_ptr<StairsAnimation>                             stairsEntranceAnimation;
 
     bool                  openMenu = false;
     std::unique_ptr<Menu> menu;
