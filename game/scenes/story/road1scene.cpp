@@ -128,6 +128,12 @@ void Road1Scene::update(Inputs const* inputs)
             stop(player);
     }
 
+    if (text1Speech->isStarted() && !text1Speech->shouldClose())
+    {
+        if (playerSprite->getAccumulatedTicks() == 0)
+            stop(player);
+    }
+
     for (auto const& pair : entities)
     {
         auto entity = pair.first.get();
