@@ -367,6 +367,12 @@ void MapScene::update(Inputs const* inputs)
         preventInputs = true;
         return;
     }
+    else if (!isWaterfallTile(player.x, player.y, player.l)
+             && (isWaterfallTile(player.previousX, player.previousY, player.l)
+                 || (player.l > 0 && isWaterfallTile(player.previousX, player.previousY, player.l - 1))))
+    {
+        stop(player);
+    }
 
     if (preventInputs)
     {
