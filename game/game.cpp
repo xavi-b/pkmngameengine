@@ -35,19 +35,19 @@ Game::Game(int argc, char* argv[])
         std::cout << desc << std::endl;
         exit(0);
     }
-    else if (vm.count("debug"))
+    if (vm.count("debug"))
     {
         debug = true;
     }
-    else if (vm.count("force-night"))
+    if (vm.count("force-night"))
     {
         forcenight = true;
     }
-    else if (vm.count("force-night"))
+    if (vm.count("force-day"))
     {
         forceday = true;
     }
-    else if (vm.count("locale"))
+    if (vm.count("locale"))
     {
         vm["locale"].as<std::string>();
         std::locale::global(gen("locale"));
