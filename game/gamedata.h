@@ -21,8 +21,9 @@ public:
     std::vector<PkmnDef::PkmnDefPtr> pkmns;
     std::vector<MoveDef::MoveDefPtr> moves;
 
-    Player   player;
-    GameTime time;
+    Player      player;
+    GameTime    time;
+    std::string location;
 };
 
 #endif // GAMEDATA_H

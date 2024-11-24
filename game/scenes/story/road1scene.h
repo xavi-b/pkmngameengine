@@ -27,6 +27,8 @@ public:
 
     virtual bool shouldShowNightTextures() const override;
 
+    virtual std::string currentLocation() const override;
+
 private:
     std::unique_ptr<FogAnimation> fogAnimation;
     std::unique_ptr<TextSpeech>   text1Speech;

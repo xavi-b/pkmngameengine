@@ -88,3 +88,8 @@ bool Cave1Scene::shouldShowNightTextures() const
 {
     return false;
 }
+
+std::string Cave1Scene::currentLocation() const
+{
+    return lc::translate("Cave 1");
+}

@@ -210,6 +210,7 @@ void Game::save()
         js::object json;
         json["totalRealTime"] = totalRealTime;
         json["gameMinutes"]   = data.time.getMinutes();
+        json["location"]      = data.location;
         json["mapName"]       = currentMapScene->name();
         auto [x, y, l]        = currentMapScene->currentPlayerPosition();
         json["playerX"]       = x;
@@ -260,6 +261,8 @@ bool Game::loadData()
                 totalRealTime = js::value_to<size_t>(obj.at("totalRealTime"));
             if (obj.contains("gameMinutes"))
                 data.time.setMinutes(js::value_to<short>(obj.at("gameMinutes")));
+            if (obj.contains("location"))
+                data.location = js::value_to<std::string>(obj.at("location"));
             return true;
         }
         catch (...)

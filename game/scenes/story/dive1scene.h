@@ -26,6 +26,8 @@ public:
 
     virtual bool shouldShowNightTextures() const override;
 
+    virtual std::string currentLocation() const override;
+
 private:
     std::unique_ptr<BubblesAnimation> bubblesAnimation;
 };

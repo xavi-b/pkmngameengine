@@ -325,3 +325,13 @@ bool Road1Scene::shouldShowNightTextures() const
 {
     return Game::instance()->isNight();
 }
+
+std::string Road1Scene::currentLocation() const
+{
+    auto& player = Game::instance()->data.player;
+
+    if (size_t(player.x) > map->getNCol() / 2)
+        return lc::translate("Road 1 right");
+    else
+        return lc::translate("Road 1 left");
+}

@@ -15,7 +15,7 @@ public:
     virtual void start();
     virtual void stop();
     virtual void reset();
-    void         restart();
+    virtual void restart();
     virtual void incrementTicks();
     virtual bool isStarted() const;
     virtual bool isFinished() const;

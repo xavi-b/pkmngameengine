@@ -91,3 +91,8 @@ bool Dive1Scene::shouldShowNightTextures() const
 {
     return false;
 }
+
+std::string Dive1Scene::currentLocation() const
+{
+    return lc::translate("Dive 1");
+}

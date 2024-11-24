@@ -73,6 +73,7 @@ void LedgeAnimation::draw(Fps const* fps, RenderSizes rs)
         }
     }
 
+    sprite->updateSpriteRow(*entity);
     sprite->draw(*entity, fps, rs, dstRect);
 }
 

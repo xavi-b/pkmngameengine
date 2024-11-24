@@ -173,9 +173,7 @@ void MapScene::update(Inputs const* inputs)
     }
 
     if (flashAnimation->isRunning())
-    {
         flashAnimation->incrementTicks();
-    }
 
     if (weatherAnimation)
     {
@@ -186,9 +184,7 @@ void MapScene::update(Inputs const* inputs)
     }
 
     if (fadeInAnimation->isRunning())
-    {
         fadeInAnimation->incrementTicks();
-    }
 
     if (fadeInAnimation->isFinished())
     {
@@ -197,6 +193,9 @@ void MapScene::update(Inputs const* inputs)
             doorClosingAnimation->start();
         }
     }
+
+    if (locationAnimation->isRunning())
+        locationAnimation->incrementTicks();
 
     if (fadeOutAnimation->isRunning())
     {
@@ -213,9 +212,7 @@ void MapScene::update(Inputs const* inputs)
     }
 
     if (doorClosingAnimation && doorClosingAnimation->isRunning())
-    {
         doorClosingAnimation->incrementTicks();
-    }
 
     if (stairsExitAnimation && stairsExitAnimation->isRunning())
     {
@@ -474,6 +471,9 @@ void MapScene::update(Inputs const* inputs)
     {
         stop(player);
     }
+
+    if (Game::instance()->data.location != currentLocation())
+        startCurrentLocationOverlay();
 }
 
 void MapScene::draw(Fps const* fps, RenderSizes rs)
@@ -626,6 +626,8 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
                                                 - (EntityPixelHeight - TilePixelSize) * rs.wh / rs.ah;
                                 dstEntityRect.w = dstTilePixelWidth + 1;
                                 dstEntityRect.h = EntityPixelHeight * rs.wh / rs.ah + 1;
+
+                                sprite.updateSpriteRow(entity);
                                 sprite.draw(entity, fps, rs, dstEntityRect);
 
                                 tryDrawingHighGrass(fps, rs, entity, sprite, dstEntityRect);
@@ -727,6 +729,8 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
 
     if (fadeOutAnimation->isRunning())
         fadeOutAnimation->draw(fps, rs);
+
+    drawCurrentLocationOverlay(fps, rs);
 }
 
 void MapScene::drawPlayer(Fps const* fps, RenderSizes rs, SDL_Rect dstPlayerRect)
@@ -742,6 +746,12 @@ void MapScene::drawPlayer(Fps const* fps, RenderSizes rs, SDL_Rect dstPlayerRect
                  * (int(fps->accumulatedTicks) % waterSpeed - (waterSpeed - 1) / 2 + fps->tickPercentage() - 0.5)
                  / (waterSpeed / 2))
         * dstTilePixelHeight / 8;
+
+    divingSprite->updateSpriteRow(player);
+    surfSprite->updateSpriteRow(player);
+    playerSurfSprite->updateSpriteRow(player);
+    playerRunSprite->updateSpriteRow(player);
+    playerSprite->updateSpriteRow(player);
 
     if (diving)
     {
@@ -781,7 +791,10 @@ void MapScene::drawPlayer(Fps const* fps, RenderSizes rs, SDL_Rect dstPlayerRect
             // TODO
             break;
         case Entity::RUN:
-            playerRunSprite->draw(player, fps, rs, dstPlayerRect);
+            if (player.x != player.previousX || player.y != player.previousY)
+                playerRunSprite->draw(player, fps, rs, dstPlayerRect);
+            else
+                playerSprite->draw(player, fps, rs, dstPlayerRect);
             break;
         case Entity::WALK:
             playerSprite->draw(player, fps, rs, dstPlayerRect);
@@ -842,6 +855,11 @@ void MapScene::drawFlashDarkness(Fps const* fps, RenderSizes rs)
     flashAnimation->draw(fps, rs);
 }
 
+void MapScene::drawCurrentLocationOverlay(Fps const* fps, RenderSizes rs)
+{
+    locationAnimation->draw(fps, rs);
+}
+
 void MapScene::initPlayerPosition(size_t x, size_t y, size_t l, Entity::Direction direction)
 {
     auto& player                 = Game::instance()->data.player;
@@ -855,6 +873,10 @@ void MapScene::initPlayerPosition(size_t x, size_t y, size_t l, Entity::Directio
 
     if (isWaterTile(x, y, l))
         player.surfing = true;
+
+    locationAnimation = std::make_unique<LocationAnimation>(renderer);
+
+    startCurrentLocationOverlay();
 }
 
 void MapScene::initMovingPlayerPosition(size_t x, size_t y, size_t l, Entity::Direction direction)
@@ -1631,6 +1653,12 @@ bool MapScene::turnOnFlash()
     }
 
     return false;
+}
+
+void MapScene::startCurrentLocationOverlay()
+{
+    Game::instance()->data.location = currentLocation();
+    locationAnimation->restart(currentLocation());
 }
 
 size_t MapScene::getPlayerOffsetX(Fps const* fps, RenderSizes rs) const

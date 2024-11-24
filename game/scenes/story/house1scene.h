@@ -20,7 +20,10 @@ public:
     virtual std::string name() override;
 
     virtual std::unique_ptr<Scene> nextScene() override;
-    virtual bool                   shouldShowNightTextures() const override;
+
+    virtual bool shouldShowNightTextures() const override;
+
+    virtual std::string currentLocation() const override;
 };
 
 #endif // HOUSE1SCENE_H

@@ -145,3 +145,8 @@ bool Town1Scene::shouldShowNightTextures() const
 {
     return Game::instance()->isNight();
 }
+
+std::string Town1Scene::currentLocation() const
+{
+    return lc::translate("Town 1");
+}

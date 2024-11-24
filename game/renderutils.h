@@ -63,6 +63,11 @@ public:
                                       std::string const& text,
                                       int                fontSize,
                                       SDL_Rect           textRect);
+    static void drawGreyTextCentered(SDL_Renderer*      renderer,
+                                     RenderSizes        rs,
+                                     std::string const& text,
+                                     int                fontSize,
+                                     SDL_Rect           textRect);
     static void drawTextWrapped(SDL_Renderer*      renderer,
                                 RenderSizes        rs,
                                 std::string const& text,

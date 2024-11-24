@@ -17,6 +17,7 @@ public:
 
     void forceSpriteDirection(Entity::Direction direction);
 
+    virtual void updateSpriteRow(Entity const& entity);
     virtual void draw(Entity const& entity, Fps const* fps, RenderSizes rs, SDL_Rect dstRect);
 
     size_t getAccumulatedTicks() const;

@@ -46,6 +46,8 @@ void StairsAnimation::draw(Fps const* fps, RenderSizes rs)
             break;
         }
     }
+
+    sprite->updateSpriteRow(*entity);
     sprite->draw(*entity, fps, rs, dstRect);
 }
 

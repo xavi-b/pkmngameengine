@@ -3,6 +3,7 @@
 
 #include "animations/battleintroanimation.h"
 #include "animations/fadeanimation.h"
+#include "animations/locationanimation.h"
 #include "animations/map/dooranimation.h"
 #include "animations/map/ledgeanimation.h"
 #include "animations/map/mapanimation.h"
@@ -47,6 +48,7 @@ public:
     virtual void drawAmbientOverlay(Fps const* fps, RenderSizes rs, size_t offsetX, size_t offsetY);
     virtual void drawWeather(Fps const* fps, RenderSizes rs);
     virtual void drawFlashDarkness(Fps const* fps, RenderSizes rs);
+    virtual void drawCurrentLocationOverlay(Fps const* fps, RenderSizes rs);
 
     virtual void    initPlayerPosition(size_t            x,
                                        size_t            y,
@@ -104,6 +106,9 @@ public:
     virtual bool shouldShowNightTextures() const = 0;
 
     bool turnOnFlash();
+    void startCurrentLocationOverlay();
+
+    virtual std::string currentLocation() const = 0;
 
 protected:
     std::map<std::string, std::pair<SDL_Surface*, SDL_Texture*>> sprites;
@@ -136,6 +141,7 @@ protected:
     std::pair<int, int>                                          stairsExitPosition;
     std::unique_ptr<StairsAnimation>                             stairsEntranceAnimation;
     std::unique_ptr<LedgeAnimation>                              ledgeAnimation;
+    std::unique_ptr<LocationAnimation>                           locationAnimation;
 
     bool                  openMenu = false;
     std::unique_ptr<Menu> menu;

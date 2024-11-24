@@ -133,6 +133,15 @@ void RenderUtils::drawWhiteTextCentered(SDL_Renderer*      renderer,
     drawWhiteText(renderer, rs, text, fontSize, textRect.x, textRect.y, textRect.w);
 }
 
+void RenderUtils::drawGreyTextCentered(SDL_Renderer*      renderer,
+                                       RenderSizes        rs,
+                                       std::string const& text,
+                                       int                fontSize,
+                                       SDL_Rect           textRect)
+{
+    drawGreyText(renderer, rs, text, fontSize, textRect.x, textRect.y, textRect.w);
+}
+
 void RenderUtils::drawTextWrapped(SDL_Renderer*      renderer,
                                   RenderSizes        rs,
                                   std::string const& text,

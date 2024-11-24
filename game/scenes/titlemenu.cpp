@@ -157,7 +157,7 @@ void TitleMenu::draw(Fps const* /*fps*/, RenderSizes rs)
 
         RenderUtils::drawWhiteTextRightAligned(renderer,
                                                rs,
-                                               "LOCATION",
+                                               Game::instance()->data.location,
                                                fontSize,
                                                dstRect.x + dstRect.w - 25 * rs.ww / rs.aw,
                                                dstRect.y + (46 * rs.wh / rs.ah - (fontSize + 10) * rs.wh / rs.ah) / 2);

@@ -57,7 +57,7 @@ void Sprite::forceSpriteDirection(Entity::Direction direction)
     }
 }
 
-void Sprite::draw(Entity const& entity, Fps const* fps, RenderSizes /*rs*/, SDL_Rect dstRect)
+void Sprite::updateSpriteRow(Entity const& entity)
 {
     switch (entity.direction)
     {
@@ -76,7 +76,10 @@ void Sprite::draw(Entity const& entity, Fps const* fps, RenderSizes /*rs*/, SDL_
     default:
         break;
     }
+}
 
+void Sprite::draw(Entity const& entity, Fps const* fps, RenderSizes /*rs*/, SDL_Rect dstRect)
+{
     int imageCol = 0;
     if (entity.direction != Entity::Direction::NONE)
     {
