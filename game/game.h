@@ -24,18 +24,21 @@ public:
 
     static Game* instance();
 
+    GameData data;
+
     int                       exec();
     void                      quit();
     void                      save();
     bool                      loadData();
     std::unique_ptr<MapScene> loadScene();
-    void                      printDebug();
-    bool                      isDebug();
-    bool                      isDay();
-    bool                      isNight();
-    bool                      isRunning();
-
-    GameData data;
+    void                      printDebug() const;
+    bool                      isDebug() const;
+    bool                      isDay() const;
+    bool                      isNight() const;
+    bool                      isRunning() const;
+    size_t                    getTotalRealTime() const;
+    std::string               getFormattedTotalRealTime() const;
+    bool                      isLoaded() const;
 
 private:
     static Game* sInstance;
@@ -55,10 +58,14 @@ private:
     size_t                            playerY = 0;
     size_t                            playerL = 0;
 
+    std::chrono::steady_clock::time_point beginRealTime;
+    size_t                                totalRealTime = 0;
+
     bool debug      = false;
     bool forcenight = false;
     bool forceday   = false;
     bool running    = true;
+    bool loaded     = false;
 
     std::unique_ptr<Fps>    fps;
     std::unique_ptr<Inputs> inputs;

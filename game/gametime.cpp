@@ -1,5 +1,9 @@
 #include "gametime.h"
 
+#include "game.h"
+
+#include <iostream>
+
 GameTime::GameTime()
 {
 }
@@ -7,29 +11,39 @@ GameTime::GameTime()
 void GameTime::incrementTicks()
 {
     ticks += 1;
-    if (ticks > MinutesInTicks)
+    if (ticks > TicksForMinute)
     {
         ticks = 0;
         incrementMinutes();
     }
 }
 
-void GameTime::incrementMinutes()
+short GameTime::getMinutes() const
 {
-    minutes = (minutes + 1) % (60 * 24);
+    return minutes;
+}
+
+void GameTime::setMinutes(short newMinutes)
+{
+    minutes = newMinutes;
 }
 
 std::string GameTime::toString() const
 {
-    return std::to_string((minutes / 60) % 24) + ":" + std::to_string(minutes % 60);
+    short h = (minutes / 60) % 24;
+    short m = minutes % 60;
+    return (h >= 10 ? "" : "0") + std::to_string(h) + ":" + (m >= 10 ? "" : "0") + std::to_string(m);
 }
 
-bool GameTime::day() const
+bool GameTime::isDay() const
 {
     return minutes > (7 * 60) && minutes < (21 * 60);
 }
 
-bool GameTime::night() const
+void GameTime::incrementMinutes()
 {
-    return !day();
+    minutes = (minutes + 1) % (60 * 24);
+
+    if (Game::instance()->isDebug())
+        std::cout << "Current in game time: " << toString() << std::endl;
 }

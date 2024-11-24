@@ -122,7 +122,8 @@ int Game::exec()
 
             inputs->update();
 
-            data.time.incrementTicks();
+            if (isLoaded())
+                data.time.incrementTicks();
 
             if (inputs->debug)
                 printDebug();
@@ -202,13 +203,19 @@ void Game::save()
 
     if (currentMapScene)
     {
+        std::chrono::steady_clock::time_point endRealTime = std::chrono::steady_clock::now();
+        totalRealTime += std::chrono::duration_cast<std::chrono::seconds>(endRealTime - beginRealTime).count();
+        if (Game::instance()->isDebug())
+            std::cout << "Total real time playing: " << getFormattedTotalRealTime() << std::endl;
         js::object json;
-        json["mapName"] = currentMapScene->name();
-        auto [x, y, l]  = currentMapScene->currentPlayerPosition();
-        json["playerX"] = x;
-        json["playerY"] = y;
-        json["playerL"] = l;
-        json["player"]  = js::value_from<Player const&>(data.player);
+        json["totalRealTime"] = totalRealTime;
+        json["gameMinutes"]   = data.time.getMinutes();
+        json["mapName"]       = currentMapScene->name();
+        auto [x, y, l]        = currentMapScene->currentPlayerPosition();
+        json["playerX"]       = x;
+        json["playerY"]       = y;
+        json["playerL"]       = l;
+        json["player"]        = js::value_from<Player const&>(data.player);
 
         std::string dataPath = Utils::dataDir();
         fs::create_directories(dataPath);
@@ -218,6 +225,8 @@ void Game::save()
         file.close();
 
         Settings::instance()->setSavedGame(true);
+
+        beginRealTime = std::chrono::steady_clock::now();
     }
 }
 
@@ -247,6 +256,10 @@ bool Game::loadData()
             if (obj.contains("playerL"))
                 playerL = js::value_to<size_t>(obj.at("playerL"));
             mapSceneName = js::value_to<std::string>(obj.at("mapName"));
+            if (obj.contains("totalRealTime"))
+                totalRealTime = js::value_to<size_t>(obj.at("totalRealTime"));
+            if (obj.contains("gameMinutes"))
+                data.time.setMinutes(js::value_to<short>(obj.at("gameMinutes")));
             return true;
         }
         catch (...)
@@ -260,12 +273,14 @@ bool Game::loadData()
 
 std::unique_ptr<MapScene> Game::loadScene()
 {
+    loaded        = true;
+    beginRealTime = std::chrono::steady_clock::now();
     auto mapScene = mapSceneFactory->fromName(mapSceneName);
     mapScene->initPlayerPosition(playerX, playerY, playerL);
     return mapScene;
 }
 
-void Game::printDebug()
+void Game::printDebug() const
 {
     std::cout << "SCENES: ";
     for (auto const& scene : scenes)
@@ -275,22 +290,20 @@ void Game::printDebug()
         scene->debug();
 }
 
-bool Game::isDebug()
+bool Game::isDebug() const
 {
     return debug;
 }
 
-bool Game::isDay()
+bool Game::isDay() const
 {
     if (forceday)
         return true;
 
-    std::time_t t   = std::time(0);
-    std::tm*    now = std::localtime(&t);
-    return now->tm_hour >= 8 && now->tm_hour < 20;
+    return data.time.isDay();
 }
 
-bool Game::isNight()
+bool Game::isNight() const
 {
     if (forcenight)
         return true;
@@ -298,7 +311,23 @@ bool Game::isNight()
     return !isDay();
 }
 
-bool Game::isRunning()
+bool Game::isRunning() const
 {
     return running;
+}
+
+size_t Game::getTotalRealTime() const
+{
+    return totalRealTime;
+}
+
+std::string Game::getFormattedTotalRealTime() const
+{
+    size_t minutes = totalRealTime / 60;
+    return std::to_string((minutes / 60) % 24) + "h" + std::to_string(minutes % 60) + "m";
+}
+
+bool Game::isLoaded() const
+{
+    return loaded;
 }

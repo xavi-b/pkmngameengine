@@ -11,10 +11,12 @@ public:
     void        incrementTicks();
     std::string toString() const;
 
-    static constexpr int MinutesInTicks = 4;
+    static constexpr int TicksForMinute = 10;
 
-    bool day() const;
-    bool night() const;
+    bool isDay() const;
+
+    short getMinutes() const;
+    void  setMinutes(short newMinutes);
 
 private:
     void incrementMinutes();
