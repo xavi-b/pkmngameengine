@@ -221,7 +221,7 @@ void Game::save()
     }
 }
 
-std::unique_ptr<MapScene> Game::load()
+bool Game::loadData()
 {
     if (Settings::instance()->savedGame())
     {
@@ -240,25 +240,29 @@ std::unique_ptr<MapScene> Game::load()
             js::value  json = js::parse(buffer);
             js::object obj  = json.as_object();
 
-            data.player    = js::value_to<Player>(obj.at("player"));
-            size_t playerX = js::value_to<size_t>(obj.at("playerX"));
-            size_t playerY = js::value_to<size_t>(obj.at("playerY"));
-            size_t playerL = 0;
+            data.player = js::value_to<Player>(obj.at("player"));
+            playerX     = js::value_to<size_t>(obj.at("playerX"));
+            playerY     = js::value_to<size_t>(obj.at("playerY"));
+            playerL     = 0;
             if (obj.contains("playerL"))
                 playerL = js::value_to<size_t>(obj.at("playerL"));
-            std::string mapSceneName = js::value_to<std::string>(obj.at("mapName"));
-            auto        mapScene     = mapSceneFactory->fromName(mapSceneName);
-            mapScene->initPlayerPosition(playerX, playerY, playerL);
-
-            return mapScene;
+            mapSceneName = js::value_to<std::string>(obj.at("mapName"));
+            return true;
         }
         catch (...)
         {
-            return nullptr;
+            return false;
         }
     }
 
-    return nullptr;
+    return false;
+}
+
+std::unique_ptr<MapScene> Game::loadScene()
+{
+    auto mapScene = mapSceneFactory->fromName(mapSceneName);
+    mapScene->initPlayerPosition(playerX, playerY, playerL);
+    return mapScene;
 }
 
 void Game::printDebug()

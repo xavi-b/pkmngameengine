@@ -23,6 +23,15 @@ public:
 
     static RenderUtils* instance();
 
+    static int  drawText(SDL_Renderer*      renderer,
+                         RenderSizes        rs,
+                         std::string const& text,
+                         SDL_Color          color,
+                         SDL_Color          bgColor,
+                         int                fontSize,
+                         int                x,
+                         int                y,
+                         int                w = 0);
     static void drawWhiteText(SDL_Renderer*      renderer,
                               RenderSizes        rs,
                               std::string const& text,
@@ -104,16 +113,6 @@ public:
 private:
     RenderUtils();
     ~RenderUtils();
-
-    static int drawText(SDL_Renderer*      renderer,
-                        RenderSizes        rs,
-                        std::string const& text,
-                        SDL_Color          color,
-                        SDL_Color          bgColor,
-                        int                fontSize,
-                        int                x,
-                        int                y,
-                        int                w = 0);
 };
 
 #endif // RENDERUTILS_H

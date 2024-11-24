@@ -45,22 +45,26 @@ MapScene::~MapScene()
 void MapScene::init()
 {
     playerSprite     = std::make_unique<Sprite>(renderer);
+    playerRunSprite  = std::make_unique<Sprite>(renderer);
     playerSurfSprite = std::make_unique<Sprite>(renderer);
     surfSprite       = std::make_unique<SurfSprite>(renderer);
     divingSprite     = std::make_unique<SurfSprite>(renderer);
     if (Game::instance()->data.player.getGender() == Player::Gender::BOY)
     {
-        playerSprite->load("resources/Graphics/Characters/boy_run.png", shouldShowNightTextures());
+        playerSprite->load("resources/Graphics/Characters/trainer_POKEMONTRAINER_Red.png", shouldShowNightTextures());
+        playerRunSprite->load("resources/Graphics/Characters/boy_run.png", shouldShowNightTextures());
         playerSurfSprite->load("resources/Graphics/Characters/boy_surf.png", diving || shouldShowNightTextures());
     }
     else
     {
-        playerSprite->load("resources/Graphics/Characters/girl_run.png", shouldShowNightTextures());
+        playerSprite->load("resources/Graphics/Characters/trainer_POKEMONTRAINER_Leaf.png", shouldShowNightTextures());
+        playerRunSprite->load("resources/Graphics/Characters/girl_run.png", shouldShowNightTextures());
         playerSurfSprite->load("resources/Graphics/Characters/girl_surf.png", diving || shouldShowNightTextures());
     }
     surfSprite->load("resources/Graphics/Characters/base_surf.png", shouldShowNightTextures());
     divingSprite->load("resources/Graphics/Characters/base_dive.png", diving || shouldShowNightTextures());
     playerSprite->forceSpriteDirection(playerSpriteInitialDirection);
+    playerRunSprite->forceSpriteDirection(playerSpriteInitialDirection);
     playerSurfSprite->forceSpriteDirection(playerSpriteInitialDirection);
     surfSprite->forceSpriteDirection(playerSpriteInitialDirection);
     divingSprite->forceSpriteDirection(playerSpriteInitialDirection);
@@ -132,6 +136,7 @@ void MapScene::update(Inputs const* inputs)
     player.previousSpeed = player.speed;
 
     playerSprite->setAccumulatedTicks((playerSprite->getAccumulatedTicks() + 1) % player.speed);
+    playerRunSprite->setAccumulatedTicks((playerSprite->getAccumulatedTicks() + 1) % player.speed);
     playerSurfSprite->setAccumulatedTicks((playerSprite->getAccumulatedTicks() + 1) % player.speed);
     surfSprite->setAccumulatedTicks((playerSprite->getAccumulatedTicks() + 1) % player.speed);
     divingSprite->setAccumulatedTicks((playerSprite->getAccumulatedTicks() + 1) % player.speed);
@@ -770,7 +775,18 @@ void MapScene::drawPlayer(Fps const* fps, RenderSizes rs, SDL_Rect dstPlayerRect
     }
     else
     {
-        playerSprite->draw(player, fps, rs, dstPlayerRect);
+        switch (player.speed)
+        {
+        case Entity::BIKE:
+            // TODO
+            break;
+        case Entity::RUN:
+            playerRunSprite->draw(player, fps, rs, dstPlayerRect);
+            break;
+        case Entity::WALK:
+            playerSprite->draw(player, fps, rs, dstPlayerRect);
+            break;
+        }
 
         tryDrawingHighGrass(fps, rs, player, *playerSprite, dstPlayerRect);
 

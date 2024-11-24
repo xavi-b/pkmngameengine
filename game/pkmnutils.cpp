@@ -18,6 +18,32 @@ SDL_Color genderColor(Pkmn::Gender gender)
     }
 }
 
+SDL_Color genderColor(Player::Gender gender)
+{
+    switch (gender)
+    {
+    case Player::Gender::BOY:
+        return {59, 144, 219, 255};
+    case Player::Gender::GIRL:
+        return {255, 73, 92, 255};
+    default:
+        return {};
+    }
+}
+
+SDL_Color genderBackgroundColor(Player::Gender gender)
+{
+    switch (gender)
+    {
+    case Player::Gender::BOY:
+        return {56, 128, 202, 255};
+    case Player::Gender::GIRL:
+        return {240, 40, 61, 255};
+    default:
+        return {};
+    }
+}
+
 wchar_t genderSymbol(Pkmn::Gender gender)
 {
     switch (gender)

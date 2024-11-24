@@ -111,6 +111,7 @@ protected:
 
     std::unique_ptr<Map>                                       map;
     std::unique_ptr<Sprite>                                    playerSprite;
+    std::unique_ptr<Sprite>                                    playerRunSprite;
     std::unique_ptr<Sprite>                                    playerSurfSprite;
     std::unique_ptr<Sprite>                                    surfSprite;
     std::unique_ptr<Sprite>                                    divingSprite;

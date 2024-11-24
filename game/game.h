@@ -27,7 +27,8 @@ public:
     int                       exec();
     void                      quit();
     void                      save();
-    std::unique_ptr<MapScene> load();
+    bool                      loadData();
+    std::unique_ptr<MapScene> loadScene();
     void                      printDebug();
     bool                      isDebug();
     bool                      isDay();
@@ -49,6 +50,10 @@ private:
 
     std::list<std::unique_ptr<Scene>> scenes;
     std::unique_ptr<MapSceneFactory>  mapSceneFactory;
+    std::string                       mapSceneName;
+    size_t                            playerX = 0;
+    size_t                            playerY = 0;
+    size_t                            playerL = 0;
 
     bool debug      = false;
     bool forcenight = false;
