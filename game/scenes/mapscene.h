@@ -46,7 +46,7 @@ public:
                           SDL_Rect                                     dstRect);
 
     virtual void drawAmbientOverlay(Fps const* fps, RenderSizes rs, size_t offsetX, size_t offsetY);
-    virtual void drawWeather(Fps const* fps, RenderSizes rs);
+    virtual void drawWeather(Fps const* fps, RenderSizes rs, size_t offsetX, size_t offsetY);
     virtual void drawFlashDarkness(Fps const* fps, RenderSizes rs);
     virtual void drawCurrentLocationOverlay(Fps const* fps, RenderSizes rs);
 

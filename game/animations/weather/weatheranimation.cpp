@@ -11,3 +11,13 @@ bool WeatherAnimation::isFinished() const
 
     return Animation::isFinished();
 }
+
+void WeatherAnimation::setOffsetX(int newOffsetX)
+{
+    offsetX = newOffsetX;
+}
+
+void WeatherAnimation::setOffsetY(int newOffsetY)
+{
+    offsetY = newOffsetY;
+}

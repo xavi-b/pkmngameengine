@@ -3,7 +3,9 @@
 #include "animations/map/grassanimation.h"
 #include "animations/map/groundanimation.h"
 #include "animations/map/underwatergrassanimation.h"
+#include "animations/weather/blizzardanimation.h"
 #include "animations/weather/rainanimation.h"
+#include "animations/weather/sandstormanimation.h"
 #include "bagscene.h"
 #include "entities/erasableentity.h"
 #include "game.h"
@@ -713,7 +715,7 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
 
     drawAmbientOverlay(fps, rs, playerOffsetX, playerOffsetY);
 
-    drawWeather(fps, rs);
+    drawWeather(fps, rs, playerOffsetX, playerOffsetY);
 
     if (!flash)
         drawFlashDarkness(fps, rs);
@@ -844,10 +846,14 @@ void MapScene::drawAmbientOverlay(Fps const* /*fps*/, RenderSizes /*rs*/, size_t
 {
 }
 
-void MapScene::drawWeather(Fps const* fps, RenderSizes rs)
+void MapScene::drawWeather(Fps const* fps, RenderSizes rs, size_t offsetX, size_t offsetY)
 {
     if (weatherAnimation)
+    {
+        weatherAnimation->setOffsetX(offsetX);
+        weatherAnimation->setOffsetY(offsetY);
         weatherAnimation->draw(fps, rs);
+    }
 }
 
 void MapScene::drawFlashDarkness(Fps const* fps, RenderSizes rs)
@@ -1633,9 +1639,16 @@ void MapScene::changeWeather(Map::Weather weather)
 
     switch (weather)
     {
-    // TODO: all weather animations
-    default:
+    case Map::HAIL:
+        weatherAnimation = std::make_unique<BlizzardAnimation>(renderer, shouldShowNightTextures());
+        break;
+    case Map::SANDSTORM:
+        weatherAnimation = std::make_unique<SandstormAnimation>(renderer, shouldShowNightTextures());
+        break;
+    case Map::RAIN:
         weatherAnimation = std::make_unique<RainAnimation>(renderer, shouldShowNightTextures());
+        break;
+    default:
         break;
     }
 }

@@ -1,6 +1,8 @@
 #include "battlescene.h"
 
+#include "animations/weather/blizzardanimation.h"
 #include "animations/weather/rainanimation.h"
+#include "animations/weather/sandstormanimation.h"
 #include "game.h"
 #include "utils.h"
 
@@ -371,9 +373,19 @@ void BattleScene::changeWeather(Map::Weather weather)
 
     switch (weather)
     {
-    // TODO: all weather animations
-    default:
+    case Map::HAIL:
+        weatherAnimation = std::make_unique<BlizzardAnimation>(renderer, false);
+        break;
+    case Map::SANDSTORM:
+        weatherAnimation = std::make_unique<SandstormAnimation>(renderer, false);
+        break;
+    case Map::RAIN:
         weatherAnimation = std::make_unique<RainAnimation>(renderer, false);
+        break;
+    case Map::HARSH_SUNLIGHT:
+        // TODO
+        break;
+    default:
         break;
     }
     weatherSpeech->setTexts({weatherAnimation->getStartingText()});

@@ -13,9 +13,15 @@ public:
     virtual std::string getStartingText() const   = 0;
     virtual std::string getContinuingText() const = 0;
 
+    void setOffsetX(int newOffsetX);
+    void setOffsetY(int newOffsetY);
+
 protected:
     float ticksDuration = 32;
     bool  night         = false;
+
+    int offsetX = 0;
+    int offsetY = 0;
 };
 
 #endif // WEATHERANIMATION_H

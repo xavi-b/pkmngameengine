@@ -18,15 +18,9 @@ public:
     virtual void incrementTicks() override;
     virtual void draw(Fps const* fps, RenderSizes rs) override;
 
-    void setOffsetX(int newOffsetX);
-    void setOffsetY(int newOffsetY);
-
 private:
     std::pair<SDL_Surface*, SDL_Texture*> fog1;
     std::pair<SDL_Surface*, SDL_Texture*> fog2;
-
-    int offsetX = 0;
-    int offsetY = 0;
 
     int speed = 16;
 };

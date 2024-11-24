@@ -65,13 +65,3 @@ void FogAnimation::draw(Fps const* /*fps*/, RenderSizes rs)
         }
     }
 }
-
-void FogAnimation::setOffsetX(int newOffsetX)
-{
-    offsetX = newOffsetX;
-}
-
-void FogAnimation::setOffsetY(int newOffsetY)
-{
-    offsetY = newOffsetY;
-}
