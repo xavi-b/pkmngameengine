@@ -4,6 +4,7 @@
 #include "animations/map/groundanimation.h"
 #include "animations/map/underwatergrassanimation.h"
 #include "animations/weather/blizzardanimation.h"
+#include "animations/weather/harshsunlightanimation.h"
 #include "animations/weather/rainanimation.h"
 #include "animations/weather/sandstormanimation.h"
 #include "bagscene.h"
@@ -1639,6 +1640,9 @@ void MapScene::changeWeather(Map::Weather weather)
 
     switch (weather)
     {
+    case Map::HARSH_SUNLIGHT:
+        weatherAnimation = std::make_unique<HarshSunlightAnimation>(renderer, shouldShowNightTextures());
+        break;
     case Map::HAIL:
         weatherAnimation = std::make_unique<BlizzardAnimation>(renderer, shouldShowNightTextures());
         break;

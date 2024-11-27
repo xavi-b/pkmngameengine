@@ -61,6 +61,8 @@ void Road1Scene::init()
 
     childSpeech = std::make_unique<TextSpeech>(renderer);
     childSpeech->setTexts({lc::translate("First NPC chat of the game !"), lc::translate("Are we cool ?")});
+
+    changeWeather(Map::HARSH_SUNLIGHT);
 }
 
 void Road1Scene::update(Inputs const* inputs)
