@@ -66,6 +66,8 @@ Game::Game(int argc, char* argv[])
     data.pkmns = js::value_to<std::vector<PkmnDef::PkmnDefPtr>>(json.as_object()["pkmns"]);
     // Moves
     data.moves = js::value_to<std::vector<MoveDef::MoveDefPtr>>(json.as_object()["moves"]);
+    // Items
+    data.items = js::value_to<std::vector<ItemDef::ItemDefPtr>>(json.as_object()["items"]);
 
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
     TTF_Init();

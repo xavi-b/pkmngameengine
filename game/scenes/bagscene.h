@@ -19,8 +19,6 @@ public:
 
     virtual std::string name() override;
 
-    static constexpr size_t NumberOfPockets = 8;
-
 private:
     std::vector<std::pair<SDL_Surface*, SDL_Texture*>> backgrounds;
     std::vector<std::pair<SDL_Surface*, SDL_Texture*>> bags;

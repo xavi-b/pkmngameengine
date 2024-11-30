@@ -2,6 +2,7 @@
 #define PLAYER_H
 
 #include "entity.h"
+#include "item.h"
 #include "pkmn.h"
 
 #include <array>
@@ -28,6 +29,8 @@ public:
     std::string name;
 
     std::array<Pkmn::PkmnPtr, 6> pkmns;
+
+    std::array<std::vector<Item::ItemPtr>, ItemDef::NumberOfPockets> items;
 
 private:
     Gender gender = Gender::BOY;

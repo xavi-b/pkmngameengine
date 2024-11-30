@@ -9,6 +9,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
     typesView = new TypesView;
     pkmnsView = new PkmnsView;
     movesView = new MovesView;
+    itemsView = new ItemsView;
 
     QWidget*     w          = new QWidget;
     QVBoxLayout* vLayout    = new QVBoxLayout;
@@ -33,6 +34,10 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
     gridLayout->addWidget(button3, 0, 2);
     QPushButton* button4 = new QPushButton(tr("Items"));
     button4->setFixedSize(200, 150);
+    connect(button4, &QPushButton::clicked, this, [=]() {
+        itemsView->setAvailableMoves(moves);
+        stackedWidget->setCurrentWidget(itemsView);
+    });
     gridLayout->addWidget(button4, 1, 0);
     QPushButton* button5 = new QPushButton(tr("Pkmns"));
     button5->setFixedSize(200, 150);
@@ -60,6 +65,10 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
         stackedWidget->setCurrentIndex(0);
     });
     stackedWidget->addWidget(movesView);
+    connect(itemsView, &ItemsView::back, this, [=]() {
+        stackedWidget->setCurrentIndex(0);
+    });
+    stackedWidget->addWidget(itemsView);
 
     setCentralWidget(stackedWidget);
 }
@@ -92,6 +101,9 @@ void MainWindow::createMenus()
             // Moves
             moves = MoveDef::vectorFromPropertyTree(readPropertyTree(dirName, "moves.txt"));
             movesView->setMoves(moves);
+            // Items
+            items = ItemDef::vectorFromPropertyTree(readPropertyTree(dirName, "items.txt"));
+            itemsView->setItems(items);
 
             stackedWidget->setCurrentIndex(0);
             QSettings().setValue("lastDir", dirName);
@@ -129,6 +141,9 @@ void MainWindow::createMenus()
             // Moves
             moves = js::value_to<std::vector<MoveDef::MoveDefPtr>>(json.as_object()["moves"]);
             movesView->setMoves(moves);
+            // Items
+            items = js::value_to<std::vector<ItemDef::ItemDefPtr>>(json.as_object()["items"]);
+            itemsView->setItems(items);
 
             stackedWidget->setCurrentIndex(0);
             QSettings().setValue("lastDir", QFileInfo(fileName).dir().path());
@@ -154,6 +169,7 @@ void MainWindow::createMenus()
         else
         {
             pkmnsView->setSpritesDirectory(dirName);
+            itemsView->setSpritesDirectory(dirName);
 
             QSettings().setValue("lastSpritesDir", dirName);
             QSettings().sync();
@@ -195,6 +211,8 @@ QString MainWindow::saveFile(bool saveAs)
         json["pkmns"] = js::value_from(pkmns);
         // Moves
         json["moves"] = js::value_from(moves);
+        // Items
+        json["items"] = js::value_from(items);
 
         file.write(js::serialize(json).c_str());
     }

@@ -33,3 +33,13 @@ MoveDef::MoveDefPtr GameData::moveDefFor(std::string const& id)
         return *it;
     return nullptr;
 }
+
+ItemDef::ItemDefPtr GameData::itemDefFor(std::string const& id)
+{
+    auto it = std::find_if(items.begin(), items.end(), [=](ItemDef::ItemDefPtr const& e) {
+        return e->getId() == id;
+    });
+    if (it != items.end())
+        return *it;
+    return nullptr;
+}

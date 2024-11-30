@@ -32,7 +32,7 @@ public:
                          int                x,
                          int                y,
                          int                w = 0);
-    static void drawWhiteText(SDL_Renderer*      renderer,
+    static int  drawWhiteText(SDL_Renderer*      renderer,
                               RenderSizes        rs,
                               std::string const& text,
                               int                fontSize,
@@ -46,6 +46,13 @@ public:
                              int                x,
                              int                y,
                              int                w = 0);
+    static int  drawBlackText(SDL_Renderer*      renderer,
+                              RenderSizes        rs,
+                              std::string const& text,
+                              int                fontSize,
+                              int                x,
+                              int                y,
+                              int                w = 0);
     static void drawWhiteTextRightAligned(SDL_Renderer*      renderer,
                                           RenderSizes        rs,
                                           std::string const& text,
@@ -58,6 +65,12 @@ public:
                                          int                fontSize,
                                          int                x,
                                          int                y);
+    static void drawBlackTextRightAligned(SDL_Renderer*      renderer,
+                                          RenderSizes        rs,
+                                          std::string const& text,
+                                          int                fontSize,
+                                          int                x,
+                                          int                y);
     static void drawWhiteTextCentered(SDL_Renderer*      renderer,
                                       RenderSizes        rs,
                                       std::string const& text,
@@ -77,6 +90,13 @@ public:
                                 int                x,
                                 int                y,
                                 int                width);
+    static void drawWhiteTextWrapped(SDL_Renderer*      renderer,
+                                     RenderSizes        rs,
+                                     std::string const& text,
+                                     int                fontSize,
+                                     int                x,
+                                     int                y,
+                                     int                width);
     static void drawTextWithIntroWrapped(SDL_Renderer*      renderer,
                                          RenderSizes        rs,
                                          std::string const& text,

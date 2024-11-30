@@ -74,17 +74,17 @@ int RenderUtils::drawText(SDL_Renderer*      renderer,
     return surface->w;
 }
 
-void RenderUtils::drawWhiteText(SDL_Renderer*      renderer,
-                                RenderSizes        rs,
-                                std::string const& text,
-                                int                fontSize,
-                                int                x,
-                                int                y,
-                                int                w)
+int RenderUtils::drawWhiteText(SDL_Renderer*      renderer,
+                               RenderSizes        rs,
+                               std::string const& text,
+                               int                fontSize,
+                               int                x,
+                               int                y,
+                               int                w)
 {
     SDL_Color color   = {255, 255, 255, 255};
     SDL_Color bgColor = {127, 127, 127, 255};
-    drawText(renderer, rs, text, color, bgColor, fontSize, x, y, w);
+    return drawText(renderer, rs, text, color, bgColor, fontSize, x, y, w);
 }
 
 int RenderUtils::drawGreyText(SDL_Renderer*      renderer,
@@ -96,6 +96,19 @@ int RenderUtils::drawGreyText(SDL_Renderer*      renderer,
                               int                w)
 {
     SDL_Color color   = {80, 80, 80, 255};
+    SDL_Color bgColor = {180, 180, 180, 255};
+    return drawText(renderer, rs, text, color, bgColor, fontSize, x, y, w);
+}
+
+int RenderUtils::drawBlackText(SDL_Renderer*      renderer,
+                               RenderSizes        rs,
+                               std::string const& text,
+                               int                fontSize,
+                               int                x,
+                               int                y,
+                               int                w)
+{
+    SDL_Color color   = {40, 40, 40, 255};
     SDL_Color bgColor = {180, 180, 180, 255};
     return drawText(renderer, rs, text, color, bgColor, fontSize, x, y, w);
 }
@@ -120,6 +133,18 @@ void RenderUtils::drawGreyTextRightAligned(SDL_Renderer*      renderer,
                                            int                y)
 {
     SDL_Color color   = {80, 80, 80, 255};
+    SDL_Color bgColor = {180, 180, 180, 255};
+    drawText(renderer, rs, text, color, bgColor, fontSize, x, y, -1);
+}
+
+void RenderUtils::drawBlackTextRightAligned(SDL_Renderer*      renderer,
+                                            RenderSizes        rs,
+                                            std::string const& text,
+                                            int                fontSize,
+                                            int                x,
+                                            int                y)
+{
+    SDL_Color color   = {40, 40, 40, 255};
     SDL_Color bgColor = {180, 180, 180, 255};
     drawText(renderer, rs, text, color, bgColor, fontSize, x, y, -1);
 }
@@ -188,6 +213,19 @@ void RenderUtils::drawTextWrapped(SDL_Renderer*      renderer,
     SDL_RenderCopy(renderer, texture, NULL, &rect);
     SDL_DestroyTexture(texture);
     SDL_FreeSurface(surface);
+}
+
+void RenderUtils::drawWhiteTextWrapped(SDL_Renderer*      renderer,
+                                       RenderSizes        rs,
+                                       std::string const& text,
+                                       int                fontSize,
+                                       int                x,
+                                       int                y,
+                                       int                width)
+{
+    SDL_Color color   = {255, 255, 255, 255};
+    SDL_Color bgColor = {127, 127, 127, 255};
+    drawTextWrapped(renderer, rs, text, color, bgColor, fontSize, x, y, width);
 }
 
 void RenderUtils::drawTextWithIntroWrapped(SDL_Renderer*      renderer,

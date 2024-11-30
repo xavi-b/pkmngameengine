@@ -1,11 +1,11 @@
-#include "pkmnsview.h"
+#include "itemsview.h"
 
-PkmnsView::PkmnsView(QWidget* parent) : QWidget(parent)
+ItemsView::ItemsView(QWidget* parent) : QWidget(parent)
 {
     QVBoxLayout* vLayout = new QVBoxLayout;
 
     QPushButton* backButton = new QPushButton(tr("Back"));
-    connect(backButton, &QPushButton::clicked, this, &PkmnsView::back);
+    connect(backButton, &QPushButton::clicked, this, &ItemsView::back);
     QHBoxLayout* hLayout = new QHBoxLayout;
     hLayout->addWidget(backButton);
     hLayout->addStretch(1);
@@ -39,12 +39,12 @@ PkmnsView::PkmnsView(QWidget* parent) : QWidget(parent)
     connect(addButton, &QPushButton::clicked, this, [=]() {
         bool    ok = false;
         QString id =
-            QInputDialog::getText(this, tr("New Pkmn"), tr("Enter Pkmn ID:"), QLineEdit::Normal, QString(), &ok);
+            QInputDialog::getText(this, tr("New Item"), tr("Enter item ID:"), QLineEdit::Normal, QString(), &ok);
         if (ok)
         {
-            auto pkmn = std::make_shared<PkmnDef>();
-            pkmn->setId(id.toStdString());
-            model->appendItem(pkmn);
+            auto item = std::make_shared<ItemDef>();
+            item->setId(id.toStdString());
+            model->appendItem(item);
         }
     });
     leftLayout->addWidget(addButton);
@@ -64,8 +64,8 @@ PkmnsView::PkmnsView(QWidget* parent) : QWidget(parent)
     leftWidget->setLayout(leftLayout);
     splitter->addWidget(leftWidget);
 
-    pkmnWidget = new PkmnWidget;
-    splitter->addWidget(pkmnWidget);
+    itemsWidget = new ItemsWidget;
+    splitter->addWidget(itemsWidget);
     splitter->setStretchFactor(1, 1);
 
     vLayout->addWidget(splitter, 1);
@@ -82,16 +82,17 @@ PkmnsView::PkmnsView(QWidget* parent) : QWidget(parent)
         if (index.isValid())
         {
             QModelIndex const&         originalIndex = proxyModel->mapToSource(index);
-            TemplateListItem<PkmnDef>* item = dynamic_cast<TemplateListItem<PkmnDef>*>(model->getItem(originalIndex));
+            TemplateListItem<ItemDef>* item = dynamic_cast<TemplateListItem<ItemDef>*>(model->getItem(originalIndex));
             if (item)
             {
-                auto pkmn = item->getPtr();
-                pkmnWidget->setPkmn(pkmn);
+                auto itemDef = item->getPtr();
+                itemsWidget->setAvailableItems(model->getObjects<ItemDef>());
+                itemsWidget->setItem(itemDef);
             }
         }
     });
 
-    connect(pkmnWidget, &PkmnWidget::idChanged, this, [=]() {
+    connect(itemsWidget, &ItemsWidget::idChanged, this, [=]() {
         QModelIndex const& index = listView->selectionModel()->currentIndex();
         if (index.isValid())
         {
@@ -101,12 +102,17 @@ PkmnsView::PkmnsView(QWidget* parent) : QWidget(parent)
     });
 }
 
-void PkmnsView::setPkmns(std::vector<PkmnDef::PkmnDefPtr> const& newPkmns)
+void ItemsView::setItems(std::vector<ItemDef::ItemDefPtr> const& newItems)
 {
-    model->setObjects(newPkmns);
+    model->setObjects(newItems);
 }
 
-void PkmnsView::setSpritesDirectory(QString const& dirName)
+void ItemsView::setAvailableMoves(std::vector<MoveDef::MoveDefPtr> const& moves)
 {
-    pkmnWidget->setSpritesDirectory(dirName);
+    itemsWidget->setAvailableMoves(moves);
+}
+
+void ItemsView::setSpritesDirectory(QString const& dirName)
+{
+    itemsWidget->setSpritesDirectory(dirName);
 }

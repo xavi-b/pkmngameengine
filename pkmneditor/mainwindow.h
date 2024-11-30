@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "editors/itemsview.h"
 #include "editors/movesview.h"
 #include "editors/pkmnsview.h"
 #include "editors/typesview.h"
@@ -41,6 +42,9 @@ private:
 
     MovesView*                       movesView;
     std::vector<MoveDef::MoveDefPtr> moves;
+
+    ItemsView*                       itemsView;
+    std::vector<ItemDef::ItemDefPtr> items;
 };
 
 #endif // MAINWINDOW_H

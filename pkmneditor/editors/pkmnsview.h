@@ -33,8 +33,6 @@ private:
     PkmnWidget* pkmnWidget;
 
     std::vector<PkmnDef::PkmnDefPtr> pkmns;
-
-    QString spritesDirectory;
 };
 
 #endif // PKMNSVIEW_H

@@ -1,14 +1,16 @@
 #include "bagscene.h"
 
+#include "itemdef.h"
+
 BagScene::BagScene(SDL_Renderer* renderer) : Scene(renderer)
 {
-    for (size_t i = 0; i < NumberOfPockets; ++i)
+    for (size_t i = 0; i < ItemDef::NumberOfPockets; ++i)
     {
         SDL_Surface* surface = IMG_Load(("resources/Graphics/UI/Bag/bg_" + std::to_string(i + 1) + ".png").c_str());
         SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
         backgrounds.push_back({surface, texture});
     }
-    for (size_t i = 0; i < NumberOfPockets; ++i)
+    for (size_t i = 0; i < ItemDef::NumberOfPockets; ++i)
     {
         SDL_Surface* surface = IMG_Load(("resources/Graphics/UI/Bag/bag_" + std::to_string(i + 1) + ".png").c_str());
         SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
@@ -46,12 +48,12 @@ void BagScene::update(Inputs const* inputs)
 
     if (inputs->left)
     {
-        currentPocketIndex = (currentPocketIndex + NumberOfPockets - 1) % NumberOfPockets;
+        currentPocketIndex = (currentPocketIndex + ItemDef::NumberOfPockets - 1) % ItemDef::NumberOfPockets;
         return;
     }
     else if (inputs->right)
     {
-        currentPocketIndex = (currentPocketIndex + NumberOfPockets + 1) % NumberOfPockets;
+        currentPocketIndex = (currentPocketIndex + ItemDef::NumberOfPockets + 1) % ItemDef::NumberOfPockets;
         return;
     }
 }
