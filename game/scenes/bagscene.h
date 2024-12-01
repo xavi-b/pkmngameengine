@@ -1,6 +1,7 @@
 #ifndef BAGSCENE_H
 #define BAGSCENE_H
 
+#include "itemdef.h"
 #include "scene.h"
 
 #include <SDL_image.h>
@@ -25,10 +26,16 @@ private:
 
     SDL_Surface* iconPocketSurface;
     SDL_Texture* iconPocketTexture;
+    SDL_Surface* cursorSurface;
+    SDL_Texture* cursorTexture;
+    SDL_Surface* itemSurface = NULL;
+    SDL_Texture* itemTexture = NULL;
 
     bool leave = false;
 
     size_t currentPocketIndex = 0;
+
+    std::array<size_t, ItemDef::NumberOfPockets> indices = {0};
 };
 
 #endif // BAGSCENE_H
