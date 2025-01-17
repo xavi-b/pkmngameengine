@@ -24,11 +24,18 @@ include_directories(${SDL2_INCLUDE_DIRS})
 target_link_libraries(${MODULE_NAME} ${SDL2_LIBRARIES})
 find_package(SDL2_IMAGE REQUIRED)
 find_package(SDL2_TTF REQUIRED)
+find_package(SDL2_MIXER REQUIRED)
+if(WIN32)
+    target_link_directories(${MODULE_NAME} PRIVATE ${SDL2_LIBDIR})
+endif()
 target_link_libraries(${MODULE_NAME} SDL2_image SDL2_ttf SDL2_mixer)
 
 # boost
-find_package(Boost COMPONENTS locale program_options REQUIRED)
+find_package(Boost COMPONENTS json locale program_options REQUIRED)
 include_directories(${Boost_INCLUDE_DIR})
+if(WIN32)
+    target_link_directories(${MODULE_NAME} PRIVATE ${Boost_LIBRARY_DIRS})
+endif()
 target_link_libraries(${MODULE_NAME} ${Boost_LIBRARIES})
 
 # VARS
