@@ -75,3 +75,4 @@ CMakeLists.txt.user*
 # Assets
 resources/Graphics/*
 build/*
+install/*
