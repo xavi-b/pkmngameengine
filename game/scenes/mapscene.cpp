@@ -16,9 +16,9 @@
 #include "sprites/squaresprite.h"
 #include "sprites/surfsprite.h"
 
+#include <cmath>
 #include <fstream>
 #include <iostream>
-#include <cmath>
 #include <numbers>
 #include <random>
 #include <sstream>
@@ -605,7 +605,7 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
                     if (layer->getType() == TileLayer::Type::SOLID_OVERLAY)
                     {
                         // Draw player
-                        if (player.x == int(i) && player.y == int(j) && player.l == l)
+                        if (player.x == i && player.y == j && player.l == l)
                         {
                             drawPlayer(fps, rs, dstPlayerRect);
                         }
@@ -615,7 +615,7 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
                         {
                             auto const& entity = *(it->first.get());
                             auto&       sprite = *(it->second.get());
-                            if (entity.l == l && entity.previousX == int(i) && entity.previousY == int(j))
+                            if (entity.l == l && entity.previousX == i && entity.previousY == j)
                             {
                                 int entityOffsetX = (entity.x - entity.previousX)
                                                   * (sprite.getAccumulatedTicks() + fps->tickPercentage())
@@ -980,7 +980,7 @@ void MapScene::move(Entity& entity, bool force)
     }
     else if (entity.direction == Entity::Direction::DOWN)
     {
-        if (entity.y < int(map->getNRow() - 1) && canMove(entity, entity.x, entity.y + 1, entity.l, force))
+        if (entity.y < map->getNRow() - 1 && canMove(entity, entity.x, entity.y + 1, entity.l, force))
         {
             if (!force && isLedgeTile(entity.x, entity.y + 1, entity.l)
                 && isLedgePassable(entity, entity.x, entity.y + 1, entity.l))
@@ -1010,7 +1010,7 @@ void MapScene::move(Entity& entity, bool force)
     }
     else if (entity.direction == Entity::Direction::RIGHT)
     {
-        if (entity.x < int(map->getNCol() - 1) && canMove(entity, entity.x + 1, entity.y, entity.l, force))
+        if (entity.x < map->getNCol() - -1 && canMove(entity, entity.x + 1, entity.y, entity.l, force))
         {
             if (!force && isLedgeTile(entity.x + 1, entity.y, entity.l)
                 && isLedgePassable(entity, entity.x + 1, entity.y, entity.l))
@@ -1081,12 +1081,12 @@ Entity* MapScene::entityAt(size_t x, size_t y, size_t l) const
     for (auto it = entities.begin(); it != entities.end(); ++it)
     {
         auto entity = it->first.get();
-        if (entity->x == int(x) && entity->y == int(y) && entity->l == l)
+        if (entity->x == x && entity->y == y && entity->l == l)
             return entity;
     }
 
     auto& player = Game::instance()->data.player;
-    if (player.x == int(x) && player.y == int(y) && player.l == l)
+    if (player.x == x && player.y == y && player.l == l)
         return &player;
 
     return {};
@@ -1106,12 +1106,12 @@ Entity* MapScene::entityPreviousAt(size_t x, size_t y, size_t l) const
     for (auto it = entities.begin(); it != entities.end(); ++it)
     {
         auto entity = it->first.get();
-        if (entity->previousX == int(x) && entity->previousY == int(y) && entity->l == l)
+        if (entity->previousX == x && entity->previousY == y && entity->l == l)
             return entity;
     }
 
     auto& player = Game::instance()->data.player;
-    if (player.previousX == int(x) && player.previousY == int(y) && player.l == l)
+    if (player.previousX == x && player.previousY == y && player.l == l)
         return &player;
 
     return {};

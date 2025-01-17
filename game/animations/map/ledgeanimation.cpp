@@ -90,17 +90,17 @@ Entity::Direction LedgeAnimation::getDirection() const
     return direction;
 }
 
-void LedgeAnimation::setStartingPosition(int x, int y)
+void LedgeAnimation::setStartingPosition(size_t x, size_t y)
 {
     startingPosition = {x, y};
 }
 
-std::pair<int, int> LedgeAnimation::getStartingPosition() const
+std::pair<size_t, size_t> LedgeAnimation::getStartingPosition() const
 {
     return startingPosition;
 }
 
-std::pair<int, int> LedgeAnimation::getFinishPosition() const
+std::pair<size_t, size_t> LedgeAnimation::getFinishPosition() const
 {
     switch (direction)
     {

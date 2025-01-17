@@ -28,10 +28,10 @@ public:
     Direction direction         = Direction::NONE;
     Direction previousDirection = Direction::NONE;
     size_t    l                 = 0;
-    int       x                 = 0;
-    int       y                 = 0;
-    int       previousX         = 0;
-    int       previousY         = 0;
+    size_t    x                 = 0;
+    size_t    y                 = 0;
+    size_t    previousX         = 0;
+    size_t    previousY         = 0;
     Speed     speed             = Speed::WALK;
     Speed     previousSpeed     = Speed::WALK;
     bool      surfing           = false;

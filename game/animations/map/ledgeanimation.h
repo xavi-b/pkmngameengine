@@ -18,9 +18,9 @@ public:
 
     Entity::Direction getDirection() const;
 
-    void                setStartingPosition(int x, int y);
-    std::pair<int, int> getStartingPosition() const;
-    std::pair<int, int> getFinishPosition() const;
+    void                      setStartingPosition(size_t x, size_t y);
+    std::pair<size_t, size_t> getStartingPosition() const;
+    std::pair<size_t, size_t> getFinishPosition() const;
 
 private:
     Entity* entity = nullptr;
@@ -29,7 +29,7 @@ private:
     SDL_Surface* surface;
     SDL_Texture* texture;
 
-    std::pair<int, int> startingPosition;
+    std::pair<size_t, size_t> startingPosition;
 
     Entity::Direction direction = Entity::Direction::NONE;
 };

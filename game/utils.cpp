@@ -2,16 +2,20 @@
 
 #ifdef WINDOWS
 #include <random>
-namespace random {
-    size_t randint(int min, int max) {
-        return rand() % (max + 1 - min) + min;
-    }
-}
 
-std::string envvar(std::string const& str) {
+namespace rdr
+{
+size_t randint(int min, int max)
+{
+    return rand() % (max + 1 - min) + min;
+}
+} // namespace rdr
+
+std::string envvar(std::string const& str)
+{
     std::string res;
-    char* buf = nullptr;
-    size_t sz = 0;
+    char*       buf = nullptr;
+    size_t      sz  = 0;
     if (_dupenv_s(&buf, &sz, str.c_str()) == 0 && buf != nullptr)
     {
         res = buf;
@@ -20,7 +24,7 @@ std::string envvar(std::string const& str) {
 }
 #else
 #include <experimental/random>
-namespace random = std::experimental;
+namespace rdr = std::experimental;
 #endif
 
 std::ostream& operator<<(std::ostream& o, SDL_Rect r)
@@ -34,12 +38,12 @@ namespace Utils
 
 size_t randint(int min, int max)
 {
-    return random::randint(min, max);
+    return rdr::randint(min, max);
 }
 
 size_t randuint(size_t min, size_t max)
 {
-    return random::randint(min, max);
+    return rdr::randint(min, max);
 }
 
 std::string dataDir()
