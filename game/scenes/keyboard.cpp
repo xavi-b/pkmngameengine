@@ -3,11 +3,11 @@
 Keyboard::Keyboard(SDL_Renderer* renderer, std::string& textOut, size_t maxSize)
     : renderer(renderer), textOut(textOut), maxSize(maxSize)
 {
-    bgSurface         = IMG_Load("resources/Graphics/Pictures/Naming/bg.png");
+    bgSurface         = IMG_Load("resources/Graphics/UI/Naming/bg.png");
     bgTexture         = SDL_CreateTextureFromSurface(renderer, bgSurface);
-    keyboardBgSurface = IMG_Load("resources/Graphics/Pictures/Naming/overlay_tab_1.png");
+    keyboardBgSurface = IMG_Load("resources/Graphics/UI/Naming/overlay_tab_1.png");
     keyboardBgTexture = SDL_CreateTextureFromSurface(renderer, keyboardBgSurface);
-    cursorSurface     = IMG_Load("resources/Graphics/Pictures/Naming/cursor_1.png");
+    cursorSurface     = IMG_Load("resources/Graphics/UI/Naming/cursor_1.png");
     cursorTexture     = SDL_CreateTextureFromSurface(renderer, cursorSurface);
 }
 

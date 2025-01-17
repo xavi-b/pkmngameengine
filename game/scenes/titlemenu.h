@@ -33,8 +33,8 @@ private:
     SDL_Texture*                                                   bgTexture;
     SDL_Surface*                                                   panelSurface;
     SDL_Texture*                                                   panelTexture;
-    SDL_Surface*                                                   playerSurface;
-    SDL_Texture*                                                   playerTexture;
+    SDL_Surface*                                                   playerSurface = NULL;
+    SDL_Texture*                                                   playerTexture = NULL;
     std::map<Pkmn::PkmnPtr, std::pair<SDL_Surface*, SDL_Texture*>> pkmnsRendering;
 
     size_t ticks = 0;

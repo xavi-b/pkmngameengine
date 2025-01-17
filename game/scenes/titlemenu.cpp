@@ -10,9 +10,9 @@
 
 TitleMenu::TitleMenu(SDL_Renderer* renderer) : Scene(renderer)
 {
-    bgSurface    = IMG_Load("resources/Graphics/Pictures/loadbg.png");
+    bgSurface    = IMG_Load("resources/Graphics/UI/Load/bg.png");
     bgTexture    = SDL_CreateTextureFromSurface(renderer, bgSurface);
-    panelSurface = IMG_Load("resources/Graphics/Pictures/loadPanels.png");
+    panelSurface = IMG_Load("resources/Graphics/UI/Load/panels.png");
     panelTexture = SDL_CreateTextureFromSurface(renderer, panelSurface);
 
     currentIndex = NewGame;
@@ -65,8 +65,10 @@ TitleMenu::~TitleMenu()
     SDL_FreeSurface(bgSurface);
     SDL_DestroyTexture(panelTexture);
     SDL_FreeSurface(panelSurface);
-    SDL_DestroyTexture(playerTexture);
-    SDL_FreeSurface(playerSurface);
+    if (playerTexture)
+        SDL_DestroyTexture(playerTexture);
+    if (playerSurface)
+        SDL_FreeSurface(playerSurface);
 
     for (auto it = pkmnsRendering.begin(); it != pkmnsRendering.end(); ++it)
     {

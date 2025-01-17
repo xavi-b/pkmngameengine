@@ -10,7 +10,7 @@ TextQuestion::TextQuestion(SDL_Renderer* renderer) : renderer(renderer)
 {
     bgSurface        = IMG_Load("resources/Graphics/Windowskins/choice 1.png");
     bgTexture        = SDL_CreateTextureFromSurface(renderer, bgSurface);
-    selectionSurface = IMG_Load("resources/Graphics/Pictures/selarrow.png");
+    selectionSurface = IMG_Load("resources/Graphics/UI/sel_arrow.png");
     selectionTexture = SDL_CreateTextureFromSurface(renderer, selectionSurface);
 }
 
