@@ -35,8 +35,12 @@ Install the above requirements using your package manager
 * Update your CMAKE_PREFIX_PATH variable:
     * CMAKE_PREFIX_PATH=%{Qt:QT_INSTALL_PREFIX};C:\SDL\cmake;
 
-# Data
-* Sprites from Pokemon Essentials
-* Pokemon stats from Pokemon Essentials
-* Logic from Pokemon Essentials
-* PkmnEditor design from Essentials PBS Editor
+## Resources
+* Audio, Fonts and Graphics from Pokemon Essentials 21.1
+    * Put the mentioned folders in game/resources
+
+# Thanks to
+* Pokemon stats and logic from Bulbapedia
+    * https://bulbapedia.bulbagarden.net/wiki/Main_Page
+* PkmnEditor inspired from Essentials PBS Editor
+    * https://github.com/Marin-MK/PBS-Editor
