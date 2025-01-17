@@ -617,10 +617,10 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
                             auto&       sprite = *(it->second.get());
                             if (entity.l == l && entity.previousX == i && entity.previousY == j)
                             {
-                                int entityOffsetX = (entity.x - entity.previousX)
+                                int entityOffsetX = (int(entity.x) - int(entity.previousX))
                                                   * (sprite.getAccumulatedTicks() + fps->tickPercentage())
                                                   / ((entity.speed + entity.previousSpeed) / 2.0) * dstTilePixelWidth;
-                                int entityOffsetY = (entity.y - entity.previousY)
+                                int entityOffsetY = (int(entity.y) - int(entity.previousY))
                                                   * (sprite.getAccumulatedTicks() + fps->tickPercentage())
                                                   / ((entity.speed + entity.previousSpeed) / 2.0) * dstTilePixelHeight;
 
@@ -1685,11 +1685,12 @@ size_t MapScene::getPlayerOffsetX(Fps const* fps, RenderSizes rs) const
 
     int dstTilePixelWidth = TilePixelSize * rs.ww / rs.aw;
 
-    int playerOffsetX = (rs.ww - dstTilePixelWidth) / 2
-                      - (player.previousX
-                         + (player.x - player.previousX) * (playerSprite->getAccumulatedTicks() + fps->tickPercentage())
-                               / ((player.speed + player.previousSpeed) / 2.0))
-                            * dstTilePixelWidth;
+    int playerOffsetX =
+        (rs.ww - dstTilePixelWidth) / 2
+        - (int(player.previousX)
+           + (int(player.x) - int(player.previousX)) * (playerSprite->getAccumulatedTicks() + fps->tickPercentage())
+                 / ((player.speed + player.previousSpeed) / 2.0))
+              * dstTilePixelWidth;
 
     return playerOffsetX;
 }
@@ -1700,11 +1701,12 @@ size_t MapScene::getPlayerOffsetY(Fps const* fps, RenderSizes rs) const
 
     int dstTilePixelHeight = TilePixelSize * rs.wh / rs.ah;
 
-    int playerOffsetY = (rs.wh - dstTilePixelHeight) / 2
-                      - (player.previousY
-                         + (player.y - player.previousY) * (playerSprite->getAccumulatedTicks() + fps->tickPercentage())
-                               / ((player.speed + player.previousSpeed) / 2.0))
-                            * dstTilePixelHeight;
+    int playerOffsetY =
+        (rs.wh - dstTilePixelHeight) / 2
+        - (int(player.previousY)
+           + (int(player.y) - int(player.previousY)) * (playerSprite->getAccumulatedTicks() + fps->tickPercentage())
+                 / ((player.speed + player.previousSpeed) / 2.0))
+              * dstTilePixelHeight;
 
     return playerOffsetY;
 }
