@@ -29,20 +29,6 @@ void Town1Scene::update(Inputs const* inputs)
     MapScene::update(inputs);
 
     auto& player = Game::instance()->data.player;
-    if (doorOpeningAnimation)
-    {
-        if (playerSprite->getAccumulatedTicks() == 0)
-            stop(player);
-
-        if (doorOpeningAnimation->isFinished())
-        {
-            if (!fadeOutAnimation->isStarted())
-            {
-                fadeOutAnimation->reset();
-                fadeOutAnimation->start();
-            }
-        }
-    }
 
     auto& entity = *(entities.begin()->first.get());
     auto& sprite = *(entities.begin()->second.get());

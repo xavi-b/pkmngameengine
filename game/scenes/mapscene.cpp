@@ -208,11 +208,25 @@ void MapScene::update(Inputs const* inputs)
         return;
     }
 
-    if (doorOpeningAnimation && doorOpeningAnimation->isRunning())
+    if (doorOpeningAnimation)
     {
-        doorOpeningAnimation->incrementTicks();
-        preventInputs = true;
-        return;
+        if (doorOpeningAnimation->isRunning())
+        {
+            doorOpeningAnimation->incrementTicks();
+            preventInputs = true;
+            return;
+        }
+
+        if (doorOpeningAnimation->isFinished())
+        {
+            stop(player);
+
+            if (!fadeOutAnimation->isStarted())
+            {
+                fadeOutAnimation->reset();
+                fadeOutAnimation->start();
+            }
+        }
     }
 
     if (doorClosingAnimation && doorClosingAnimation->isRunning())
