@@ -1024,7 +1024,7 @@ void MapScene::move(Entity& entity, bool force)
     }
     else if (entity.direction == Entity::Direction::RIGHT)
     {
-        if (entity.x < map->getNCol() - -1 && canMove(entity, entity.x + 1, entity.y, entity.l, force))
+        if (entity.x < map->getNCol() - 1 && canMove(entity, entity.x + 1, entity.y, entity.l, force))
         {
             if (!force && isLedgeTile(entity.x + 1, entity.y, entity.l)
                 && isLedgePassable(entity, entity.x + 1, entity.y, entity.l))
