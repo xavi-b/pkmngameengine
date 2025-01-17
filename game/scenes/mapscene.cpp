@@ -201,6 +201,28 @@ void MapScene::update(Inputs const* inputs)
     if (locationAnimation->isRunning())
         locationAnimation->incrementTicks();
 
+    if (stairsExitAnimation)
+    {
+        if (player.x == stairsExitPosition.first && player.y == stairsExitPosition.second)
+        {
+            if (playerSprite->getAccumulatedTicks() == 0)
+                stop(player);
+        }
+
+        if (stairsExitAnimation->isRunning())
+        {
+            if (!fadeOutAnimation->isStarted())
+            {
+                fadeOutAnimation->reset();
+                fadeOutAnimation->start();
+            }
+
+            stairsExitAnimation->incrementTicks();
+            preventInputs = true;
+            return;
+        }
+    }
+
     if (fadeOutAnimation->isRunning())
     {
         fadeOutAnimation->incrementTicks();
@@ -232,29 +254,19 @@ void MapScene::update(Inputs const* inputs)
     if (doorClosingAnimation && doorClosingAnimation->isRunning())
         doorClosingAnimation->incrementTicks();
 
-    if (stairsExitAnimation && stairsExitAnimation->isRunning())
+    if (stairsEntranceAnimation)
     {
-        stairsExitAnimation->incrementTicks();
-        preventInputs = true;
-
-        if (!fadeOutAnimation->isStarted())
+        if (stairsEntranceAnimation->isRunning())
         {
-            fadeOutAnimation->reset();
-            fadeOutAnimation->start();
-        }
+            if (playerSprite->getAccumulatedTicks() == 0)
+                stop(player);
 
-        return;
-    }
-
-    if (stairsEntranceAnimation && stairsEntranceAnimation->isStarted())
-    {
-        if (!stairsEntranceAnimation->isFinished())
-        {
             stairsEntranceAnimation->incrementTicks();
             preventInputs = true;
             return;
         }
-        else
+
+        if (stairsEntranceAnimation->isFinished())
         {
             stairsEntranceAnimation.release();
         }

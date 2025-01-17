@@ -19,54 +19,45 @@ void House1Scene::update(Inputs const* inputs)
 
     auto& player = Game::instance()->data.player;
 
-    if (stairsExitAnimation)
-    {
-        if (player.x == stairsExitPosition.first && player.y == stairsExitPosition.second)
-        {
-            if (playerSprite->getAccumulatedTicks() == 0)
-                stop(player);
-        }
-    }
-
-    if (stairsEntranceAnimation && !stairsEntranceAnimation->isFinished())
-    {
-        if (playerSprite->getAccumulatedTicks() == 0)
-            stop(player);
-    }
-
     if (!preventInputs)
     {
         if (auto event = facedPreviousEvent(player))
         {
             if (event->getId() == "UpStairsEntrance")
             {
-                if (!stairsExitAnimation)
+                if (player.direction == Entity::Direction::RIGHT)
                 {
-                    stairsExitAnimation = std::make_unique<StairsAnimation>(renderer,
-                                                                            StairsAnimation::ToUpstairs,
-                                                                            shouldShowNightTextures());
-                    stairsExitAnimation->start();
-                    stairsExitPosition = {player.x + 1, player.y};
-                    preventInputs      = true;
-                    goToScene          = "UpStairsEntrance";
-                    player.direction   = Entity::Direction::RIGHT;
-                    move(player, true);
+                    if (!stairsExitAnimation)
+                    {
+                        stairsExitAnimation = std::make_unique<StairsAnimation>(renderer,
+                                                                                StairsAnimation::ToUpstairs,
+                                                                                shouldShowNightTextures());
+                        stairsExitAnimation->start();
+                        stairsExitPosition = {player.x + 1, player.y};
+                        preventInputs      = true;
+                        goToScene          = "UpStairsEntrance";
+                        player.direction   = Entity::Direction::RIGHT;
+                        move(player, true);
+                    }
                 }
             }
 
             if (event->getId() == "DownStairsEntrance")
             {
-                if (!stairsExitAnimation)
+                if (player.direction == Entity::Direction::RIGHT)
                 {
-                    stairsExitAnimation = std::make_unique<StairsAnimation>(renderer,
-                                                                            StairsAnimation::ToDownstairs,
-                                                                            shouldShowNightTextures());
-                    stairsExitAnimation->start();
-                    stairsExitPosition = {player.x + 1, player.y};
-                    preventInputs      = true;
-                    goToScene          = "DownStairsEntrance";
-                    player.direction   = Entity::Direction::RIGHT;
-                    move(player, true);
+                    if (!stairsExitAnimation)
+                    {
+                        stairsExitAnimation = std::make_unique<StairsAnimation>(renderer,
+                                                                                StairsAnimation::ToDownstairs,
+                                                                                shouldShowNightTextures());
+                        stairsExitAnimation->start();
+                        stairsExitPosition = {player.x + 1, player.y};
+                        preventInputs      = true;
+                        goToScene          = "DownStairsEntrance";
+                        player.direction   = Entity::Direction::RIGHT;
+                        move(player, true);
+                    }
                 }
             }
 
@@ -121,7 +112,7 @@ std::unique_ptr<Scene> House1Scene::nextScene()
         {
             auto scene = std::make_unique<House1Scene>(renderer);
             scene->initMovingPlayerPosition(22, 4, 0, Entity::Direction::RIGHT);
-            scene->initStairsEntrance(StairsAnimation::FromUpstairs);
+            scene->initStairsEntrance(StairsAnimation::FromDownstairs);
             return scene;
         }
 
@@ -129,7 +120,7 @@ std::unique_ptr<Scene> House1Scene::nextScene()
         {
             auto scene = std::make_unique<House1Scene>(renderer);
             scene->initMovingPlayerPosition(15, 4, 0, Entity::Direction::RIGHT);
-            scene->initStairsEntrance(StairsAnimation::FromDownstairs);
+            scene->initStairsEntrance(StairsAnimation::FromUpstairs);
             return scene;
         }
     }

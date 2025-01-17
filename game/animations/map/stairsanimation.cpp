@@ -36,13 +36,13 @@ void StairsAnimation::draw(Fps const* fps, RenderSizes rs)
             dstRect.y -= delta * dstPixelSizeHeight / 4;
             break;
         case ToDownstairs:
-            dstRect.y += delta * dstPixelSizeHeight / 4;
+            dstRect.y += delta * dstPixelSizeHeight / 8;
             break;
         case FromUpstairs:
-            dstRect.y += (2.0 - delta) * dstPixelSizeHeight / 4;
+            dstRect.y -= (2.0 - delta) * dstPixelSizeHeight / 4;
             break;
         case FromDownstairs:
-            dstRect.y -= (2.0 - delta) * dstPixelSizeHeight / 4;
+            dstRect.y += (2.0 - delta) * dstPixelSizeHeight / 8;
             break;
         }
     }
