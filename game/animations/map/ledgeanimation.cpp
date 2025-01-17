@@ -3,6 +3,8 @@
 #include "scenes/mapscene.h"
 
 #include <SDL_image.h>
+#include <cmath>
+#include <numbers>
 
 LedgeAnimation::LedgeAnimation(SDL_Renderer* renderer, Entity::Direction direction, bool night)
     : MapAnimation(renderer, night), direction(direction)

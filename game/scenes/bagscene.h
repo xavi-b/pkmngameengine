@@ -6,6 +6,7 @@
 
 #include <SDL_image.h>
 #include <vector>
+#include <array>
 
 class BagScene : public Scene
 {

@@ -4,6 +4,8 @@
 #include "textspeech.h"
 
 #include <SDL_image.h>
+#include <cmath>
+#include <numbers>
 
 LocationAnimation::LocationAnimation(SDL_Renderer* renderer) : Animation(renderer)
 {

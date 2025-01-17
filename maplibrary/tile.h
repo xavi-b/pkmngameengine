@@ -12,11 +12,11 @@ class Tile
 public:
     using TilePtr = std::unique_ptr<Tile>;
 
-    Tile(std::string const& spritePath, int col, int row);
+    Tile(std::string const& spritePath, size_t col, size_t row);
 
     std::string const& getSpritePath() const;
-    int                getRow() const;
-    int                getCol() const;
+    size_t             getRow() const;
+    size_t             getCol() const;
 
     bool isAnimated() const;
     void setAnimated(bool newAnimated);
@@ -30,8 +30,8 @@ public:
 
 private:
     std::string spritePath;
-    int         col      = 0;
-    int         row      = 0;
+    size_t      col      = 0;
+    size_t      row      = 0;
     bool        animated = false;
     bool        door     = false;
 };

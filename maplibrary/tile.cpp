@@ -1,6 +1,6 @@
 #include "tile.h"
 
-Tile::Tile(std::string const& spritePath, int col, int row) : spritePath(spritePath), col(col), row(row)
+Tile::Tile(std::string const& spritePath, size_t col, size_t row) : spritePath(spritePath), col(col), row(row)
 {
 }
 
@@ -9,12 +9,12 @@ std::string const& Tile::getSpritePath() const
     return spritePath;
 }
 
-int Tile::getRow() const
+size_t Tile::getRow() const
 {
     return row;
 }
 
-int Tile::getCol() const
+size_t Tile::getCol() const
 {
     return col;
 }

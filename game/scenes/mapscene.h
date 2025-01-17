@@ -131,14 +131,14 @@ protected:
     std::unique_ptr<FadeAnimation>                               fadeInAnimation;
     std::unique_ptr<FadeAnimation>                               fadeOutAnimation;
     std::unique_ptr<WeatherAnimation>                            weatherAnimation;
-    std::map<std::pair<int, int>, std::unique_ptr<MapAnimation>> tilesAnimations;
-    std::pair<int, int>                                          doorOpeningPosition;
+    std::map<std::pair<size_t, size_t>, std::unique_ptr<MapAnimation>> tilesAnimations;
+    std::pair<size_t, size_t>                                    doorOpeningPosition;
     std::unique_ptr<DoorAnimation>                               doorOpeningAnimation;
-    std::pair<int, int>                                          doorClosingPosition;
+    std::pair<size_t, size_t>                                    doorClosingPosition;
     std::unique_ptr<DoorAnimation>                               doorClosingAnimation;
     std::unique_ptr<FlashAnimation>                              flashAnimation;
     std::unique_ptr<StairsAnimation>                             stairsExitAnimation;
-    std::pair<int, int>                                          stairsExitPosition;
+    std::pair<size_t, size_t>                                    stairsExitPosition;
     std::unique_ptr<StairsAnimation>                             stairsEntranceAnimation;
     std::unique_ptr<LedgeAnimation>                              ledgeAnimation;
     std::unique_ptr<LocationAnimation>                           locationAnimation;

@@ -6,7 +6,7 @@
 
 #include <memory>
 #include <string>
-#include <vector>
+#include <array>
 
 class TileLayer : public Layer<Tile::TilePtr>
 {

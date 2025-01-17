@@ -42,7 +42,7 @@ Settings::Settings()
     if (!fs::exists(configPath))
         std::fstream file(configPath, std::fstream::out);
 
-    pt::ini_parser::read_ini(configPath, pt);
+    pt::ini_parser::read_ini(configPath.string(), pt);
 }
 
 Settings::~Settings()
@@ -51,5 +51,5 @@ Settings::~Settings()
 
 void Settings::save()
 {
-    pt::ini_parser::write_ini(configPath, pt);
+    pt::ini_parser::write_ini(configPath.string(), pt);
 }

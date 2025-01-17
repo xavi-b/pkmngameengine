@@ -18,6 +18,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <cmath>
 #include <numbers>
 #include <random>
 #include <sstream>
@@ -825,7 +826,7 @@ void MapScene::drawTile(Fps const*                                   fps,
 
     if (tile->isDoor())
     {
-        if (doorClosingAnimation && doorClosingPosition == std::pair<int, int>{i, j})
+        if (doorClosingAnimation && doorClosingPosition == std::pair<size_t, size_t>{i, j})
         {
             doorClosingAnimation->setSprite(sprite);
             doorClosingAnimation->setSourceRect(srcRect);
@@ -833,7 +834,7 @@ void MapScene::drawTile(Fps const*                                   fps,
             doorClosingAnimation->draw(fps, rs);
         }
 
-        if (doorOpeningAnimation && doorOpeningPosition == std::pair<int, int>{i, j})
+        if (doorOpeningAnimation && doorOpeningPosition == std::pair<size_t, size_t>{i, j})
         {
             doorOpeningAnimation->setSprite(sprite);
             doorOpeningAnimation->setSourceRect(srcRect);

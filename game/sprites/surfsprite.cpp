@@ -1,5 +1,7 @@
 #include "surfsprite.h"
 
+#include <cmath>
+
 SurfSprite::SurfSprite(SDL_Renderer* renderer) : Sprite(renderer)
 {
 }
