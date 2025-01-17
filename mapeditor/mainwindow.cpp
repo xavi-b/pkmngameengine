@@ -18,7 +18,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
     QWidget*     w = new QWidget;
     QHBoxLayout* l = new QHBoxLayout;
 
-    QString root = QDir::currentPath() + "/resources/Graphics";
+    QString root = "./resources/Graphics";
 
     QFileSystemModel* model = new QFileSystemModel;
     model->setRootPath(root);
@@ -45,7 +45,8 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
                 QFileInfo info = model->fileInfo(current);
                 if (info.suffix().compare("png", Qt::CaseInsensitive) == 0)
                 {
-                    imageViewer->setPixmap(info.filePath());
+                    QString pixmap = QDir(".").relativeFilePath(info.filePath());
+                    imageViewer->setPixmap(pixmap);
                 }
             });
 
