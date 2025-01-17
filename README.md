@@ -14,6 +14,26 @@
 * sdl2
 * sdl2-image
 * sdl2-mixer
+* sdl2-ttf
+
+## Linux
+
+Install the above requirements using your package manager
+
+## Windows
+
+* Install boost binaries https://sourceforge.net/projects/boost/
+* Add the following CMake parameters with the proper boost install location:
+    * BOOST_INCLUDEDIR=C:\boost\boost_1_82_0\
+    * BOOST_LIBRARYDIR=C:\boost\boost_1_82_0\lib64-msvc-14.3
+    * Boost_ROOT=C:\boost\boost_1_82_0\boost
+* Download the latest SDL 2 libraries and put them in the same folder:
+    * https://github.com/libsdl-org/SDL/releases
+    * https://github.com/libsdl-org/SDL_ttf/releases
+    * https://github.com/libsdl-org/SDL_mixer/releases
+    * https://github.com/libsdl-org/SDL_image/releases
+* Update your CMAKE_PREFIX_PATH variable:
+    * CMAKE_PREFIX_PATH=%{Qt:QT_INSTALL_PREFIX};C:\SDL\cmake;
 
 # Data
 * Sprites from Pokemon Essentials
