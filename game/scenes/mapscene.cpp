@@ -126,9 +126,6 @@ void MapScene::init()
     }
 
     fadeOutAnimation = std::make_unique<FadeAnimation>(renderer, false);
-    fadeInAnimation  = std::make_unique<FadeAnimation>(renderer, true);
-    fadeInAnimation->reset();
-    fadeInAnimation->start();
 
     flashAnimation = std::make_unique<FlashAnimation>(renderer);
 }
@@ -187,14 +184,17 @@ void MapScene::update(Inputs const* inputs)
         weatherAnimation->incrementTicks();
     }
 
-    if (fadeInAnimation->isRunning())
-        fadeInAnimation->incrementTicks();
-
-    if (fadeInAnimation->isFinished())
+    if (fadeInAnimation)
     {
-        if (doorClosingAnimation && !doorClosingAnimation->isStarted())
+        if (fadeInAnimation->isRunning())
+            fadeInAnimation->incrementTicks();
+
+        if (fadeInAnimation->isFinished())
         {
-            doorClosingAnimation->start();
+            if (doorClosingAnimation && !doorClosingAnimation->isStarted())
+            {
+                doorClosingAnimation->start();
+            }
         }
     }
 
@@ -754,10 +754,10 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
     if (openMenu)
         menu->draw(fps, rs);
 
-    if (fadeInAnimation->isRunning())
+    if (fadeInAnimation && fadeInAnimation->isRunning())
         fadeInAnimation->draw(fps, rs);
 
-    if (fadeOutAnimation->isRunning())
+    if (fadeOutAnimation && fadeOutAnimation->isRunning())
         fadeOutAnimation->draw(fps, rs);
 
     drawCurrentLocationOverlay(fps, rs);
@@ -894,7 +894,7 @@ void MapScene::drawCurrentLocationOverlay(Fps const* fps, RenderSizes rs)
     locationAnimation->draw(fps, rs);
 }
 
-void MapScene::initPlayerPosition(size_t x, size_t y, size_t l, Entity::Direction direction)
+void MapScene::initPlayerPosition(size_t x, size_t y, size_t l, Entity::Direction direction, bool fadeIn)
 {
     auto& player                 = Game::instance()->data.player;
     player.x                     = x;
@@ -911,12 +911,19 @@ void MapScene::initPlayerPosition(size_t x, size_t y, size_t l, Entity::Directio
     locationAnimation = std::make_unique<LocationAnimation>(renderer);
 
     startCurrentLocationOverlay();
+
+    if (fadeIn)
+    {
+        fadeInAnimation = std::make_unique<FadeAnimation>(renderer, true);
+        fadeInAnimation->reset();
+        fadeInAnimation->start();
+    }
 }
 
-void MapScene::initMovingPlayerPosition(size_t x, size_t y, size_t l, Entity::Direction direction)
+void MapScene::initMovingPlayerPosition(size_t x, size_t y, size_t l, Entity::Direction direction, bool fadeIn)
 {
     auto& player = Game::instance()->data.player;
-    initPlayerPosition(x, y, l, direction);
+    initPlayerPosition(x, y, l, direction, fadeIn);
     switch (direction)
     {
     case Entity::Direction::LEFT:

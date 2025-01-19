@@ -3,6 +3,7 @@
 #include "game.h"
 #include "scenes/story/cave1scene.h"
 #include "scenes/story/dive1scene.h"
+#include "scenes/story/road2scene.h"
 #include "scenes/story/town1scene.h"
 
 Road1Scene::Road1Scene(SDL_Renderer* renderer) : MapScene(renderer, "resources/maps/road1.pkmap")
@@ -183,6 +184,11 @@ void Road1Scene::update(Inputs const* inputs)
 
     if (!preventInputs)
     {
+        if (player.x == map->getNCol() - 9 && player.direction == Entity::Direction::RIGHT)
+        {
+            goToScene = "Road2";
+        }
+
         if (auto event = facedPreviousEvent(player))
         {
             if (event->getId() == "Cave1")
@@ -292,6 +298,13 @@ std::unique_ptr<Scene> Road1Scene::nextScene()
     auto scene = MapScene::nextScene();
     if (scene)
         return scene;
+
+    if (goToScene == "Road2")
+    {
+        auto scene = std::make_unique<Road2Scene>(renderer);
+        scene->initMovingPlayerPosition(9, player.y, 0, Entity::Direction::RIGHT, false);
+        return scene;
+    }
 
     if (fadeOutAnimation->isStarted() && fadeOutAnimation->isFinished())
     {

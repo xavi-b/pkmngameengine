@@ -53,8 +53,13 @@ public:
     virtual void    initPlayerPosition(size_t            x,
                                        size_t            y,
                                        size_t            l,
-                                       Entity::Direction direction = Entity::Direction::NONE);
-    virtual void    initMovingPlayerPosition(size_t x, size_t y, size_t l, Entity::Direction direction);
+                                       Entity::Direction direction = Entity::Direction::NONE,
+                                       bool              fadeIn    = true);
+    virtual void    initMovingPlayerPosition(size_t            x,
+                                             size_t            y,
+                                             size_t            l,
+                                             Entity::Direction direction,
+                                             bool              fadeIn = true);
     void            initClosingDoor(size_t x, size_t y);
     void            initStairsEntrance(StairsAnimation::Direction direction);
     void            startLedgeJump(Entity& entity);
