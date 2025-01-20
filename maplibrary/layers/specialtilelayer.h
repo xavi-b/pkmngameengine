@@ -21,6 +21,7 @@ enum SpecialTileType
     SOOTGRASS,
     ICE,
     BREAKABLEGROUND,
+    WATERCURRENT,
     __SIZE
 };
 

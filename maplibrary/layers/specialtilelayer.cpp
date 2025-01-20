@@ -54,6 +54,8 @@ std::string SpecialTileTypeToString(SpecialTileType e)
         return "ICE";
     case BREAKABLEGROUND:
         return "BREAKABLEGROUND";
+    case WATERCURRENT:
+        return "WATERCURRENT";
     case __SIZE:
         return "__SIZE";
     }

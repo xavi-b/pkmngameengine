@@ -1438,6 +1438,21 @@ bool MapScene::isLedgePassable(Entity const& entity, size_t x, size_t y, size_t 
     return false;
 }
 
+bool MapScene::isWaterCurrent(size_t x, size_t y, size_t l) const
+{
+    auto& level = map->getLevels()[l];
+
+    auto& specialTileLayer = level->getSpecialTileLayer();
+    auto& specialTile      = (*specialTileLayer.get())(x, y);
+    if (specialTile)
+    {
+        if (*(specialTile.get()) == WATERCURRENT)
+            return true;
+    }
+
+    return false;
+}
+
 Event* MapScene::eventAt(size_t x, size_t y, size_t l) const
 {
     if (x >= map->getNCol())
