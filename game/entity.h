@@ -34,6 +34,7 @@ public:
     size_t    previousY         = 0;
     Speed     speed             = Speed::WALK;
     Speed     previousSpeed     = Speed::WALK;
+    bool      sliding           = false;
     bool      surfing           = false;
     bool      boulder           = false;
 

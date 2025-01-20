@@ -83,7 +83,10 @@ void Sprite::draw(Entity const& entity, Fps const* fps, RenderSizes /*rs*/, SDL_
     int imageCol = 0;
     if (entity.direction != Entity::Direction::NONE)
     {
-        imageCol = std::floor((accumulatedTicks + fps->tickPercentage()) / int(entity.speed) * 4);
+        if (entity.sliding)
+            imageCol = 1;
+        else
+            imageCol = std::floor((accumulatedTicks + fps->tickPercentage()) / int(entity.speed) * 4);
     }
 
     SDL_Rect srcRect;

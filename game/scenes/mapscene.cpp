@@ -414,7 +414,7 @@ void MapScene::update(Inputs const* inputs)
             if (player.direction != Entity::Direction::NONE)
             {
                 player.surfing = true;
-                move(player, true);
+                move(player);
                 preventInputs = true;
                 return;
             }
@@ -423,6 +423,28 @@ void MapScene::update(Inputs const* inputs)
     else if (!isWaterCurrent(player.x, player.y, player.l)
              && isWaterCurrent(player.previousX, player.previousY, player.l))
     {
+        stop(player);
+    }
+    else if (isIce(player.x, player.y, player.l))
+    {
+        player.direction = player.previousDirection;
+        player.sliding   = true;
+        move(player);
+
+        if (player.x == player.previousX && player.y == player.previousY)
+        {
+            player.sliding = false;
+            stop(player);
+        }
+        else
+        {
+            preventInputs = true;
+            return;
+        }
+    }
+    else if (!isIce(player.x, player.y, player.l) && isIce(player.previousX, player.previousY, player.l))
+    {
+        player.sliding = false;
         stop(player);
     }
 
@@ -814,6 +836,10 @@ void MapScene::drawPlayer(Fps const* fps, RenderSizes rs, SDL_Rect dstPlayerRect
         dstPlayerRect.y += waterMovementOffset;
         surfSprite->draw(player, fps, rs, dstPlayerRect);
         playerSurfSprite->draw(player, fps, rs, dstPlayerRect);
+    }
+    else if (player.sliding)
+    {
+        playerSprite->draw(player, fps, rs, dstPlayerRect);
     }
     else if (stairsExitAnimation && stairsExitAnimation->isStarted())
     {
@@ -1467,6 +1493,21 @@ bool MapScene::isWaterCurrent(size_t x, size_t y, size_t l) const
     if (specialTile)
     {
         if (*(specialTile.get()) == WATERCURRENT)
+            return true;
+    }
+
+    return false;
+}
+
+bool MapScene::isIce(size_t x, size_t y, size_t l) const
+{
+    auto& level = map->getLevels()[l];
+
+    auto& specialTileLayer = level->getSpecialTileLayer();
+    auto& specialTile      = (*specialTileLayer.get())(x, y);
+    if (specialTile)
+    {
+        if (*(specialTile.get()) == ICE)
             return true;
     }
 

@@ -93,6 +93,7 @@ public:
     bool    isLedgeTile(size_t x, size_t y, size_t l) const;
     bool    isLedgePassable(Entity const& entity, size_t x, size_t y, size_t l) const;
     bool    isWaterCurrent(size_t x, size_t y, size_t l) const;
+    bool    isIce(size_t x, size_t y, size_t l) const;
 
     Event* eventAt(size_t x, size_t y, size_t l) const;
     Event* facedEvent(Entity const& entity) const;
