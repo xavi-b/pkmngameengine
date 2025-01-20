@@ -282,7 +282,7 @@ void MapperWidget::processMouseEvent(QMouseEvent* event)
     case LayerType::EVENTS: {
         auto& layer = level->getEventLayer();
 
-        if (event->buttons() & Qt::RightButton)
+        if (event->button() == Qt::RightButton || event->buttons() & Qt::RightButton)
         {
             auto& previousTile = (*layer.get())(col, row);
             commandExecute(std::make_unique<ResetCommand<Event>>(previousTile));
@@ -308,7 +308,7 @@ void MapperWidget::processMouseEvent(QMouseEvent* event)
     case LayerType::SPECIAL_TILE: {
         auto& layer = level->getSpecialTileLayer();
 
-        if (event->buttons() & Qt::RightButton)
+        if (event->button() == Qt::RightButton || event->buttons() & Qt::RightButton)
         {
             auto& previousTile = (*layer.get())(col, row);
             commandExecute(std::make_unique<ResetCommand<SpecialTileType>>(previousTile));
@@ -324,7 +324,7 @@ void MapperWidget::processMouseEvent(QMouseEvent* event)
     default: {
         auto& layer = level->getTileLayers()[workingLayerIndex];
 
-        if (event->buttons() & Qt::RightButton)
+        if (event->button() == Qt::RightButton || event->buttons() & Qt::RightButton)
         {
             auto& previousTile = (*layer.get())(col, row);
             commandExecute(std::make_unique<ResetCommand<Tile>>(previousTile));
