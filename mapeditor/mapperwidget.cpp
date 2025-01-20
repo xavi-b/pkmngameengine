@@ -211,10 +211,11 @@ void MapperWidget::mousePressEvent(QMouseEvent* event)
 
     if (event->pos().x() < selSize * int(map->getNCol()) && event->pos().y() < selSize * int(map->getNRow()))
     {
-        int col        = event->pos().x() / selSize * selSize;
-        int row        = event->pos().y() / selSize * selSize;
-        originPosition = {col, row};
-        pressed        = true;
+        int col         = event->pos().x() / selSize * selSize;
+        int row         = event->pos().y() / selSize * selSize;
+        originPosition  = {col, row};
+        currentPosition = {col, row};
+        pressed         = true;
     }
     else
     {
@@ -286,7 +287,7 @@ void MapperWidget::processMouseEvent(QMouseEvent* event)
             auto& previousTile = (*layer.get())(col, row);
             commandExecute(std::make_unique<ResetCommand<Event>>(previousTile));
         }
-        else if (event->button() == Qt::LeftButton)
+        else if (event->button() == Qt::LeftButton || event->buttons() & Qt::LeftButton)
         {
             auto& previousEvent = (*layer.get())(col, row);
 
@@ -312,7 +313,7 @@ void MapperWidget::processMouseEvent(QMouseEvent* event)
             auto& previousTile = (*layer.get())(col, row);
             commandExecute(std::make_unique<ResetCommand<SpecialTileType>>(previousTile));
         }
-        else if (event->button() == Qt::LeftButton)
+        else if (event->button() == Qt::LeftButton || event->buttons() & Qt::LeftButton)
         {
             auto& previousType = (*layer.get())(col, row);
             auto  type         = std::make_unique<SpecialTileType>(specialTileType);
@@ -328,7 +329,7 @@ void MapperWidget::processMouseEvent(QMouseEvent* event)
             auto& previousTile = (*layer.get())(col, row);
             commandExecute(std::make_unique<ResetCommand<Tile>>(previousTile));
         }
-        else if (event->button() == Qt::LeftButton)
+        else if (event->button() == Qt::LeftButton || event->buttons() & Qt::LeftButton)
         {
             if (event->modifiers() & Qt::ShiftModifier)
             {
