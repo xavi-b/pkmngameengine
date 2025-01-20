@@ -405,6 +405,26 @@ void MapScene::update(Inputs const* inputs)
     {
         stop(player);
     }
+    else if (isWaterCurrent(player.x, player.y, player.l))
+    {
+        auto event = eventAt(player.x, player.y, player.l);
+        if (event)
+        {
+            player.direction = Entity::getDirectionFromString(event->getId());
+            if (player.direction != Entity::Direction::NONE)
+            {
+                player.surfing = true;
+                move(player, true);
+                preventInputs = true;
+                return;
+            }
+        }
+    }
+    else if (!isWaterCurrent(player.x, player.y, player.l)
+             && isWaterCurrent(player.previousX, player.previousY, player.l))
+    {
+        stop(player);
+    }
 
     if (preventInputs)
     {
@@ -1099,7 +1119,7 @@ void MapScene::move(Entity& entity, bool force)
         }
 
         if (entity.surfing && !isWaterTile(entity.x, entity.y, entity.l)
-            && !isWaterfallTile(entity.x, entity.y, entity.l)
+            && !isWaterCurrent(entity.x, entity.y, entity.l) && !isWaterfallTile(entity.x, entity.y, entity.l)
             && !(entity.l > 0 && isWaterfallTile(entity.x, entity.y, entity.l - 1)))
         {
             entity.surfing = false;

@@ -41,3 +41,17 @@ std::string Entity::getDirectionString(Direction direction)
         return "DOWN";
     }
 }
+
+Entity::Direction Entity::getDirectionFromString(std::string direction)
+{
+    if (direction == "LEFT")
+        return Direction::LEFT;
+    if (direction == "RIGHT")
+        return Direction::RIGHT;
+    if (direction == "UP")
+        return Direction::UP;
+    if (direction == "DOWN")
+        return Direction::DOWN;
+
+    return Direction::NONE;
+}

@@ -39,6 +39,7 @@ public:
 
     static Direction   getOppositeDirection(Direction direction);
     static std::string getDirectionString(Direction direction);
+    static Direction   getDirectionFromString(std::string direction);
 };
 
 #endif // ENTITY_H
