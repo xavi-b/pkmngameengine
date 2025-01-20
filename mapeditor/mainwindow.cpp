@@ -2,11 +2,13 @@
 
 #include "version.h"
 
+#include <QClipboard>
 #include <QFileDialog>
 #include <QFileSystemModel>
 #include <QHBoxLayout>
 #include <QMenuBar>
 #include <QMessageBox>
+#include <QMimeData>
 #include <QScrollArea>
 #include <QTreeView>
 #include <iostream>
@@ -209,6 +211,26 @@ void MainWindow::createMenus()
     });
     editMenu->addAction(undoAct);
     editMenu->addAction(redoAct);
+    QAction* copyAct = new QAction(tr("&Copy"));
+    copyAct->setShortcuts(QKeySequence::Copy);
+    connect(copyAct, &QAction::triggered, this, [=]() {
+        mapEditor->getMapperViewer()->contentWidget()->startCopying();
+    });
+    QAction* pasteAct = new QAction(tr("&Paste"));
+    pasteAct->setShortcuts(QKeySequence::Paste);
+    QClipboard const* clipboard = QGuiApplication::clipboard();
+    QMimeData const*  mimeData  = clipboard->mimeData();
+    pasteAct->setEnabled(mimeData->hasFormat(MapperWidget::MIMEDATA_FORMAT));
+    connect(pasteAct, &QAction::triggered, this, [=]() {
+        mapEditor->getMapperViewer()->contentWidget()->startPasting();
+    });
+    connect(QGuiApplication::clipboard(), &QClipboard::dataChanged, this, [=]() {
+        QClipboard const* clipboard = QGuiApplication::clipboard();
+        QMimeData const*  mimeData  = clipboard->mimeData();
+        pasteAct->setEnabled(mimeData->hasFormat(MapperWidget::MIMEDATA_FORMAT));
+    });
+    editMenu->addAction(copyAct);
+    editMenu->addAction(pasteAct);
 
     QMenu*   viewMenu           = menuBar()->addMenu(tr("&View"));
     QAction* showCoordinatesAct = new QAction(tr("&Show coordinates"));

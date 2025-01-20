@@ -18,6 +18,8 @@ class MapperWidget : public QWidget
     Q_PROPERTY(bool gridVisible READ isGridVisible WRITE setGridVisible NOTIFY gridVisibleChanged FINAL)
 
 public:
+    static constexpr char MIMEDATA_FORMAT[] = "pkmngameengine/pkmap";
+
     enum class LayerType
     {
         TILES,
@@ -33,10 +35,10 @@ public:
 
     std::unique_ptr<TileLayer>&              getWorkingLayer();
     std::unique_ptr<Level>&                  getWorkingLevel();
-    int                                      getWorkingLayerIndex() const;
-    void                                     setWorkingLayerIndex(int index);
-    int                                      getWorkingLevelIndex() const;
-    void                                     setWorkingLevelIndex(int index);
+    size_t                                   getWorkingLayerIndex() const;
+    void                                     setWorkingLayerIndex(size_t index);
+    size_t                                   getWorkingLevelIndex() const;
+    void                                     setWorkingLevelIndex(size_t index);
     std::vector<std::unique_ptr<Level>>&     getLevels();
     std::vector<std::unique_ptr<TileLayer>>& getWorkingLevelLayers();
 
@@ -77,6 +79,11 @@ public:
     void commandRedo();
     void commandClear();
 
+    void startCopying();
+    void copy(QMouseEvent* event);
+    void startPasting();
+    void paste(QMouseEvent* event);
+
 signals:
     void workingLayerIndexChanged(int index);
     void workingLevelIndexChanged(int index);
@@ -116,19 +123,29 @@ private:
     QPixmap                overlayPixmap;
     QMap<QString, QPixmap> pixmaps;
     QMap<QString, QPixmap> nightPixmaps;
-    QPoint                 origin;
+    QPoint                 originPosition;
+    QPoint                 currentPosition;
     bool                   pressed             = false;
     bool                   showSelectionPixmap = false;
+    bool                   copying             = false;
+    bool                   pasting             = false;
 
     std::unique_ptr<Map> map;
-    int                  workingLayerIndex   = 0;
-    int                  workingLevelIndex   = 0;
+    size_t               workingLayerIndex   = 0;
+    size_t               workingLevelIndex   = 0;
     bool                 belowLevelsOpacity  = false;
     bool                 night               = false;
     LayerType            layerType           = LayerType::TILES;
     SpecialTileType      specialTileType     = SpecialTileType::GRASS;
     bool                 gridVisible         = true;
     bool                 mustShowCoordinates = false;
+
+    // Pasting
+    std::unique_ptr<Level> pastingLevel;
+    size_t                 pastingStartX;
+    size_t                 pastingStartY;
+    size_t                 pastingEndX;
+    size_t                 pastingEndY;
 
     std::vector<std::unique_ptr<MapperCommand>> commandsHistory;
     size_t                                      commandsIndex    = 0;
