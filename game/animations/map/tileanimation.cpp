@@ -2,8 +2,8 @@
 
 #include <SDL_image.h>
 
-TileAnimation::TileAnimation(SDL_Renderer* renderer, std::string const& tilePath, bool night)
-    : MapAnimation(renderer, night)
+TileAnimation::TileAnimation(SDL_Renderer* renderer, std::string const& tilePath, TileLayer::Type layerType, bool night)
+    : MapAnimation(renderer, night), layerType(layerType)
 {
     surface = IMG_Load(tilePath.c_str());
     texture = RenderUtils::texture(renderer, SDL_CreateTextureFromSurface(renderer, surface), night);
@@ -30,4 +30,19 @@ void TileAnimation::incrementTicks()
 
     if (int(accumulatedTicks) % speed == 0)
         ticks++;
+}
+
+Entity::Direction TileAnimation::getDirection() const
+{
+    return direction;
+}
+
+void TileAnimation::setDirection(Entity::Direction direction)
+{
+    this->direction = direction;
+}
+
+TileLayer::Type TileAnimation::getLayerType() const
+{
+    return layerType;
 }

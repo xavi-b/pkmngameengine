@@ -2,6 +2,7 @@
 
 #include "animations/map/grassanimation.h"
 #include "animations/map/groundanimation.h"
+#include "animations/map/sandanimation.h"
 #include "animations/map/underwatergrassanimation.h"
 #include "animations/weather/blizzardanimation.h"
 #include "animations/weather/harshsunlightanimation.h"
@@ -302,7 +303,8 @@ void MapScene::update(Inputs const* inputs)
             }
             else
             {
-                it->second->restart();
+                if (isNormalTile(player.x, player.y, player.l) || isGrassTile(player.x, player.y, player.l))
+                    it->second->restart();
             }
         }
     }
@@ -405,7 +407,7 @@ void MapScene::update(Inputs const* inputs)
     {
         stop(player);
     }
-    else if (isWaterCurrent(player.x, player.y, player.l))
+    else if (isWaterCurrentTile(player.x, player.y, player.l))
     {
         auto event = eventAt(player.x, player.y, player.l);
         if (event)
@@ -420,12 +422,12 @@ void MapScene::update(Inputs const* inputs)
             }
         }
     }
-    else if (!isWaterCurrent(player.x, player.y, player.l)
-             && isWaterCurrent(player.previousX, player.previousY, player.l))
+    else if (!isWaterCurrentTile(player.x, player.y, player.l)
+             && isWaterCurrentTile(player.previousX, player.previousY, player.l))
     {
         stop(player);
     }
-    else if (isIce(player.x, player.y, player.l))
+    else if (isIceTile(player.x, player.y, player.l))
     {
         player.direction = player.previousDirection;
         player.sliding   = true;
@@ -442,7 +444,7 @@ void MapScene::update(Inputs const* inputs)
             return;
         }
     }
-    else if (!isIce(player.x, player.y, player.l) && isIce(player.previousX, player.previousY, player.l))
+    else if (!isIceTile(player.x, player.y, player.l) && isIceTile(player.previousX, player.previousY, player.l))
     {
         player.sliding = false;
         stop(player);
@@ -712,37 +714,35 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
                     }
                 }
 
-                if (layer->getType() == TileLayer::Type::SOLID_OVERLAY)
+                for (size_t i = 0; i < map->getNCol(); ++i)
                 {
-                    for (size_t i = 0; i < map->getNCol(); ++i)
+                    SDL_Rect dstRect;
+                    dstRect.x = i * dstTilePixelWidth + playerOffsetX;
+                    dstRect.y = j * dstTilePixelHeight + playerOffsetY;
+                    dstRect.w = dstTilePixelWidth;
+                    dstRect.h = dstTilePixelHeight;
+
+                    // Draw only visible tiles
+                    if (!(dstRect.x >= -dstTilePixelWidth && dstRect.x <= (rs.ww + dstTilePixelWidth)
+                          && dstRect.y >= -dstTilePixelHeight && dstRect.y <= rs.wh + dstTilePixelHeight))
                     {
-                        SDL_Rect dstRect;
-                        dstRect.x = i * dstTilePixelWidth + playerOffsetX;
-                        dstRect.y = j * dstTilePixelHeight + playerOffsetY;
-                        dstRect.w = dstTilePixelWidth;
-                        dstRect.h = dstTilePixelHeight;
+                        continue;
+                    }
 
-                        // Draw only visible tiles
-                        if (!(dstRect.x >= -dstTilePixelWidth && dstRect.x <= (rs.ww + dstTilePixelWidth)
-                              && dstRect.y >= -dstTilePixelHeight && dstRect.y <= rs.wh + dstTilePixelHeight))
+                    // Draw animated tiles
+                    auto it = tilesAnimations.find({i, j});
+
+                    if (it != tilesAnimations.end() && it->second && it->second->getLayerType() == layer->getType()
+                        && !it->second->isFinished())
+                    {
+                        if (isUnderWaterGrassTile(i, j, l))
                         {
-                            continue;
+                            dstRect.y -= dstTilePixelHeight;
+                            dstRect.h += dstTilePixelHeight;
                         }
 
-                        // Draw animated tiles
-                        auto it = tilesAnimations.find({i, j});
-
-                        if (it != tilesAnimations.end() && it->second && !it->second->isFinished())
-                        {
-                            if (isUnderWaterGrassTile(i, j, l))
-                            {
-                                dstRect.y -= dstTilePixelHeight;
-                                dstRect.h += dstTilePixelHeight;
-                            }
-
-                            it->second->setDestinationRect(dstRect);
-                            it->second->draw(fps, rs);
-                        }
+                        it->second->setDestinationRect(dstRect);
+                        it->second->draw(fps, rs);
                     }
                 }
             }
@@ -1128,6 +1128,27 @@ void MapScene::move(Entity& entity, bool force)
             }
         }
 
+        if (isSandTile(entity.previousX, entity.previousY, entity.l))
+        {
+            auto it = tilesAnimations.find({entity.previousX, entity.previousY});
+
+            if (it == tilesAnimations.end())
+            {
+                tilesAnimations[{entity.previousX, entity.previousY}] =
+                    std::make_unique<SandAnimation>(renderer, shouldShowNightTextures());
+                tilesAnimations[{entity.previousX, entity.previousY}]->setDirection(entity.direction);
+                tilesAnimations[{entity.previousX, entity.previousY}]->start();
+            }
+            else
+            {
+                if (it->second->getDirection() != entity.direction || it->second->isFinished())
+                {
+                    it->second->setDirection(entity.direction);
+                    it->second->restart();
+                }
+            }
+        }
+
         if (isUnderWaterGrassTile(entity.x, entity.y, entity.l))
         {
             auto it = tilesAnimations.find({entity.x, entity.y});
@@ -1145,7 +1166,7 @@ void MapScene::move(Entity& entity, bool force)
         }
 
         if (entity.surfing && !isWaterTile(entity.x, entity.y, entity.l)
-            && !isWaterCurrent(entity.x, entity.y, entity.l) && !isWaterfallTile(entity.x, entity.y, entity.l)
+            && !isWaterCurrentTile(entity.x, entity.y, entity.l) && !isWaterfallTile(entity.x, entity.y, entity.l)
             && !(entity.l > 0 && isWaterfallTile(entity.x, entity.y, entity.l - 1)))
         {
             entity.surfing = false;
@@ -1484,7 +1505,7 @@ bool MapScene::isLedgePassable(Entity const& entity, size_t x, size_t y, size_t 
     return false;
 }
 
-bool MapScene::isWaterCurrent(size_t x, size_t y, size_t l) const
+bool MapScene::isWaterCurrentTile(size_t x, size_t y, size_t l) const
 {
     auto& level = map->getLevels()[l];
 
@@ -1499,7 +1520,7 @@ bool MapScene::isWaterCurrent(size_t x, size_t y, size_t l) const
     return false;
 }
 
-bool MapScene::isIce(size_t x, size_t y, size_t l) const
+bool MapScene::isIceTile(size_t x, size_t y, size_t l) const
 {
     auto& level = map->getLevels()[l];
 
@@ -1508,6 +1529,21 @@ bool MapScene::isIce(size_t x, size_t y, size_t l) const
     if (specialTile)
     {
         if (*(specialTile.get()) == ICE)
+            return true;
+    }
+
+    return false;
+}
+
+bool MapScene::isSandTile(size_t x, size_t y, size_t l) const
+{
+    auto& level = map->getLevels()[l];
+
+    auto& specialTileLayer = level->getSpecialTileLayer();
+    auto& specialTile      = (*specialTileLayer.get())(x, y);
+    if (specialTile)
+    {
+        if (*(specialTile.get()) == SAND)
             return true;
     }
 

@@ -2,6 +2,7 @@
 #define MAPANIMATION_H
 
 #include "animation.h"
+#include "entity.h"
 
 class MapAnimation : public Animation
 {

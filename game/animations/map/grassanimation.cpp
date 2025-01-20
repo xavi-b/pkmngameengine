@@ -5,7 +5,10 @@
 #include <SDL_image.h>
 
 GrassAnimation::GrassAnimation(SDL_Renderer* renderer, bool night)
-    : TileAnimation(renderer, "resources/Graphics/Animations/Overworld dust and grass.png", night)
+    : TileAnimation(renderer,
+                    "resources/Graphics/Animations/Overworld dust and grass.png",
+                    TileLayer::Type::SOLID_OVERLAY,
+                    night)
 {
     speed            = 2;
     spriteStartIndex = 3;

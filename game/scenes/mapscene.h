@@ -6,8 +6,8 @@
 #include "animations/locationanimation.h"
 #include "animations/map/dooranimation.h"
 #include "animations/map/ledgeanimation.h"
-#include "animations/map/mapanimation.h"
 #include "animations/map/stairsanimation.h"
+#include "animations/map/tileanimation.h"
 #include "animations/weather/flashanimation.h"
 #include "animations/weather/weatheranimation.h"
 #include "entity.h"
@@ -92,8 +92,9 @@ public:
     bool    isUnderWaterGrassTile(size_t x, size_t y, size_t l) const;
     bool    isLedgeTile(size_t x, size_t y, size_t l) const;
     bool    isLedgePassable(Entity const& entity, size_t x, size_t y, size_t l) const;
-    bool    isWaterCurrent(size_t x, size_t y, size_t l) const;
-    bool    isIce(size_t x, size_t y, size_t l) const;
+    bool    isWaterCurrentTile(size_t x, size_t y, size_t l) const;
+    bool    isIceTile(size_t x, size_t y, size_t l) const;
+    bool    isSandTile(size_t x, size_t y, size_t l) const;
 
     Event* eventAt(size_t x, size_t y, size_t l) const;
     Event* facedEvent(Entity const& entity) const;
@@ -137,23 +138,23 @@ protected:
 
     Map::Weather weather = Map::Weather::NONE;
 
-    Pkmn::PkmnPtr                                                      emptyPkmnPtr = nullptr;
-    Pkmn::PkmnPtr                                                      encounteredPkmn;
-    std::unique_ptr<BattleIntroAnimation>                              battleIntro;
-    std::unique_ptr<FadeAnimation>                                     fadeInAnimation;
-    std::unique_ptr<FadeAnimation>                                     fadeOutAnimation;
-    std::unique_ptr<WeatherAnimation>                                  weatherAnimation;
-    std::map<std::pair<size_t, size_t>, std::unique_ptr<MapAnimation>> tilesAnimations;
-    std::pair<size_t, size_t>                                          doorOpeningPosition;
-    std::unique_ptr<DoorAnimation>                                     doorOpeningAnimation;
-    std::pair<size_t, size_t>                                          doorClosingPosition;
-    std::unique_ptr<DoorAnimation>                                     doorClosingAnimation;
-    std::unique_ptr<FlashAnimation>                                    flashAnimation;
-    std::unique_ptr<StairsAnimation>                                   stairsExitAnimation;
-    std::pair<size_t, size_t>                                          stairsExitPosition;
-    std::unique_ptr<StairsAnimation>                                   stairsEntranceAnimation;
-    std::unique_ptr<LedgeAnimation>                                    ledgeAnimation;
-    std::unique_ptr<LocationAnimation>                                 locationAnimation;
+    Pkmn::PkmnPtr                                                       emptyPkmnPtr = nullptr;
+    Pkmn::PkmnPtr                                                       encounteredPkmn;
+    std::unique_ptr<BattleIntroAnimation>                               battleIntro;
+    std::unique_ptr<FadeAnimation>                                      fadeInAnimation;
+    std::unique_ptr<FadeAnimation>                                      fadeOutAnimation;
+    std::unique_ptr<WeatherAnimation>                                   weatherAnimation;
+    std::map<std::pair<size_t, size_t>, std::unique_ptr<TileAnimation>> tilesAnimations;
+    std::pair<size_t, size_t>                                           doorOpeningPosition;
+    std::unique_ptr<DoorAnimation>                                      doorOpeningAnimation;
+    std::pair<size_t, size_t>                                           doorClosingPosition;
+    std::unique_ptr<DoorAnimation>                                      doorClosingAnimation;
+    std::unique_ptr<FlashAnimation>                                     flashAnimation;
+    std::unique_ptr<StairsAnimation>                                    stairsExitAnimation;
+    std::pair<size_t, size_t>                                           stairsExitPosition;
+    std::unique_ptr<StairsAnimation>                                    stairsEntranceAnimation;
+    std::unique_ptr<LedgeAnimation>                                     ledgeAnimation;
+    std::unique_ptr<LocationAnimation>                                  locationAnimation;
 
     bool                  openMenu = false;
     std::unique_ptr<Menu> menu;

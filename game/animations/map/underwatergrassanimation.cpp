@@ -5,7 +5,10 @@
 #include <SDL_image.h>
 
 UnderWaterGrassAnimation::UnderWaterGrassAnimation(SDL_Renderer* renderer, bool night)
-    : TileAnimation(renderer, "resources/Graphics/Animations/underwater_bubbles.png", night)
+    : TileAnimation(renderer,
+                    "resources/Graphics/Animations/underwater_bubbles.png",
+                    TileLayer::Type::SOLID_OVERLAY,
+                    night)
 {
 }
 
