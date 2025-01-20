@@ -2,6 +2,7 @@
 
 #include "game.h"
 #include "scenes/story/road1scene.h"
+#include "scenes/story/sea1scene.h"
 
 Road2Scene::Road2Scene(SDL_Renderer* renderer) : MapScene(renderer, "resources/maps/road2.pkmap")
 {
@@ -18,6 +19,11 @@ void Road2Scene::update(Inputs const* inputs)
         if (player.x == 8 && player.direction == Entity::Direction::LEFT)
         {
             goToScene = "Road1";
+        }
+
+        if (player.x > 17 && player.x < 22 && player.y == 17 && player.direction == Entity::Direction::DOWN)
+        {
+            goToScene = "Sea1";
         }
     }
 }
@@ -39,6 +45,13 @@ std::unique_ptr<Scene> Road2Scene::nextScene()
     {
         auto scene = std::make_unique<Road1Scene>(renderer);
         scene->initMovingPlayerPosition(22, player.y, 0, Entity::Direction::LEFT, false);
+        return scene;
+    }
+
+    if (goToScene == "Sea1")
+    {
+        auto scene = std::make_unique<Sea1Scene>(renderer);
+        scene->initMovingSurfingPlayerPosition(player.x - 10, 9, 0, Entity::Direction::DOWN, false);
         return scene;
     }
 

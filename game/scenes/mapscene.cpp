@@ -945,6 +945,13 @@ void MapScene::initMovingPlayerPosition(size_t x, size_t y, size_t l, Entity::Di
     player.direction = direction;
 }
 
+void MapScene::initMovingSurfingPlayerPosition(size_t x, size_t y, size_t l, Entity::Direction direction, bool fadeIn)
+{
+    auto& player   = Game::instance()->data.player;
+    player.surfing = true;
+    initMovingPlayerPosition(x, y, l, direction, fadeIn);
+}
+
 void MapScene::initClosingDoor(size_t x, size_t y)
 {
     doorClosingPosition  = {x, y};

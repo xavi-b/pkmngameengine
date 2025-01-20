@@ -60,6 +60,11 @@ public:
                                              size_t            l,
                                              Entity::Direction direction,
                                              bool              fadeIn = true);
+    virtual void    initMovingSurfingPlayerPosition(size_t            x,
+                                                    size_t            y,
+                                                    size_t            l,
+                                                    Entity::Direction direction,
+                                                    bool              fadeIn = true);
     void            initClosingDoor(size_t x, size_t y);
     void            initStairsEntrance(StairsAnimation::Direction direction);
     void            startLedgeJump(Entity& entity);
