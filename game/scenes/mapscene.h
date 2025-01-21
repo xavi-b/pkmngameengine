@@ -5,9 +5,12 @@
 #include "animations/fadeanimation.h"
 #include "animations/locationanimation.h"
 #include "animations/map/dooranimation.h"
+#include "animations/map/fallentranceanimation.h"
+#include "animations/map/fallexitanimation.h"
 #include "animations/map/ledgeanimation.h"
 #include "animations/map/stairsanimation.h"
 #include "animations/map/tileanimation.h"
+#include "animations/shake/shakeanimation.h"
 #include "animations/weather/flashanimation.h"
 #include "animations/weather/weatheranimation.h"
 #include "entity.h"
@@ -65,6 +68,7 @@ public:
                                                     size_t            l,
                                                     Entity::Direction direction,
                                                     bool              fadeIn = true);
+    virtual void    initFallingPlayerPosition(size_t x, size_t y, size_t l, Entity::Direction direction);
     void            initClosingDoor(size_t x, size_t y);
     void            initStairsEntrance(StairsAnimation::Direction direction);
     void            startLedgeJump(Entity& entity);
@@ -95,6 +99,7 @@ public:
     bool    isWaterCurrentTile(size_t x, size_t y, size_t l) const;
     bool    isIceTile(size_t x, size_t y, size_t l) const;
     bool    isSandTile(size_t x, size_t y, size_t l) const;
+    bool    isBreakableIceTile(size_t x, size_t y, size_t l) const;
 
     Event* eventAt(size_t x, size_t y, size_t l) const;
     Event* facedEvent(Entity const& entity) const;
@@ -145,6 +150,7 @@ protected:
     std::unique_ptr<FadeAnimation>                                      fadeOutAnimation;
     std::unique_ptr<WeatherAnimation>                                   weatherAnimation;
     std::map<std::pair<size_t, size_t>, std::unique_ptr<TileAnimation>> tilesAnimations;
+    std::map<std::pair<size_t, size_t>, size_t>                         tilesDataCount;
     std::pair<size_t, size_t>                                           doorOpeningPosition;
     std::unique_ptr<DoorAnimation>                                      doorOpeningAnimation;
     std::pair<size_t, size_t>                                           doorClosingPosition;
@@ -155,6 +161,9 @@ protected:
     std::unique_ptr<StairsAnimation>                                    stairsEntranceAnimation;
     std::unique_ptr<LedgeAnimation>                                     ledgeAnimation;
     std::unique_ptr<LocationAnimation>                                  locationAnimation;
+    std::unique_ptr<FallExitAnimation>                                  fallExitAnimation;
+    std::unique_ptr<FallEntranceAnimation>                              fallEntranceAnimation;
+    std::unique_ptr<ShakeAnimation>                                     shakeAnimation;
 
     bool                  openMenu = false;
     std::unique_ptr<Menu> menu;

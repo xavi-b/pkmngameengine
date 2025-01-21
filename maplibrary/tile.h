@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+
 namespace js = boost::json;
 
 class Tile
@@ -16,7 +17,9 @@ public:
 
     std::string const& getSpritePath() const;
     size_t             getRow() const;
+    void               setRow(size_t newRow);
     size_t             getCol() const;
+    void               setCol(size_t newCol);
 
     bool isAnimated() const;
     void setAnimated(bool newAnimated);

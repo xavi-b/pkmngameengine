@@ -14,9 +14,19 @@ size_t Tile::getRow() const
     return row;
 }
 
+void Tile::setRow(size_t newRow)
+{
+    row = newRow;
+}
+
 size_t Tile::getCol() const
 {
     return col;
+}
+
+void Tile::setCol(size_t newCol)
+{
+    col = newCol;
 }
 
 bool Tile::isAnimated() const

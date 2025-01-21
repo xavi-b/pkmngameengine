@@ -52,10 +52,12 @@ std::string SpecialTileTypeToString(SpecialTileType e)
         return "SOOTGRASS";
     case ICE:
         return "ICE";
-    case BREAKABLEGROUND:
-        return "BREAKABLEGROUND";
+    case BREAKABLEICE:
+        return "BREAKABLEICE";
     case WATERCURRENT:
         return "WATERCURRENT";
+    case BREAKABLEGROUND:
+        return "BREAKABLEGROUND";
     case __SIZE:
         return "__SIZE";
     }

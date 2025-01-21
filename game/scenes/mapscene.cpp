@@ -4,6 +4,7 @@
 #include "animations/map/groundanimation.h"
 #include "animations/map/sandanimation.h"
 #include "animations/map/underwatergrassanimation.h"
+#include "animations/shake/verticalshakeanimation.h"
 #include "animations/weather/blizzardanimation.h"
 #include "animations/weather/harshsunlightanimation.h"
 #include "animations/weather/rainanimation.h"
@@ -174,6 +175,9 @@ void MapScene::update(Inputs const* inputs)
         }
     }
 
+    if (shakeAnimation && shakeAnimation->isRunning())
+        shakeAnimation->incrementTicks();
+
     if (flashAnimation->isRunning())
         flashAnimation->incrementTicks();
 
@@ -306,6 +310,43 @@ void MapScene::update(Inputs const* inputs)
                 if (isNormalTile(player.x, player.y, player.l) || isGrassTile(player.x, player.y, player.l))
                     it->second->restart();
             }
+        }
+    }
+
+    if (fallExitAnimation && fallExitAnimation->isRunning())
+    {
+        fallExitAnimation->incrementTicks();
+        preventInputs = true;
+        return;
+    }
+
+    if (fallEntranceAnimation && fallEntranceAnimation->isStarted())
+    {
+        if (!fallEntranceAnimation->isFinished())
+        {
+            fallEntranceAnimation->incrementTicks();
+            preventInputs = true;
+            return;
+        }
+        else
+        {
+            auto it = tilesAnimations.find({player.x, player.y});
+
+            if (it == tilesAnimations.end())
+            {
+                tilesAnimations[{player.x, player.y}] =
+                    std::make_unique<GroundAnimation>(renderer, shouldShowNightTextures());
+                tilesAnimations[{player.x, player.y}]->start();
+            }
+            else
+            {
+                it->second->restart();
+            }
+
+            shakeAnimation = std::make_unique<VerticalShakeAnimation>(renderer);
+            shakeAnimation->start();
+
+            fallEntranceAnimation.release();
         }
     }
 
@@ -449,6 +490,34 @@ void MapScene::update(Inputs const* inputs)
         player.sliding = false;
         stop(player);
     }
+    else if (isBreakableIceTile(player.x, player.y, player.l)
+             && (player.x != player.previousX || player.y != player.previousY))
+    {
+        tilesDataCount[{player.x, player.y}]++;
+
+        auto& level = map->getLevels()[player.l];
+
+        for (size_t h = 0; h < level->getTileLayers().size(); ++h)
+        {
+            auto& layer = level->getTileLayers()[h];
+
+            if (layer->getType() == TileLayer::Type::GROUND)
+            {
+                auto& tile = (*layer.get())(player.x, player.y);
+                tile->setCol(tile->getCol() + 1);
+                break;
+            }
+        }
+    }
+
+    if (tilesDataCount[{player.x, player.y}] > 1)
+    {
+        fallExitAnimation = std::make_unique<FallExitAnimation>(renderer, shouldShowNightTextures());
+        fallExitAnimation->start();
+        preventInputs = true;
+        stop(player);
+        return;
+    }
 
     if (preventInputs)
     {
@@ -557,14 +626,18 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
     int dstTilePixelWidth  = TilePixelSize * rs.ww / rs.aw;
     int dstTilePixelHeight = TilePixelSize * rs.wh / rs.ah;
 
+    int shakeOffsetX = shakeAnimation ? shakeAnimation->getShakeX(fps, rs) : 0;
+    int shakeOffsetY = shakeAnimation ? shakeAnimation->getShakeY(fps, rs) : 0;
+
     SDL_Rect dstPlayerRect;
-    dstPlayerRect.x = (rs.ww - dstTilePixelWidth) / 2;
-    dstPlayerRect.y = (rs.wh - dstTilePixelHeight) / 2 - (EntityPixelHeight - TilePixelSize) * rs.wh / rs.ah;
+    dstPlayerRect.x = (rs.ww - dstTilePixelWidth) / 2 + shakeOffsetX;
+    dstPlayerRect.y =
+        (rs.wh - dstTilePixelHeight) / 2 - (EntityPixelHeight - TilePixelSize) * rs.wh / rs.ah + shakeOffsetY;
     dstPlayerRect.w = dstTilePixelWidth + 1;
     dstPlayerRect.h = EntityPixelHeight * rs.wh / rs.ah + 1;
 
-    int playerOffsetX = getPlayerOffsetX(fps, rs);
-    int playerOffsetY = getPlayerOffsetY(fps, rs);
+    int playerOffsetX = getPlayerOffsetX(fps, rs) + shakeOffsetX;
+    int playerOffsetY = getPlayerOffsetY(fps, rs) + shakeOffsetY;
 
     for (size_t l = 0; l < map->getLevels().size(); ++l)
     {
@@ -859,6 +932,18 @@ void MapScene::drawPlayer(Fps const* fps, RenderSizes rs, SDL_Rect dstPlayerRect
         ledgeAnimation->setDestinationRect(dstPlayerRect);
         ledgeAnimation->draw(fps, rs);
     }
+    else if (fallExitAnimation && fallExitAnimation->isRunning())
+    {
+        fallExitAnimation->setEntitySprite(&player, playerSprite.get());
+        fallExitAnimation->setDestinationRect(dstPlayerRect);
+        fallExitAnimation->draw(fps, rs);
+    }
+    else if (fallEntranceAnimation && fallEntranceAnimation->isRunning())
+    {
+        fallEntranceAnimation->setEntitySprite(&player, playerSprite.get());
+        fallEntranceAnimation->setDestinationRect(dstPlayerRect);
+        fallEntranceAnimation->draw(fps, rs);
+    }
     else
     {
         switch (player.speed)
@@ -996,6 +1081,13 @@ void MapScene::initMovingSurfingPlayerPosition(size_t x, size_t y, size_t l, Ent
     auto& player   = Game::instance()->data.player;
     player.surfing = true;
     initMovingPlayerPosition(x, y, l, direction, fadeIn);
+}
+
+void MapScene::initFallingPlayerPosition(size_t x, size_t y, size_t l, Entity::Direction direction)
+{
+    initPlayerPosition(x, y, l, direction, false);
+    fallEntranceAnimation = std::make_unique<FallEntranceAnimation>(renderer, shouldShowNightTextures());
+    fallEntranceAnimation->start();
 }
 
 void MapScene::initClosingDoor(size_t x, size_t y)
@@ -1544,6 +1636,21 @@ bool MapScene::isSandTile(size_t x, size_t y, size_t l) const
     if (specialTile)
     {
         if (*(specialTile.get()) == SAND)
+            return true;
+    }
+
+    return false;
+}
+
+bool MapScene::isBreakableIceTile(size_t x, size_t y, size_t l) const
+{
+    auto& level = map->getLevels()[l];
+
+    auto& specialTileLayer = level->getSpecialTileLayer();
+    auto& specialTile      = (*specialTileLayer.get())(x, y);
+    if (specialTile)
+    {
+        if (*(specialTile.get()) == BREAKABLEICE)
             return true;
     }
 

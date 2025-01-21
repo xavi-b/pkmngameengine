@@ -33,6 +33,17 @@ void Cave2Scene::update(Inputs const* inputs)
 
     MapScene::update(inputs);
 
+    if (isBreakableIceTile(player.x, player.y, player.l))
+    {
+        if (tilesDataCount[{player.x, player.y}] > 1)
+        {
+            if (fallExitAnimation->isStarted())
+            {
+                goToScene = "FallCave3";
+            }
+        }
+    }
+
     if (auto event = eventAt(player.x, player.y, player.l))
     {
         if (event->getId() == "Cave3" && player.direction != Entity::Direction::NONE)
@@ -69,6 +80,16 @@ std::unique_ptr<Scene> Cave2Scene::nextScene()
     auto scene = MapScene::nextScene();
     if (scene)
         return scene;
+
+    if (fallExitAnimation && fallExitAnimation->isStarted() && fallExitAnimation->isFinished())
+    {
+        if (goToScene == "FallCave3")
+        {
+            auto scene = std::make_unique<Cave3Scene>(renderer);
+            scene->initFallingPlayerPosition(player.x, player.y, 0, player.previousDirection);
+            return scene;
+        }
+    }
 
     if (fadeOutAnimation->isStarted() && fadeOutAnimation->isFinished())
     {
