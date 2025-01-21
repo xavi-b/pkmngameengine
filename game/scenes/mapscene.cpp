@@ -546,7 +546,7 @@ void MapScene::update(Inputs const* inputs)
         stop(player);
     }
 
-    if (Game::instance()->data.location != currentLocation())
+    if (Game::instance()->data.location != currentLocation() && currentLocation() != "")
         startCurrentLocationOverlay();
 }
 

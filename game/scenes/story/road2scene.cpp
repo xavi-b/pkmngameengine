@@ -1,6 +1,7 @@
 #include "road2scene.h"
 
 #include "game.h"
+#include "scenes/story/cave2scene.h"
 #include "scenes/story/road1scene.h"
 #include "scenes/story/sea1scene.h"
 
@@ -24,6 +25,22 @@ void Road2Scene::update(Inputs const* inputs)
         if (player.x > 17 && player.x < 22 && player.y == 17 && player.direction == Entity::Direction::DOWN)
         {
             goToScene = "Sea1";
+        }
+
+        if (auto event = facedPreviousEvent(player))
+        {
+            if (event->getId() == "Cave2")
+            {
+                if (player.direction == Entity::Direction::UP)
+                {
+                    if (!fadeOutAnimation->isStarted())
+                    {
+                        fadeOutAnimation->reset();
+                        fadeOutAnimation->start();
+                        goToScene = "Cave2";
+                    }
+                }
+            }
         }
     }
 }
@@ -53,6 +70,16 @@ std::unique_ptr<Scene> Road2Scene::nextScene()
         auto scene = std::make_unique<Sea1Scene>(renderer);
         scene->initMovingSurfingPlayerPosition(player.x - 10, 9, 0, Entity::Direction::DOWN, false);
         return scene;
+    }
+
+    if (fadeOutAnimation->isStarted() && fadeOutAnimation->isFinished())
+    {
+        if (goToScene == "Cave2")
+        {
+            auto scene = std::make_unique<Cave2Scene>(renderer);
+            scene->initPlayerPosition(6, 7, 0, Entity::Direction::UP);
+            return scene;
+        }
     }
 
     return nullptr;

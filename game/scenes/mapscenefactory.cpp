@@ -1,6 +1,8 @@
 #include "mapscenefactory.h"
 
 #include "scenes/story/cave1scene.h"
+#include "scenes/story/cave2scene.h"
+#include "scenes/story/cave3scene.h"
 #include "scenes/story/dive1scene.h"
 #include "scenes/story/house1scene.h"
 #include "scenes/story/road1scene.h"
@@ -28,5 +30,9 @@ std::unique_ptr<MapScene> MapSceneFactory::fromName(std::string const& name)
         return std::make_unique<Road2Scene>(renderer);
     if (name == "Sea1Scene")
         return std::make_unique<Sea1Scene>(renderer);
+    if (name == "Cave2Scene")
+        return std::make_unique<Cave2Scene>(renderer);
+    if (name == "Cave3Scene")
+        return std::make_unique<Cave3Scene>(renderer);
     return nullptr;
 }
