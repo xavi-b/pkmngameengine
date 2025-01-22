@@ -14,6 +14,7 @@
 #include "game.h"
 #include "pkmnsscene.h"
 #include "scenes/encounterscene.h"
+#include "sprites/bikesprite.h"
 #include "sprites/erasablesprite.h"
 #include "sprites/squaresprite.h"
 #include "sprites/surfsprite.h"
@@ -53,6 +54,7 @@ void MapScene::init()
     playerSprite     = std::make_unique<Sprite>(renderer);
     playerRunSprite  = std::make_unique<Sprite>(renderer);
     playerSurfSprite = std::make_unique<Sprite>(renderer);
+    playerBikeSprite = std::make_unique<BikeSprite>(renderer);
     surfSprite       = std::make_unique<SurfSprite>(renderer);
     divingSprite     = std::make_unique<SurfSprite>(renderer);
     if (Game::instance()->data.player.getGender() == Player::Gender::BOY)
@@ -60,18 +62,21 @@ void MapScene::init()
         playerSprite->load("resources/Graphics/Characters/trainer_POKEMONTRAINER_Red.png", shouldShowNightTextures());
         playerRunSprite->load("resources/Graphics/Characters/boy_run.png", shouldShowNightTextures());
         playerSurfSprite->load("resources/Graphics/Characters/boy_surf.png", diving || shouldShowNightTextures());
+        playerBikeSprite->load("resources/Graphics/Characters/boy_bike.png", shouldShowNightTextures());
     }
     else
     {
         playerSprite->load("resources/Graphics/Characters/trainer_POKEMONTRAINER_Leaf.png", shouldShowNightTextures());
         playerRunSprite->load("resources/Graphics/Characters/girl_run.png", shouldShowNightTextures());
         playerSurfSprite->load("resources/Graphics/Characters/girl_surf.png", diving || shouldShowNightTextures());
+        playerBikeSprite->load("resources/Graphics/Characters/girl_bike.png", shouldShowNightTextures());
     }
     surfSprite->load("resources/Graphics/Characters/base_surf.png", shouldShowNightTextures());
     divingSprite->load("resources/Graphics/Characters/base_dive.png", diving || shouldShowNightTextures());
     playerSprite->forceSpriteDirection(playerSpriteInitialDirection);
     playerRunSprite->forceSpriteDirection(playerSpriteInitialDirection);
     playerSurfSprite->forceSpriteDirection(playerSpriteInitialDirection);
+    playerBikeSprite->forceSpriteDirection(playerSpriteInitialDirection);
     surfSprite->forceSpriteDirection(playerSpriteInitialDirection);
     divingSprite->forceSpriteDirection(playerSpriteInitialDirection);
 
@@ -239,6 +244,9 @@ void MapScene::update(Inputs const* inputs)
     {
         if (doorOpeningAnimation->isRunning())
         {
+            if (playerSprite->getAccumulatedTicks() == 0)
+                stop(player);
+
             doorOpeningAnimation->incrementTicks();
             preventInputs = true;
             return;
@@ -247,7 +255,6 @@ void MapScene::update(Inputs const* inputs)
         if (doorOpeningAnimation->isFinished())
         {
             stop(player);
-
             if (!fadeOutAnimation->isStarted())
             {
                 fadeOutAnimation->reset();
@@ -470,6 +477,7 @@ void MapScene::update(Inputs const* inputs)
     }
     else if (isIceTile(player.x, player.y, player.l))
     {
+        player.speed     = Entity::Speed::WALK;
         player.direction = player.previousDirection;
         player.sliding   = true;
         move(player);
@@ -525,10 +533,21 @@ void MapScene::update(Inputs const* inputs)
         return;
     }
 
-    if (inputs->B && !player.surfing)
-        player.speed = Entity::Speed::RUN;
-    else
-        player.speed = Entity::Speed::WALK;
+    if (inputs->select && !player.surfing && !player.sliding && allowBike())
+    {
+        if (player.speed == Entity::Speed::BIKE)
+            player.speed = Entity::Speed::WALK;
+        else
+            player.speed = Entity::Speed::BIKE;
+    }
+
+    if (player.speed != Entity::Speed::BIKE || player.surfing || player.sliding || !allowBike())
+    {
+        if (inputs->B && !player.surfing && !player.sliding)
+            player.speed = Entity::Speed::RUN;
+        else
+            player.speed = Entity::Speed::WALK;
+    }
 
     if (inputs->A)
     {
@@ -894,6 +913,7 @@ void MapScene::drawPlayer(Fps const* fps, RenderSizes rs, SDL_Rect dstPlayerRect
 
     divingSprite->updateSpriteRow(player);
     surfSprite->updateSpriteRow(player);
+    playerBikeSprite->updateSpriteRow(player);
     playerSurfSprite->updateSpriteRow(player);
     playerRunSprite->updateSpriteRow(player);
     playerSprite->updateSpriteRow(player);
@@ -949,7 +969,7 @@ void MapScene::drawPlayer(Fps const* fps, RenderSizes rs, SDL_Rect dstPlayerRect
         switch (player.speed)
         {
         case Entity::BIKE:
-            // TODO
+            playerBikeSprite->draw(player, fps, rs, dstPlayerRect);
             break;
         case Entity::RUN:
             if (player.x != player.previousX || player.y != player.previousY)
@@ -1239,6 +1259,18 @@ void MapScene::move(Entity& entity, bool force)
                     it->second->restart();
                 }
             }
+
+            SandAnimation* sandAnimation =
+                dynamic_cast<SandAnimation*>(tilesAnimations[{entity.previousX, entity.previousY}].get());
+
+            if (sandAnimation)
+                sandAnimation->setBike(entity.speed == Entity::BIKE);
+        }
+
+        if (isIceTile(entity.x, entity.y, entity.l))
+        {
+            entity.speed   = Entity::Speed::WALK;
+            entity.sliding = true;
         }
 
         if (isUnderWaterGrassTile(entity.x, entity.y, entity.l))
@@ -1423,7 +1455,7 @@ bool MapScene::isNormalTile(size_t x, size_t y, size_t l) const
     return false;
 }
 
-bool MapScene::isWaterTile(size_t x, size_t y, size_t l) const
+bool MapScene::isSpecialTileOfType(size_t x, size_t y, size_t l, SpecialTileType type) const
 {
     auto& level = map->getLevels()[l];
 
@@ -1431,11 +1463,16 @@ bool MapScene::isWaterTile(size_t x, size_t y, size_t l) const
     auto& specialTile      = (*specialTileLayer.get())(x, y);
     if (specialTile)
     {
-        if (*(specialTile.get()) == WATER)
+        if (*(specialTile.get()) == type)
             return true;
     }
 
     return false;
+}
+
+bool MapScene::isWaterTile(size_t x, size_t y, size_t l) const
+{
+    return isSpecialTileOfType(x, y, l, WATER);
 }
 
 bool MapScene::isEntityFacingWaterTile(Entity const& entity) const
@@ -1447,17 +1484,7 @@ bool MapScene::isEntityFacingWaterTile(Entity const& entity) const
 
 bool MapScene::isTreeTile(size_t x, size_t y, size_t l) const
 {
-    auto& level = map->getLevels()[l];
-
-    auto& specialTileLayer = level->getSpecialTileLayer();
-    auto& specialTile      = (*specialTileLayer.get())(x, y);
-    if (specialTile)
-    {
-        if (*(specialTile.get()) == TREE)
-            return true;
-    }
-
-    return false;
+    return isSpecialTileOfType(x, y, l, TREE);
 }
 
 bool MapScene::isEntityFacingTreeTile(Entity const& entity) const
@@ -1469,17 +1496,7 @@ bool MapScene::isEntityFacingTreeTile(Entity const& entity) const
 
 bool MapScene::isRockTile(size_t x, size_t y, size_t l) const
 {
-    auto& level = map->getLevels()[l];
-
-    auto& specialTileLayer = level->getSpecialTileLayer();
-    auto& specialTile      = (*specialTileLayer.get())(x, y);
-    if (specialTile)
-    {
-        if (*(specialTile.get()) == ROCK)
-            return true;
-    }
-
-    return false;
+    return isSpecialTileOfType(x, y, l, ROCK);
 }
 
 bool MapScene::isEntityFacingRockTile(Entity const& entity) const
@@ -1491,17 +1508,7 @@ bool MapScene::isEntityFacingRockTile(Entity const& entity) const
 
 bool MapScene::isWaterfallTile(size_t x, size_t y, size_t l) const
 {
-    auto& level = map->getLevels()[l];
-
-    auto& specialTileLayer = level->getSpecialTileLayer();
-    auto& specialTile      = (*specialTileLayer.get())(x, y);
-    if (specialTile)
-    {
-        if (*(specialTile.get()) == WATERFALL)
-            return true;
-    }
-
-    return false;
+    return isSpecialTileOfType(x, y, l, WATERFALL);
 }
 
 bool MapScene::isEntityFacingWaterfallTile(Entity const& entity) const
@@ -1520,62 +1527,22 @@ bool MapScene::isEntityFacingWaterfallTile(Entity const& entity) const
 
 bool MapScene::isGrassTile(size_t x, size_t y, size_t l) const
 {
-    auto& level = map->getLevels()[l];
-
-    auto& specialTileLayer = level->getSpecialTileLayer();
-    auto& specialTile      = (*specialTileLayer.get())(x, y);
-    if (specialTile)
-    {
-        if (*(specialTile.get()) == GRASS)
-            return true;
-    }
-
-    return false;
+    return isSpecialTileOfType(x, y, l, GRASS);
 }
 
 bool MapScene::isTallGrassTile(size_t x, size_t y, size_t l) const
 {
-    auto& level = map->getLevels()[l];
-
-    auto& specialTileLayer = level->getSpecialTileLayer();
-    auto& specialTile      = (*specialTileLayer.get())(x, y);
-    if (specialTile)
-    {
-        if (*(specialTile.get()) == TALLGRASS)
-            return true;
-    }
-
-    return false;
+    return isSpecialTileOfType(x, y, l, TALLGRASS);
 }
 
 bool MapScene::isUnderWaterGrassTile(size_t x, size_t y, size_t l) const
 {
-    auto& level = map->getLevels()[l];
-
-    auto& specialTileLayer = level->getSpecialTileLayer();
-    auto& specialTile      = (*specialTileLayer.get())(x, y);
-    if (specialTile)
-    {
-        if (*(specialTile.get()) == UNDERWATERGRASS)
-            return true;
-    }
-
-    return false;
+    return isSpecialTileOfType(x, y, l, UNDERWATERGRASS);
 }
 
 bool MapScene::isLedgeTile(size_t x, size_t y, size_t l) const
 {
-    auto& level = map->getLevels()[l];
-
-    auto& specialTileLayer = level->getSpecialTileLayer();
-    auto& specialTile      = (*specialTileLayer.get())(x, y);
-    if (specialTile)
-    {
-        if (*(specialTile.get()) == LEDGE)
-            return true;
-    }
-
-    return false;
+    return isSpecialTileOfType(x, y, l, LEDGE);
 }
 
 bool MapScene::isLedgePassable(Entity const& entity, size_t x, size_t y, size_t l) const
@@ -1599,62 +1566,27 @@ bool MapScene::isLedgePassable(Entity const& entity, size_t x, size_t y, size_t 
 
 bool MapScene::isWaterCurrentTile(size_t x, size_t y, size_t l) const
 {
-    auto& level = map->getLevels()[l];
-
-    auto& specialTileLayer = level->getSpecialTileLayer();
-    auto& specialTile      = (*specialTileLayer.get())(x, y);
-    if (specialTile)
-    {
-        if (*(specialTile.get()) == WATERCURRENT)
-            return true;
-    }
-
-    return false;
+    return isSpecialTileOfType(x, y, l, WATERCURRENT);
 }
 
 bool MapScene::isIceTile(size_t x, size_t y, size_t l) const
 {
-    auto& level = map->getLevels()[l];
-
-    auto& specialTileLayer = level->getSpecialTileLayer();
-    auto& specialTile      = (*specialTileLayer.get())(x, y);
-    if (specialTile)
-    {
-        if (*(specialTile.get()) == ICE)
-            return true;
-    }
-
-    return false;
+    return isSpecialTileOfType(x, y, l, ICE);
 }
 
 bool MapScene::isSandTile(size_t x, size_t y, size_t l) const
 {
-    auto& level = map->getLevels()[l];
-
-    auto& specialTileLayer = level->getSpecialTileLayer();
-    auto& specialTile      = (*specialTileLayer.get())(x, y);
-    if (specialTile)
-    {
-        if (*(specialTile.get()) == SAND)
-            return true;
-    }
-
-    return false;
+    return isSpecialTileOfType(x, y, l, SAND);
 }
 
 bool MapScene::isBreakableIceTile(size_t x, size_t y, size_t l) const
 {
-    auto& level = map->getLevels()[l];
+    return isSpecialTileOfType(x, y, l, BREAKABLEICE);
+}
 
-    auto& specialTileLayer = level->getSpecialTileLayer();
-    auto& specialTile      = (*specialTileLayer.get())(x, y);
-    if (specialTile)
-    {
-        if (*(specialTile.get()) == BREAKABLEICE)
-            return true;
-    }
-
-    return false;
+bool MapScene::isBreakableGroundTile(size_t x, size_t y, size_t l) const
+{
+    return isSpecialTileOfType(x, y, l, BREAKABLEGROUND);
 }
 
 Event* MapScene::eventAt(size_t x, size_t y, size_t l) const
@@ -1915,6 +1847,11 @@ void MapScene::changeWeather(Map::Weather weather)
     default:
         break;
     }
+}
+
+bool MapScene::allowBike() const
+{
+    return true;
 }
 
 bool MapScene::turnOnFlash()

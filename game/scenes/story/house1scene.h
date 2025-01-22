@@ -22,6 +22,7 @@ public:
     virtual std::unique_ptr<Scene> nextScene() override;
 
     virtual bool shouldShowNightTextures() const override;
+    virtual bool allowBike() const override;
 
     virtual std::string currentLocation() const override;
 };

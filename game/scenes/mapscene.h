@@ -83,6 +83,7 @@ public:
     Entity* facedEntity(Entity const& entity) const;
     bool    isEntityFacingTile(Entity const& entity, std::function<bool(size_t x, size_t y, size_t l)> func) const;
     bool    isNormalTile(size_t x, size_t y, size_t l) const;
+    bool    isSpecialTileOfType(size_t x, size_t y, size_t l, SpecialTileType type) const;
     bool    isWaterTile(size_t x, size_t y, size_t l) const;
     bool    isEntityFacingWaterTile(Entity const& entity) const;
     bool    isTreeTile(size_t x, size_t y, size_t l) const;
@@ -100,6 +101,7 @@ public:
     bool    isIceTile(size_t x, size_t y, size_t l) const;
     bool    isSandTile(size_t x, size_t y, size_t l) const;
     bool    isBreakableIceTile(size_t x, size_t y, size_t l) const;
+    bool    isBreakableGroundTile(size_t x, size_t y, size_t l) const;
 
     Event* eventAt(size_t x, size_t y, size_t l) const;
     Event* facedEvent(Entity const& entity) const;
@@ -122,6 +124,7 @@ public:
     void changeWeather(Map::Weather weather);
 
     virtual bool shouldShowNightTextures() const = 0;
+    virtual bool allowBike() const;
 
     bool turnOnFlash();
     void startCurrentLocationOverlay();
@@ -136,6 +139,7 @@ protected:
     std::unique_ptr<Sprite>                                    playerSprite;
     std::unique_ptr<Sprite>                                    playerRunSprite;
     std::unique_ptr<Sprite>                                    playerSurfSprite;
+    std::unique_ptr<Sprite>                                    playerBikeSprite;
     std::unique_ptr<Sprite>                                    surfSprite;
     std::unique_ptr<Sprite>                                    divingSprite;
     Entity::Direction                                          playerSpriteInitialDirection = Entity::Direction::NONE;

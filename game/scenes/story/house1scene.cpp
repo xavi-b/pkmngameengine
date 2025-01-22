@@ -133,6 +133,11 @@ bool House1Scene::shouldShowNightTextures() const
     return false;
 }
 
+bool House1Scene::allowBike() const
+{
+    return false;
+}
+
 std::string House1Scene::currentLocation() const
 {
     return lc::translate("House 1");

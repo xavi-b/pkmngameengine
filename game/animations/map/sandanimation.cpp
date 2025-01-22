@@ -16,8 +16,6 @@ SandAnimation::SandAnimation(SDL_Renderer* renderer, bool night)
 
 void SandAnimation::draw(Fps const* /*fps*/, RenderSizes /*rs*/)
 {
-    // TODO bikes
-
     if (ticks >= nSprites)
         return;
 
@@ -45,10 +43,18 @@ void SandAnimation::draw(Fps const* /*fps*/, RenderSizes /*rs*/)
 
     int row = 2 * ticks;
 
+    if (bike)
+        row++;
+
     SDL_Rect srcRect;
     srcRect.w = MapScene::TilePixelSize;
     srcRect.h = MapScene::TilePixelSize;
     srcRect.x = col * 6 * MapScene::TilePixelSize + 2.5 * MapScene::TilePixelSize;
     srcRect.y = row * 6 * MapScene::TilePixelSize + 2.5 * MapScene::TilePixelSize;
     SDL_RenderCopy(renderer, texture, &srcRect, &dstRect);
+}
+
+void SandAnimation::setBike(bool bike)
+{
+    this->bike = bike;
 }
