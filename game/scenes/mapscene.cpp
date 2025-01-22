@@ -516,15 +516,46 @@ void MapScene::update(Inputs const* inputs)
                 break;
             }
         }
-    }
 
-    if (tilesDataCount[{player.x, player.y}] > 1)
+        if (tilesDataCount[{player.x, player.y}] > 1)
+        {
+            fallExitAnimation = std::make_unique<FallExitAnimation>(renderer, shouldShowNightTextures());
+            fallExitAnimation->start();
+            preventInputs = true;
+            stop(player);
+            return;
+        }
+    }
+    else if (isBreakableGroundTile(player.x, player.y, player.l))
     {
-        fallExitAnimation = std::make_unique<FallExitAnimation>(renderer, shouldShowNightTextures());
-        fallExitAnimation->start();
-        preventInputs = true;
-        stop(player);
-        return;
+        tilesDataCount[{player.x, player.y}]++;
+
+        if (tilesDataCount[{player.x, player.y}] == 1)
+        {
+            auto& level = map->getLevels()[player.l];
+
+            for (size_t h = 0; h < level->getTileLayers().size(); ++h)
+            {
+                auto& layer = level->getTileLayers()[h];
+
+                if (layer->getType() == TileLayer::Type::GROUND_OVERLAY)
+                {
+                    auto& tile = (*layer.get())(player.x, player.y);
+                    tile->setCol(tile->getCol() + 1);
+                    break;
+                }
+            }
+        }
+
+        if ((tilesDataCount[{player.x, player.y}] > 1 && player.direction == player.previousDirection)
+            || (tilesDataCount[{player.x, player.y}] > 0 && player.speed != Entity::Speed::BIKE))
+        {
+            fallExitAnimation = std::make_unique<FallExitAnimation>(renderer, shouldShowNightTextures());
+            fallExitAnimation->start();
+            preventInputs = true;
+            stop(player);
+            return;
+        }
     }
 
     if (preventInputs)

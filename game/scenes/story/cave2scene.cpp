@@ -44,6 +44,17 @@ void Cave2Scene::update(Inputs const* inputs)
         }
     }
 
+    if (isBreakableGroundTile(player.x, player.y, player.l))
+    {
+        if (tilesDataCount[{player.x, player.y}] > 0)
+        {
+            if (fallExitAnimation && fallExitAnimation->isStarted())
+            {
+                goToScene = "FallCave3";
+            }
+        }
+    }
+
     if (auto event = eventAt(player.x, player.y, player.l))
     {
         if (event->getId() == "Cave3" && player.direction != Entity::Direction::NONE)
