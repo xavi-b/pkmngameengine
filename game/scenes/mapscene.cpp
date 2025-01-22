@@ -1015,7 +1015,8 @@ void MapScene::drawPlayer(Fps const* fps, RenderSizes rs, SDL_Rect dstPlayerRect
 
         tryDrawingHighGrass(fps, rs, player, *playerSprite, dstPlayerRect);
 
-        if (isGrassTile(player.previousX, player.previousY, player.l) && player.speed == Entity::WALK)
+        if (isGrassTile(player.previousX, player.previousY, player.l) && player.speed == Entity::WALK
+            && player.direction != Entity::Direction::DOWN)
             drawGrass(fps, rs, player.previousX, player.previousY, player.l);
     }
 }
