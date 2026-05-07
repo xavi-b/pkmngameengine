@@ -1,6 +1,7 @@
 #ifndef PKMN_H
 #define PKMN_H
 
+#include "item.h"
 #include "move.h"
 #include "pkmndef.h"
 
@@ -84,9 +85,15 @@ public:
     Gender getGender() const;
     void   setGender(Gender newGender);
 
+    Item::ItemPtr getHeldItem() const;
+    void          setHeldItem(Item::ItemPtr const& newHeldItem);
+
     std::string getDisplayName() const;
 
     bool isShiny() const;
+
+    uint64_t getFirstTrainerId() const;
+    void     setFirstTrainerId(uint64_t newFirstTrainerId);
 
 private:
     std::array<Move::MovePtr, 4>    moves;
@@ -100,7 +107,9 @@ private:
     StatusCondition                 statusCondition = StatusCondition::NONE;
     unsigned char                   happiness       = 0;
     Gender                          gender          = Gender::MALE;
+    Item::ItemPtr                   heldItem        = nullptr;
     bool                            shiny           = false;
+    uint64_t                        firstTrainerId  = 0;
 };
 
 #endif // PKMN_H

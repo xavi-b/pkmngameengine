@@ -46,6 +46,11 @@ size_t randuint(size_t min, size_t max)
     return rdr::randint(min, max);
 }
 
+uint64_t randuint64(uint64_t min, uint64_t max)
+{
+    return rdr::randint(min, max);
+}
+
 std::string dataDir()
 {
 #if defined(LINUX)

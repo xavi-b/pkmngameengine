@@ -294,6 +294,16 @@ void Pkmn::setGender(Gender newGender)
     gender = newGender;
 }
 
+Item::ItemPtr Pkmn::getHeldItem() const
+{
+    return heldItem;
+}
+
+void Pkmn::setHeldItem(Item::ItemPtr const& newHeldItem)
+{
+    heldItem = newHeldItem;
+}
+
 std::string Pkmn::getDisplayName() const
 {
     if (nickName.empty())
@@ -304,6 +314,16 @@ std::string Pkmn::getDisplayName() const
 bool Pkmn::isShiny() const
 {
     return shiny;
+}
+
+uint64_t Pkmn::getFirstTrainerId() const
+{
+    return firstTrainerId;
+}
+
+void Pkmn::setFirstTrainerId(uint64_t newFirstTrainerId)
+{
+    firstTrainerId = newFirstTrainerId;
 }
 
 void tag_invoke(js::value_from_tag, js::value& jv, Pkmn::PkmnPtr const& o)
@@ -333,7 +353,9 @@ void tag_invoke(js::value_from_tag, js::value& jv, Pkmn::PkmnPtr const& o)
             {"EVs", jsEVs},
             {"statusCondition", static_cast<int>(o->statusCondition)},
             {"happiness", o->happiness},
-            {"gender", static_cast<int>(o->gender)}
+            {"gender", static_cast<int>(o->gender)},
+            {"firstTrainerId", o->firstTrainerId},
+            {"heldItem", js::value_from<Item::ItemPtr const&>(o->heldItem)}
         };
     }
     else
@@ -358,6 +380,12 @@ Pkmn::PkmnPtr tag_invoke(js::value_to_tag<Pkmn::PkmnPtr>, js::value const& jv)
     pkmn->statusCondition = static_cast<Pkmn::StatusCondition>(js::value_to<int>(obj.at("statusCondition")));
     pkmn->happiness       = js::value_to<unsigned char>(obj.at("happiness"));
     pkmn->gender          = static_cast<Pkmn::Gender>(js::value_to<int>(obj.at("gender")));
+    if (obj.contains("firstTrainerId"))
+        pkmn->firstTrainerId = js::value_to<uint64_t>(obj.at("firstTrainerId"));
+    else
+        pkmn->firstTrainerId = Game::instance()->data.player.id;
+    if (obj.contains("heldItem"))
+        pkmn->heldItem = js::value_to<Item::ItemPtr>(obj.at("heldItem"));
     for (auto& value : obj.at("IVs").as_array())
     {
         js::object const& obj                                                  = value.as_object();

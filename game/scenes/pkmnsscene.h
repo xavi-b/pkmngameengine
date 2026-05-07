@@ -9,7 +9,7 @@
 class PkmnsScene : public Scene
 {
 public:
-    PkmnsScene(SDL_Renderer* renderer, Pkmn::PkmnPtr& currentPkmn);
+    PkmnsScene(SDL_Renderer* renderer, Pkmn::PkmnPtr& currentPkmn, bool forceSelectedPkmn = false);
     virtual ~PkmnsScene();
 
     virtual void update(Inputs const* inputs) override;
@@ -60,6 +60,7 @@ private:
 
     bool           leave         = false;
     bool           selectingPkmn = false;
+    bool           forceSelectedPkmn = false;
     Pkmn::PkmnPtr& selectedPkmn;
     size_t         currentIndex = 0;
     int            swapIndex    = -1;

@@ -2,8 +2,9 @@
 
 #include "game.h"
 
-BagScene::BagScene(SDL_Renderer* renderer) : Scene(renderer)
+BagScene::BagScene(SDL_Renderer* renderer, Item::ItemPtr& selectedItem) : Scene(renderer), selectedItem(selectedItem)
 {
+    selectedItem.reset();
     auto const& player = Game::instance()->data.player;
 
     for (size_t i = 0; i < ItemDef::NumberOfPockets; ++i)
@@ -67,8 +68,18 @@ void BagScene::update(Inputs const* inputs)
 {
     auto const& player = Game::instance()->data.player;
 
+    if (inputs->A)
+    {
+        auto const& items = player.items[currentPocketIndex];
+        if (!items.empty() && indices[currentPocketIndex] < items.size())
+            selectedItem = items[indices[currentPocketIndex]];
+        leave = true;
+        return;
+    }
+
     if (inputs->B)
     {
+        selectedItem.reset();
         leave = true;
         return;
     }

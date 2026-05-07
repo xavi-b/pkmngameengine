@@ -39,6 +39,8 @@ std::string BattleScene::StateToString(State e)
         return "OPPONENT_MOVES";
     case OPPONENT_RUN:
         return "OPPONENT_RUN";
+    case EXPERIENCE:
+        return "EXPERIENCE";
     case END:
         return "END";
     }
@@ -125,6 +127,10 @@ void BattleScene::update(Inputs const* inputs)
         update_OPPONENT_RUN(inputs);
         break;
     }
+    case EXPERIENCE: {
+        update_EXPERIENCE(inputs);
+        break;
+    }
     case END: {
         update_END(inputs);
         break;
@@ -175,8 +181,12 @@ void BattleScene::draw(Fps const* fps, RenderSizes rs)
     case OPPONENT_RUN:
         draw_OPPONENT_RUN(fps, rs);
         break;
+    case EXPERIENCE:
+        draw_EXPERIENCE(fps, rs);
+        break;
     case END:
         draw_END(fps, rs);
+        break;
     case BAG:
     case PKMNS:
         break;
@@ -193,46 +203,81 @@ std::string BattleScene::name()
     return "BattleScene";
 }
 
-size_t BattleScene::computeDamage(Pkmn::PkmnPtr const& pkmn, Move::MovePtr const& move) const
+size_t BattleScene::computeDamage(Pkmn::PkmnPtr const& attacker,
+                                  Pkmn::PkmnPtr const& defender,
+                                  Move::MovePtr const& move) const
 {
-    if (!move)
+    if (!attacker || !defender || !move)
         return 0;
 
     auto category = move->getDefinition()->getCategory();
+    if (category == MoveDef::STATUS)
+        return 0;
 
     // https://bulbapedia.bulbagarden.net/wiki/Damage#Generation_III
-    float  level = pkmn->getLevel();
+    float  level = attacker->getLevel();
     size_t power = move->getDefinition()->getPower();
-    size_t ad =
-        category == MoveDef::PHYSICAL ? pkmn->getStats()[PkmnDef::ATTACK] : pkmn->getStats()[PkmnDef::SPECIAL_ATTACK];
-    float burn = pkmn->getStatusCondition() == Pkmn::StatusCondition::BURN ? 0.5 : 1;
-    // TODO
-    float  screen  = 1.0;
-    size_t targets = 1;
-    // TODO
-    float weather = 1.0;
-    // TODO
-    float  ff        = 1.0;
-    float  damage    = (((2 * level / 5 + 2) * power * ad) / 50) * burn * screen * targets * weather * ff;
+    size_t a     = category == MoveDef::PHYSICAL ? attacker->getStats()[PkmnDef::ATTACK]
+                                                 : attacker->getStats()[PkmnDef::SPECIAL_ATTACK];
+    size_t d     = category == MoveDef::PHYSICAL ? defender->getStats()[PkmnDef::DEFENSE]
+                                                 : defender->getStats()[PkmnDef::SPECIAL_DEFENSE];
+    if (d == 0)
+        d = 1;
+    float burn =
+        (category == MoveDef::PHYSICAL && attacker->getStatusCondition() == Pkmn::StatusCondition::BURN) ? 0.5 : 1.0;
+    float  screen            = 1.0;
+    size_t targets           = 1;
+    float  weatherMultiplier = 1.0;
+    if (weather == Map::Weather::RAIN)
+    {
+        if (move->getDefinition()->getType() == "WATER")
+            weatherMultiplier = 1.5;
+        else if (move->getDefinition()->getType() == "FIRE")
+            weatherMultiplier = 0.5;
+    }
+    else if (weather == Map::Weather::HARSH_SUNLIGHT)
+    {
+        if (move->getDefinition()->getType() == "FIRE")
+            weatherMultiplier = 1.5;
+        else if (move->getDefinition()->getType() == "WATER")
+            weatherMultiplier = 0.5;
+    }
+    float  ff     = 1.0;
+    float  damage = (((2 * level / 5 + 2) * power * a / d) / 50 + 2) * burn * screen * targets * weatherMultiplier * ff;
     size_t stockpile = 1;
-    // TODO
     // https://bulbapedia.bulbagarden.net/wiki/Critical_hit
-    size_t critical = 1;
-    // TODO
-    size_t doubledmg = 1;
-    // TODO
-    size_t charge = 1;
-    // TODO
+    float       critical  = Utils::randuint(0, 15) == 0 ? 2.0 : 1.0;
+    size_t      doubledmg = 1;
+    size_t      charge    = 1;
     size_t      hh        = 1;
-    auto const& pkmnTypes = pkmn->getDefinition()->getTypes();
+    auto const& pkmnTypes = attacker->getDefinition()->getTypes();
     float       stab =
         std::find(pkmnTypes.begin(), pkmnTypes.end(), move->getDefinition()->getType()) != pkmnTypes.end() ? 1.5 : 1.0;
-    // TODO
     // https://bulbapedia.bulbagarden.net/wiki/Type#Type_effectiveness
     float typeEffectiveness = 1.0;
-    float random            = Utils::randuint(85, 100) / 100.0;
+    for (auto const& defenderTypeId : defender->getDefinition()->getTypes())
+    {
+        auto defenderType = Game::instance()->data.typeFor(defenderTypeId);
+        if (!defenderType)
+            continue;
+
+        auto const& immunities = defenderType->getImmunities();
+        if (std::find(immunities.begin(), immunities.end(), move->getDefinition()->getType()) != immunities.end())
+            typeEffectiveness *= 0.0;
+
+        auto const& weaknesses = defenderType->getWeaknesses();
+        if (std::find(weaknesses.begin(), weaknesses.end(), move->getDefinition()->getType()) != weaknesses.end())
+            typeEffectiveness *= 2.0;
+
+        auto const& resistances = defenderType->getResistances();
+        if (std::find(resistances.begin(), resistances.end(), move->getDefinition()->getType()) != resistances.end())
+            typeEffectiveness *= 0.5;
+    }
+    float random = Utils::randuint(85, 100) / 100.0;
     damage *= stockpile * critical * doubledmg * charge * hh * stab * typeEffectiveness * random;
-    return damage;
+    if (damage < 1.0)
+        damage = 1.0;
+    return static_cast<size_t>(damage);
 }
 
 std::string BattleScene::canEvolve(Pkmn::PkmnPtr const& pkmn)

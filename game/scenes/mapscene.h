@@ -14,6 +14,7 @@
 #include "animations/weather/flashanimation.h"
 #include "animations/weather/weatheranimation.h"
 #include "entity.h"
+#include "item.h"
 #include "map.h"
 #include "menu.h"
 #include "pkmn.h"
@@ -147,7 +148,8 @@ protected:
 
     Map::Weather weather = Map::Weather::NONE;
 
-    Pkmn::PkmnPtr                                                       emptyPkmnPtr = nullptr;
+    Pkmn::PkmnPtr                                                       emptyPkmnPtr    = nullptr;
+    Item::ItemPtr                                                       selectedBagItem = nullptr;
     Pkmn::PkmnPtr                                                       encounteredPkmn;
     std::unique_ptr<BattleIntroAnimation>                               battleIntro;
     std::unique_ptr<FadeAnimation>                                      fadeInAnimation;

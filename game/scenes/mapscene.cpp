@@ -1809,6 +1809,7 @@ void MapScene::popReset()
 
     openPkmns = false;
     openBag   = false;
+    selectedBagItem.reset();
     encounteredPkmn.reset();
     battleIntro.reset();
 }
@@ -1821,7 +1822,7 @@ std::unique_ptr<Scene> MapScene::nextScene()
     }
     else if (openBag && fadeOutAnimation->isFinished())
     {
-        auto scene = std::make_unique<BagScene>(renderer);
+        auto scene = std::make_unique<BagScene>(renderer, selectedBagItem);
         return scene;
     }
     else if (encounteredPkmn && battleIntro && battleIntro->isFinished())

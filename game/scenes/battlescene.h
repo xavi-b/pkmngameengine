@@ -29,7 +29,8 @@ public:
 
     virtual std::string name() override;
 
-    virtual size_t computeDamage(Pkmn::PkmnPtr const& pkmn, Move::MovePtr const& move) const;
+    virtual size_t
+    computeDamage(Pkmn::PkmnPtr const& attacker, Pkmn::PkmnPtr const& defender, Move::MovePtr const& move) const;
     std::string    canEvolve(Pkmn::PkmnPtr const& pkmn);
 
     void changeWeather(Map::Weather weather);
@@ -70,6 +71,9 @@ public:
     virtual void update_OPPONENT_RUN(Inputs const* inputs)         = 0;
     virtual void draw_OPPONENT_RUN(Fps const* fps, RenderSizes rs) = 0;
 
+    virtual void update_EXPERIENCE(Inputs const* inputs)         = 0;
+    virtual void draw_EXPERIENCE(Fps const* fps, RenderSizes rs) = 0;
+
     virtual void update_END(Inputs const* inputs)         = 0;
     virtual void draw_END(Fps const* fps, RenderSizes rs) = 0;
 
@@ -90,6 +94,7 @@ protected:
         OPPONENT_ITEMS,
         OPPONENT_MOVES,
         OPPONENT_RUN,
+        EXPERIENCE,
         END
     };
 

@@ -24,6 +24,7 @@ namespace Utils
 
 size_t randint(int min, int max);
 size_t randuint(size_t min, size_t max);
+uint64_t randuint64(uint64_t min, uint64_t max);
 
 std::string dataDir();
 

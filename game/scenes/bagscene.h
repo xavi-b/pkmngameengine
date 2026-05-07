@@ -1,17 +1,18 @@
 #ifndef BAGSCENE_H
 #define BAGSCENE_H
 
+#include "item.h"
 #include "itemdef.h"
 #include "scene.h"
 
 #include <SDL_image.h>
-#include <vector>
 #include <array>
+#include <vector>
 
 class BagScene : public Scene
 {
 public:
-    BagScene(SDL_Renderer* renderer);
+    BagScene(SDL_Renderer* renderer, Item::ItemPtr& selectedItem);
     virtual ~BagScene();
 
     virtual void update(Inputs const* inputs) override;
@@ -32,7 +33,8 @@ private:
     SDL_Surface* itemSurface = NULL;
     SDL_Texture* itemTexture = NULL;
 
-    bool leave = false;
+    bool           leave = false;
+    Item::ItemPtr& selectedItem;
 
     size_t currentPocketIndex = 0;
 

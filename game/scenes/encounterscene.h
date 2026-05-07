@@ -2,9 +2,11 @@
 #define ENCOUNTERSCENE_H
 
 #include "battlescene.h"
+#include "item.h"
 #include "pkmn.h"
 
 #include <SDL_image.h>
+#include <set>
 
 class EncounterScene : public BattleScene
 {
@@ -25,7 +27,7 @@ public:
     void setEncounterPkmn(Pkmn::PkmnPtr const& newEncounterPkmn);
     void setPlayerPkmn(Pkmn::PkmnPtr const& newPlayerPkmn);
 
-    void chooseOpponentAction();
+    virtual void chooseOpponentAction();
 
     virtual void update_START(Inputs const* inputs) override;
     virtual void draw_START(Fps const* fps, RenderSizes rs) override;
@@ -63,10 +65,13 @@ public:
     virtual void update_OPPONENT_RUN(Inputs const* inputs) override;
     virtual void draw_OPPONENT_RUN(Fps const* fps, RenderSizes rs) override;
 
+    virtual void update_EXPERIENCE(Inputs const* inputs) override;
+    virtual void draw_EXPERIENCE(Fps const* fps, RenderSizes rs) override;
+
     virtual void update_END(Inputs const* inputs) override;
     virtual void draw_END(Fps const* fps, RenderSizes rs) override;
 
-private:
+protected:
     Pkmn::PkmnPtr encounterPkmn;
     Pkmn::PkmnPtr playerPkmn;
     size_t        runAttemps    = 0;
@@ -78,9 +83,29 @@ private:
     std::unique_ptr<TextSpeech> firstPkmnSpeech;
     std::unique_ptr<TextSpeech> runSpeech;
     std::unique_ptr<TextSpeech> failedRunSpeech;
+    std::unique_ptr<TextSpeech> noPpLeftSpeech;
+    std::unique_ptr<TextSpeech> experienceSpeech;
+    std::unique_ptr<TextSpeech> moveToLearnSpeech;
+    std::unique_ptr<TextSpeech> playerMoveSpeech;
+    std::unique_ptr<TextSpeech> opponentMoveSpeech;
+    std::unique_ptr<TextSpeech> endSpeech;
+    std::unique_ptr<TextSpeech> pkmnEnterSpeech;
+    std::unique_ptr<TextSpeech> pkmnFaintSpeech;
 
-    BattleActions::Type opponentAction  = BattleActions::Type::MOVES;
-    Pkmn::PkmnPtr       newSelectedPkmn = nullptr;
+    BattleActions::Type             opponentAction  = BattleActions::Type::MOVES;
+    Pkmn::PkmnPtr                   newSelectedPkmn = nullptr;
+    Item::ItemPtr                   selectedItem    = nullptr;
+    std::set<Pkmn::PkmnPtr>         participatingPlayerPkmns;
+    std::map<Pkmn::PkmnPtr, size_t> expGained;
+
+    // Current pkmn experience gain information
+    bool                shouldBreakToEvolution  = false;
+    bool                shouldBreakToLevelUp    = false;
+    bool                shouldBreakToNewMove    = false;
+    bool                shouldGoToNewMovesScene = false;
+    Pkmn::PkmnPtr       expPkmn                 = nullptr;
+    size_t              expFromBattle           = 0;
+    PkmnDef::PkmnDefPtr evolutionDef            = nullptr;
 };
 
 #endif // ENCOUNTERSCENE_H

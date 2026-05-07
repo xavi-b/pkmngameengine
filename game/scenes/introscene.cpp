@@ -81,6 +81,7 @@ void IntroScene::update(Inputs const* inputs)
         if (genderQuestion->isFinished())
         {
             Game::instance()->data.player.setGender(gender);
+            Game::instance()->data.player.id = Utils::randuint64(1, std::numeric_limits<uint64_t>::max());
             std::vector<std::string> texts;
             texts.push_back(lc::translate("Prof: So you are a ").str()
                             + (Game::instance()->data.player.getGender() == Player::Gender::BOY ? lc::translate("boy")

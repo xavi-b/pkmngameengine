@@ -32,6 +32,9 @@ public:
 
     std::array<std::vector<Item::ItemPtr>, ItemDef::NumberOfPockets> items;
 
+    uint64_t money = 0;
+    uint64_t id    = 0;
+
 private:
     Gender gender = Gender::BOY;
 };

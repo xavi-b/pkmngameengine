@@ -4,8 +4,9 @@
 #include "pkmnutils.h"
 #include "utils.h"
 
-PkmnsScene::PkmnsScene(SDL_Renderer* renderer, Pkmn::PkmnPtr& currentPkmn)
-    : Scene(renderer), selectingPkmn(currentPkmn != nullptr), selectedPkmn(currentPkmn)
+PkmnsScene::PkmnsScene(SDL_Renderer* renderer, Pkmn::PkmnPtr& currentPkmn, bool forceSelectedPkmn)
+    : Scene(renderer), selectingPkmn(forceSelectedPkmn || currentPkmn != nullptr), forceSelectedPkmn(forceSelectedPkmn),
+      selectedPkmn(currentPkmn)
 {
     bgSurface = IMG_Load("resources/Graphics/UI/Party/bg.png");
     bgTexture = SDL_CreateTextureFromSurface(renderer, bgSurface);
@@ -144,7 +145,7 @@ void PkmnsScene::update(Inputs const* inputs)
         {
             swapIndex = -1;
         }
-        else
+        else if (!forceSelectedPkmn)
         {
             selectedPkmn = nullptr;
             leave        = true;
