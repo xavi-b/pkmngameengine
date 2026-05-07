@@ -39,29 +39,29 @@ public:
     virtual void update_MOVES(Inputs const* inputs) override;
     virtual void draw_MOVES(Fps const* fps, RenderSizes rs) override;
 
-    virtual void update_P_MOVES(Inputs const* inputs) override;
-    virtual void draw_P_MOVES(Fps const* fps, RenderSizes rs) override;
+    virtual void update_PLAYER_MOVES(Inputs const* inputs) override;
+    virtual void draw_PLAYER_MOVES(Fps const* fps, RenderSizes rs) override;
 
-    virtual void update_P_ITEMS(Inputs const* inputs) override;
-    virtual void draw_P_ITEMS(Fps const* fps, RenderSizes rs) override;
+    virtual void update_PLAYER_ITEMS(Inputs const* inputs) override;
+    virtual void draw_PLAYER_ITEMS(Fps const* fps, RenderSizes rs) override;
 
-    virtual void update_P_PKMNS(Inputs const* inputs) override;
-    virtual void draw_P_PKMNS(Fps const* fps, RenderSizes rs) override;
+    virtual void update_PLAYER_PKMNS(Inputs const* inputs) override;
+    virtual void draw_PLAYER_PKMNS(Fps const* fps, RenderSizes rs) override;
 
-    virtual void update_P_RUN(Inputs const* inputs) override;
-    virtual void draw_P_RUN(Fps const* fps, RenderSizes rs) override;
+    virtual void update_PLAYER_RUN(Inputs const* inputs) override;
+    virtual void draw_PLAYER_RUN(Fps const* fps, RenderSizes rs) override;
 
-    virtual void update_O_PKMNS(Inputs const* inputs) override;
-    virtual void draw_O_PKMNS(Fps const* fps, RenderSizes rs) override;
+    virtual void update_OPPONENT_PKMNS(Inputs const* inputs) override;
+    virtual void draw_OPPONENT_PKMNS(Fps const* fps, RenderSizes rs) override;
 
-    virtual void update_O_ITEMS(Inputs const* inputs) override;
-    virtual void draw_O_ITEMS(Fps const* fps, RenderSizes rs) override;
+    virtual void update_OPPONENT_ITEMS(Inputs const* inputs) override;
+    virtual void draw_OPPONENT_ITEMS(Fps const* fps, RenderSizes rs) override;
 
-    virtual void update_O_MOVES(Inputs const* inputs) override;
-    virtual void draw_O_MOVES(Fps const* fps, RenderSizes rs) override;
+    virtual void update_OPPONENT_MOVES(Inputs const* inputs) override;
+    virtual void draw_OPPONENT_MOVES(Fps const* fps, RenderSizes rs) override;
 
-    virtual void update_O_RUN(Inputs const* inputs) override;
-    virtual void draw_O_RUN(Fps const* fps, RenderSizes rs) override;
+    virtual void update_OPPONENT_RUN(Inputs const* inputs) override;
+    virtual void draw_OPPONENT_RUN(Fps const* fps, RenderSizes rs) override;
 
     virtual void update_END(Inputs const* inputs) override;
     virtual void draw_END(Fps const* fps, RenderSizes rs) override;

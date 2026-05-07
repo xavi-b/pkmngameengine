@@ -24,21 +24,21 @@ std::string BattleScene::StateToString(State e)
     case PKMNS:
         return "PKMNS";
     case PLAYER_MOVES:
-        return "P_MOVES";
+        return "PLAYER_MOVES";
     case PLAYER_ITEMS:
-        return "P_ITEMS";
+        return "PLAYER_ITEMS";
     case PLAYER_PKMNS:
-        return "P_PKMNS";
+        return "PLAYER_PKMNS";
     case PLAYER_RUN:
-        return "P_RUN";
+        return "PLAYER_RUN";
     case OPPONENT_PKMNS:
-        return "O_PKMNS";
+        return "OPPONENT_PKMNS";
     case OPPONENT_ITEMS:
-        return "O_ITEMS";
+        return "OPPONENT_ITEMS";
     case OPPONENT_MOVES:
-        return "O_MOVES";
+        return "OPPONENT_MOVES";
     case OPPONENT_RUN:
-        return "O_RUN";
+        return "OPPONENT_RUN";
     case END:
         return "END";
     }
@@ -94,35 +94,35 @@ void BattleScene::update(Inputs const* inputs)
         break;
     }
     case PLAYER_MOVES: {
-        update_P_MOVES(inputs);
+        update_PLAYER_MOVES(inputs);
         break;
     }
     case PLAYER_ITEMS: {
-        update_P_ITEMS(inputs);
+        update_PLAYER_ITEMS(inputs);
         break;
     }
     case PLAYER_PKMNS: {
-        update_P_PKMNS(inputs);
+        update_PLAYER_PKMNS(inputs);
         break;
     }
     case PLAYER_RUN: {
-        update_P_RUN(inputs);
+        update_PLAYER_RUN(inputs);
         break;
     }
     case OPPONENT_PKMNS: {
-        update_O_PKMNS(inputs);
+        update_OPPONENT_PKMNS(inputs);
         break;
     }
     case OPPONENT_ITEMS: {
-        update_O_ITEMS(inputs);
+        update_OPPONENT_ITEMS(inputs);
         break;
     }
     case OPPONENT_MOVES: {
-        update_O_MOVES(inputs);
+        update_OPPONENT_MOVES(inputs);
         break;
     }
     case OPPONENT_RUN: {
-        update_O_RUN(inputs);
+        update_OPPONENT_RUN(inputs);
         break;
     }
     case END: {
@@ -152,28 +152,28 @@ void BattleScene::draw(Fps const* fps, RenderSizes rs)
         draw_MOVES(fps, rs);
         break;
     case PLAYER_MOVES:
-        draw_P_MOVES(fps, rs);
+        draw_PLAYER_MOVES(fps, rs);
         break;
     case PLAYER_ITEMS:
-        draw_P_ITEMS(fps, rs);
+        draw_PLAYER_ITEMS(fps, rs);
         break;
     case PLAYER_PKMNS:
-        draw_P_PKMNS(fps, rs);
+        draw_PLAYER_PKMNS(fps, rs);
         break;
     case PLAYER_RUN:
-        draw_P_RUN(fps, rs);
+        draw_PLAYER_RUN(fps, rs);
         break;
     case OPPONENT_PKMNS:
-        draw_O_PKMNS(fps, rs);
+        draw_OPPONENT_PKMNS(fps, rs);
         break;
     case OPPONENT_ITEMS:
-        draw_O_ITEMS(fps, rs);
+        draw_OPPONENT_ITEMS(fps, rs);
         break;
     case OPPONENT_MOVES:
-        draw_O_MOVES(fps, rs);
+        draw_OPPONENT_MOVES(fps, rs);
         break;
     case OPPONENT_RUN:
-        draw_O_RUN(fps, rs);
+        draw_OPPONENT_RUN(fps, rs);
         break;
     case END:
         draw_END(fps, rs);

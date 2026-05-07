@@ -321,7 +321,7 @@ void EncounterScene::draw_MOVES(Fps const* fps, RenderSizes rs)
     moveSelection->draw(fps, rs);
 }
 
-void EncounterScene::update_P_MOVES(Inputs const* /*inputs*/)
+void EncounterScene::update_PLAYER_MOVES(Inputs const* /*inputs*/)
 {
     playerMove->decreasePP();
     // Move animation
@@ -391,11 +391,11 @@ void EncounterScene::update_P_MOVES(Inputs const* /*inputs*/)
         state = WEATHER;
 }
 
-void EncounterScene::draw_P_MOVES(Fps const* /*fps*/, RenderSizes /*rs*/)
+void EncounterScene::draw_PLAYER_MOVES(Fps const* /*fps*/, RenderSizes /*rs*/)
 {
 }
 
-void EncounterScene::update_P_ITEMS(Inputs const* /*inputs*/)
+void EncounterScene::update_PLAYER_ITEMS(Inputs const* /*inputs*/)
 {
     // Open BagScene
 
@@ -431,11 +431,11 @@ void EncounterScene::update_P_ITEMS(Inputs const* /*inputs*/)
     }
 }
 
-void EncounterScene::draw_P_ITEMS(Fps const* /*fps*/, RenderSizes /*rs*/)
+void EncounterScene::draw_PLAYER_ITEMS(Fps const* /*fps*/, RenderSizes /*rs*/)
 {
 }
 
-void EncounterScene::update_P_PKMNS(Inputs const* /*inputs*/)
+void EncounterScene::update_PLAYER_PKMNS(Inputs const* /*inputs*/)
 {
     setPlayerPkmn(newSelectedPkmn);
     newSelectedPkmn.reset();
@@ -466,11 +466,11 @@ void EncounterScene::update_P_PKMNS(Inputs const* /*inputs*/)
     }
 }
 
-void EncounterScene::draw_P_PKMNS(Fps const* /*fps*/, RenderSizes /*rs*/)
+void EncounterScene::draw_PLAYER_PKMNS(Fps const* /*fps*/, RenderSizes /*rs*/)
 {
 }
 
-void EncounterScene::update_P_RUN(Inputs const* inputs)
+void EncounterScene::update_PLAYER_RUN(Inputs const* inputs)
 {
     if (runSpeech)
     {
@@ -544,7 +544,7 @@ void EncounterScene::update_P_RUN(Inputs const* inputs)
     }
 }
 
-void EncounterScene::draw_P_RUN(Fps const* fps, RenderSizes rs)
+void EncounterScene::draw_PLAYER_RUN(Fps const* fps, RenderSizes rs)
 {
     if (runSpeech)
     {
@@ -559,17 +559,17 @@ void EncounterScene::draw_P_RUN(Fps const* fps, RenderSizes rs)
     }
 }
 
-void EncounterScene::update_O_PKMNS(Inputs const* /*inputs*/)
+void EncounterScene::update_OPPONENT_PKMNS(Inputs const* /*inputs*/)
 {
     // Should never reach
 }
 
-void EncounterScene::draw_O_PKMNS(Fps const* /*fps*/, RenderSizes /*rs*/)
+void EncounterScene::draw_OPPONENT_PKMNS(Fps const* /*fps*/, RenderSizes /*rs*/)
 {
     // Should never reach
 }
 
-void EncounterScene::update_O_ITEMS(Inputs const* /*inputs*/)
+void EncounterScene::update_OPPONENT_ITEMS(Inputs const* /*inputs*/)
 {
     // Attached berry
     // Item computation
@@ -578,11 +578,11 @@ void EncounterScene::update_O_ITEMS(Inputs const* /*inputs*/)
     state = WEATHER;
 }
 
-void EncounterScene::draw_O_ITEMS(Fps const* /*fps*/, RenderSizes /*rs*/)
+void EncounterScene::draw_OPPONENT_ITEMS(Fps const* /*fps*/, RenderSizes /*rs*/)
 {
 }
 
-void EncounterScene::update_O_MOVES(Inputs const* /*inputs*/)
+void EncounterScene::update_OPPONENT_MOVES(Inputs const* /*inputs*/)
 {
     if (Game::instance()->isDebug())
         std::cout << __PRETTY_FUNCTION__ << " Move: " << encounterMove->getDefinition()->getId() << std::endl;
@@ -610,11 +610,11 @@ void EncounterScene::update_O_MOVES(Inputs const* /*inputs*/)
         state = PLAYER_MOVES;
 }
 
-void EncounterScene::draw_O_MOVES(Fps const* /*fps*/, RenderSizes /*rs*/)
+void EncounterScene::draw_OPPONENT_MOVES(Fps const* /*fps*/, RenderSizes /*rs*/)
 {
 }
 
-void EncounterScene::update_O_RUN(Inputs const* inputs)
+void EncounterScene::update_OPPONENT_RUN(Inputs const* inputs)
 {
     if (!runSpeech)
     {
@@ -633,7 +633,7 @@ void EncounterScene::update_O_RUN(Inputs const* inputs)
     }
 }
 
-void EncounterScene::draw_O_RUN(Fps const* fps, RenderSizes rs)
+void EncounterScene::draw_OPPONENT_RUN(Fps const* fps, RenderSizes rs)
 {
     if (runSpeech)
     {
