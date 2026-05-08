@@ -103,5 +103,5 @@ void EncounterScene::onOpponentPkmnDefeated()
 
 bool EncounterScene::onExperienceResolvedNextPkmn()
 {
-    return true;
+    return false;
 }

@@ -108,7 +108,10 @@ float TrainerScene::battleExperienceMultiplier() const
 
 void TrainerScene::onOpponentPkmnDefeated()
 {
-    shouldSwitchOpponentPkmn = nextUsableOpponentPkmn() != nullptr;
+    defeatedOpponentPkmnName = opponentPkmn ? opponentPkmn->getDisplayName() : "";
+    nextOpponentPkmn         = nextUsableOpponentPkmn();
+    shouldSwitchOpponentPkmn = nextOpponentPkmn != nullptr;
+    opponentSwitchAnnounced  = false;
 }
 
 bool TrainerScene::onExperienceResolvedNextPkmn()
@@ -116,12 +119,47 @@ bool TrainerScene::onExperienceResolvedNextPkmn()
     if (!shouldSwitchOpponentPkmn)
         return false;
 
-    auto nextPkmn            = nextUsableOpponentPkmn();
+    if (!opponentSwitchAnnounced)
+    {
+        if (!nextOpponentPkmn)
+            return false;
+
+        std::vector<std::string> texts;
+        if (!defeatedOpponentPkmnName.empty())
+        {
+            boost::format faintText = boost::format(lc::translate("Foe %1% fainted !")) % defeatedOpponentPkmnName;
+            texts.push_back(faintText.str());
+        }
+
+        if (opponentTrainer && !opponentTrainer->name.empty())
+        {
+            boost::format sendOutText =
+                boost::format(lc::translate("Trainer %1% sent out %2% !")) % opponentTrainer->name
+                % nextOpponentPkmn->getDisplayName();
+            texts.push_back(sendOutText.str());
+        }
+        else
+        {
+            boost::format sendOutText =
+                boost::format(lc::translate("Foe sent out %1% !")) % nextOpponentPkmn->getDisplayName();
+            texts.push_back(sendOutText.str());
+        }
+
+        experienceSpeech = std::make_unique<TextSpeech>(renderer);
+        experienceSpeech->setTexts(texts);
+        experienceSpeech->start();
+        opponentSwitchAnnounced = true;
+        return true;
+    }
+
     shouldSwitchOpponentPkmn = false;
-    if (!nextPkmn)
+    if (!nextOpponentPkmn)
         return false;
 
-    setOpponentPkmn(nextPkmn);
+    setOpponentPkmn(nextOpponentPkmn);
+    nextOpponentPkmn.reset();
+    defeatedOpponentPkmnName.clear();
+    opponentSwitchAnnounced = false;
     encounterMove.reset();
     opponentMoveSpeech.reset();
     battleActions->reset();

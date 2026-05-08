@@ -13,6 +13,7 @@
 #include "animations/shake/shakeanimation.h"
 #include "animations/weather/flashanimation.h"
 #include "animations/weather/weatheranimation.h"
+#include "entities/trainer.h"
 #include "entity.h"
 #include "item.h"
 #include "map.h"
@@ -113,6 +114,7 @@ public:
 
     virtual bool                                  manageEvents();
     virtual bool                                  manageEncounters();
+    virtual bool                                  manageTrainers();
     virtual std::unique_ptr<BattleIntroAnimation> manageBattleIntro();
 
     virtual bool pushScene() const override;
@@ -144,14 +146,15 @@ protected:
     std::unique_ptr<Sprite>                                    surfSprite;
     std::unique_ptr<Sprite>                                    divingSprite;
     Entity::Direction                                          playerSpriteInitialDirection = Entity::Direction::NONE;
-    std::map<std::unique_ptr<Entity>, std::unique_ptr<Sprite>> entities;
+    std::map<std::shared_ptr<Entity>, std::unique_ptr<Sprite>> entities;
 
     Map::Weather weather = Map::Weather::NONE;
 
-    Pkmn::PkmnPtr                                                       emptyPkmnPtr    = nullptr;
-    Item::ItemPtr                                                       selectedBagItem = nullptr;
+    Pkmn::PkmnPtr                                                       emptyPkmnPtr          = nullptr;
+    Item::ItemPtr                                                       selectedBagItem       = nullptr;
     Pkmn::PkmnPtr                                                       selectedBagTargetPkmn = nullptr;
     Pkmn::PkmnPtr                                                       encounteredPkmn;
+    Trainer::TrainerPtr                                                 opponentTrainer;
     std::unique_ptr<BattleIntroAnimation>                               battleIntro;
     std::unique_ptr<FadeAnimation>                                      fadeInAnimation;
     std::unique_ptr<FadeAnimation>                                      fadeOutAnimation;

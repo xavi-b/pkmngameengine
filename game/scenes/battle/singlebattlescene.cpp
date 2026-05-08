@@ -22,6 +22,7 @@ SingleBattleScene::~SingleBattleScene()
 void SingleBattleScene::init()
 {
     BattleScene::init();
+    expGained.clear();
     participatingPlayerPkmns.clear();
     if (playerPkmn)
         participatingPlayerPkmns.insert(playerPkmn);
@@ -56,6 +57,12 @@ std::string SingleBattleScene::name()
 void SingleBattleScene::setOpponentPkmn(Pkmn::PkmnPtr const& newOpponentPkmn)
 {
     opponentPkmn = newOpponentPkmn;
+
+    expGained.clear();
+    participatingPlayerPkmns.clear();
+    if (playerPkmn)
+        participatingPlayerPkmns.insert(playerPkmn);
+
     singleBattleUi->setFoePkmn(newOpponentPkmn);
 }
 

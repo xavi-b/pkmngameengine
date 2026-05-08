@@ -45,14 +45,10 @@ void Road1Scene::init()
     }
 
     {
-        auto entity = std::make_unique<Trainer>();
+        auto entity = std::make_shared<Trainer>();
         entity->setGender(Trainer::Gender::BOY);
-        entity->name     = "Trainer from Road 1";
-        entity->pkmns[0] = std::make_shared<Pkmn>(Game::instance()->data.pkmnDefFor("PIKACHU"), 6);
-        entity->pkmns[0]->generateFromPkmnDef();
-        entity->pkmns[1] = std::make_shared<Pkmn>(Game::instance()->data.pkmnDefFor("TOGEPI"), 6);
-        entity->pkmns[1]->generateFromPkmnDef();
-        trainerNpc        = entity.get();
+        entity->name      = "Trainer from Road 1";
+        trainerNpc        = entity;
         entity->x         = 5;
         entity->y         = 10;
         entity->previousX = 5;
@@ -93,17 +89,10 @@ void Road1Scene::update(Inputs const* inputs)
         preventInputs = true;
     }
 
-    if (trainerSpeech->isStarted())
+    if (trainerSpeech->isStarted() && !trainerSpeech->shouldClose())
     {
-        if (!trainerSpeech->shouldClose())
-        {
-            trainerSpeech->update(inputs);
-            preventInputs = true;
-        }
-        else
-        {
-            // TODO: start battle
-        }
+        trainerSpeech->update(inputs);
+        preventInputs = true;
     }
 
     if (!preventInputs)
@@ -140,12 +129,8 @@ void Road1Scene::update(Inputs const* inputs)
                     preventInputs = true;
                 }
 
-                if (entity == trainerNpc)
+                if (entity == trainerNpc.get())
                 {
-                    auto d = Entity::getOppositeDirection(player.previousDirection);
-                    trainerSprite->forceSpriteDirection(d);
-                    trainerNpc->previousDirection = d;
-                    trainerNpc->direction         = Entity::Direction::NONE;
                     trainerSpeech->reset();
                     trainerSpeech->start();
                     preventInputs = true;
@@ -219,6 +204,17 @@ void Road1Scene::update(Inputs const* inputs)
                     ladyNpc->direction = Entity::Direction::UP;
                 }
                 move(*ladyNpc);
+            }
+
+            if (entity == trainerNpc.get())
+            {
+                if (trainerSpeech->isStarted() && !trainerSpeech->shouldClose())
+                {
+                    auto d = Entity::getOppositeDirection(player.previousDirection);
+                    trainerSprite->forceSpriteDirection(d);
+                    trainerNpc->previousDirection = d;
+                    trainerNpc->direction         = Entity::Direction::NONE;
+                }
             }
         }
     }
@@ -335,6 +331,23 @@ bool Road1Scene::manageEvents()
 std::string Road1Scene::name()
 {
     return "Road1Scene";
+}
+
+bool Road1Scene::manageTrainers()
+{
+    if (trainerSpeech->isStarted() && trainerSpeech->shouldClose())
+    {
+        trainerSpeech->reset();
+        trainerNpc->pkmns[0] = std::make_shared<Pkmn>(Game::instance()->data.pkmnDefFor("PIKACHU"), 6);
+        trainerNpc->pkmns[0]->generateFromPkmnDef();
+        trainerNpc->pkmns[1] = std::make_shared<Pkmn>(Game::instance()->data.pkmnDefFor("TOGEPI"), 6);
+        trainerNpc->pkmns[1]->generateFromPkmnDef();
+        opponentTrainer = trainerNpc;
+        preventInputs   = true;
+        return true;
+    }
+
+    return false;
 }
 
 std::unique_ptr<Scene> Road1Scene::nextScene()

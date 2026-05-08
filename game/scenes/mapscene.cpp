@@ -15,6 +15,7 @@
 #include "itemutils.h"
 #include "pkmnsscene.h"
 #include "scenes/battle/encounterscene.h"
+#include "scenes/battle/trainerscene.h"
 #include "sprites/bikesprite.h"
 #include "sprites/erasablesprite.h"
 #include "sprites/squaresprite.h"
@@ -423,6 +424,7 @@ void MapScene::update(Inputs const* inputs)
 
     bool event     = manageEvents();
     bool encounter = manageEncounters();
+    bool trainer   = manageTrainers();
 
     if (event)
     {
@@ -432,6 +434,15 @@ void MapScene::update(Inputs const* inputs)
     }
 
     if (encounter)
+    {
+        stop(player);
+        battleIntro = manageBattleIntro();
+        battleIntro->start();
+        preventInputs = true;
+        return;
+    }
+
+    if (trainer)
     {
         stop(player);
         battleIntro = manageBattleIntro();
@@ -1770,12 +1781,17 @@ bool MapScene::manageEncounters()
     return false;
 }
 
+bool MapScene::manageTrainers()
+{
+    return false;
+}
+
 std::unique_ptr<BattleIntroAnimation> MapScene::manageBattleIntro()
 {
     auto battleIntro = std::make_unique<BattleIntroAnimation>(renderer);
     battleIntro->setFile("resources/Graphics/Transitions/battle2.png");
 
-    if (!encounteredPkmn)
+    if (!encounteredPkmn && !opponentTrainer)
     {
         // Force to implement logic for specific trainers
         battleIntro->stop();
@@ -1795,6 +1811,10 @@ bool MapScene::pushScene() const
         return true;
     }
     else if (encounteredPkmn && battleIntro && battleIntro->isFinished())
+    {
+        return true;
+    }
+    else if (opponentTrainer && battleIntro && battleIntro->isFinished())
     {
         return true;
     }
@@ -1824,6 +1844,7 @@ void MapScene::popReset()
     openBag   = false;
     selectedBagItem.reset();
     encounteredPkmn.reset();
+    opponentTrainer.reset();
     battleIntro.reset();
 }
 
@@ -1843,6 +1864,22 @@ std::unique_ptr<Scene> MapScene::nextScene()
         auto scene = std::make_unique<EncounterScene>(renderer);
         scene->changeWeather(weather);
         scene->setEncounterPkmn(encounteredPkmn);
+        auto& pkmns = Game::instance()->data.player.pkmns;
+        for (size_t i = 0; i < pkmns.size(); ++i)
+        {
+            if (!pkmns[i]->isKO())
+            {
+                scene->setPlayerPkmn(pkmns[i]);
+                break;
+            }
+        }
+        return scene;
+    }
+    else if (opponentTrainer && battleIntro && battleIntro->isFinished())
+    {
+        auto scene = std::make_unique<TrainerScene>(renderer);
+        scene->changeWeather(weather);
+        scene->setOpponentTrainer(opponentTrainer);
         auto& pkmns = Game::instance()->data.player.pkmns;
         for (size_t i = 0; i < pkmns.size(); ++i)
         {

@@ -24,6 +24,8 @@ public:
 
     virtual std::string name() override;
 
+    virtual bool manageTrainers() override;
+
     virtual std::unique_ptr<Scene> nextScene() override;
 
     virtual bool shouldShowNightTextures() const override;
@@ -42,8 +44,8 @@ private:
 
     Entity* ladyNpc;
 
-    Trainer* trainerNpc;
-    Sprite*  trainerSprite;
+    Trainer::TrainerPtr trainerNpc;
+    Sprite*             trainerSprite;
 };
 
 #endif // ROAD1SCENE_H

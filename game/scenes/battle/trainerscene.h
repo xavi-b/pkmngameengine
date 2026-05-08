@@ -31,6 +31,9 @@ private:
 
     Trainer::TrainerPtr opponentTrainer;
     bool                shouldSwitchOpponentPkmn = false;
+    bool                opponentSwitchAnnounced  = false;
+    std::string         defeatedOpponentPkmnName;
+    Pkmn::PkmnPtr       nextOpponentPkmn = nullptr;
 };
 
 #endif // TRAINERSCENE_H

@@ -1,11 +1,14 @@
 #ifndef ENTITY_H
 #define ENTITY_H
 
+#include <memory>
 #include <string>
 
 class Entity
 {
 public:
+    using EntityPtr = std::shared_ptr<Entity>;
+
     enum class Direction
     {
         NONE,
