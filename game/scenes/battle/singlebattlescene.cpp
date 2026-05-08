@@ -9,17 +9,17 @@
 
 #include <cctype>
 
-EncounterScene::EncounterScene(SDL_Renderer* renderer) : BattleScene(renderer)
+SingleBattleScene::SingleBattleScene(SDL_Renderer* renderer) : BattleScene(renderer)
 {
     pkmnEncounterSpeech = std::make_unique<TextSpeech>(renderer);
     firstPkmnSpeech     = std::make_unique<TextSpeech>(renderer);
 }
 
-EncounterScene::~EncounterScene()
+SingleBattleScene::~SingleBattleScene()
 {
 }
 
-void EncounterScene::init()
+void SingleBattleScene::init()
 {
     BattleScene::init();
     participatingPlayerPkmns.clear();
@@ -42,7 +42,7 @@ void EncounterScene::init()
     firstPkmnSpeech->start();
 }
 
-void EncounterScene::draw(Fps const* fps, RenderSizes rs)
+void SingleBattleScene::draw(Fps const* fps, RenderSizes rs)
 {
     battleBackground->draw(fps, rs);
     singleBattleUi->draw(fps, rs);
@@ -50,18 +50,18 @@ void EncounterScene::draw(Fps const* fps, RenderSizes rs)
     BattleScene::draw(fps, rs);
 }
 
-std::string EncounterScene::name()
+std::string SingleBattleScene::name()
 {
-    return "EncounterScene";
+    return "SingleBattleScene";
 }
 
-void EncounterScene::setEncounterPkmn(Pkmn::PkmnPtr const& newEncounterPkmn)
+void SingleBattleScene::setEncounterPkmn(Pkmn::PkmnPtr const& newEncounterPkmn)
 {
     encounterPkmn = newEncounterPkmn;
     singleBattleUi->setFoePkmn(newEncounterPkmn);
 }
 
-void EncounterScene::setPlayerPkmn(Pkmn::PkmnPtr const& newPlayerPkmn)
+void SingleBattleScene::setPlayerPkmn(Pkmn::PkmnPtr const& newPlayerPkmn)
 {
     playerPkmn = newPlayerPkmn;
     singleBattleUi->setPlayerPkmn(newPlayerPkmn);
@@ -69,7 +69,7 @@ void EncounterScene::setPlayerPkmn(Pkmn::PkmnPtr const& newPlayerPkmn)
         participatingPlayerPkmns.insert(newPlayerPkmn);
 }
 
-void EncounterScene::chooseOpponentAction()
+void SingleBattleScene::chooseOpponentAction()
 {
     // TODO: randomize with weights ?
     // TODO: special cases like Latias/Latios
@@ -110,7 +110,7 @@ void EncounterScene::chooseOpponentAction()
     }
 }
 
-void EncounterScene::update_START(Inputs const* inputs)
+void SingleBattleScene::update_START(Inputs const* inputs)
 {
     if (!eyeAnimation->isFinished())
     {
@@ -148,7 +148,7 @@ void EncounterScene::update_START(Inputs const* inputs)
     }
 }
 
-void EncounterScene::draw_START(Fps const* fps, RenderSizes rs)
+void SingleBattleScene::draw_START(Fps const* fps, RenderSizes rs)
 {
     // TODO: Open animation
 
@@ -170,7 +170,7 @@ void EncounterScene::draw_START(Fps const* fps, RenderSizes rs)
     }
 }
 
-void EncounterScene::update_WEATHER(Inputs const* inputs)
+void SingleBattleScene::update_WEATHER(Inputs const* inputs)
 {
     if (weather == Map::Weather::NONE)
     {
@@ -205,7 +205,7 @@ void EncounterScene::update_WEATHER(Inputs const* inputs)
     }
 }
 
-void EncounterScene::draw_WEATHER(Fps const* fps, RenderSizes rs)
+void SingleBattleScene::draw_WEATHER(Fps const* fps, RenderSizes rs)
 {
     if (weatherAnimation)
     {
@@ -221,7 +221,7 @@ void EncounterScene::draw_WEATHER(Fps const* fps, RenderSizes rs)
     }
 }
 
-void EncounterScene::update_ACTIONS(Inputs const* inputs)
+void SingleBattleScene::update_ACTIONS(Inputs const* inputs)
 {
     battleSpeech->update(inputs);
     if (battleSpeech->mayClose())
@@ -256,13 +256,13 @@ void EncounterScene::update_ACTIONS(Inputs const* inputs)
     }
 }
 
-void EncounterScene::draw_ACTIONS(Fps const* fps, RenderSizes rs)
+void SingleBattleScene::draw_ACTIONS(Fps const* fps, RenderSizes rs)
 {
     battleSpeech->draw(fps, rs);
     battleActions->draw(fps, rs);
 }
 
-void EncounterScene::update_MOVES(Inputs const* inputs)
+void SingleBattleScene::update_MOVES(Inputs const* inputs)
 {
     if (noPpLeftSpeech)
     {
@@ -353,14 +353,14 @@ void EncounterScene::update_MOVES(Inputs const* inputs)
     }
 }
 
-void EncounterScene::draw_MOVES(Fps const* fps, RenderSizes rs)
+void SingleBattleScene::draw_MOVES(Fps const* fps, RenderSizes rs)
 {
     moveSelection->draw(fps, rs);
     if (noPpLeftSpeech)
         noPpLeftSpeech->draw(fps, rs);
 }
 
-void EncounterScene::update_PLAYER_MOVES(Inputs const* inputs)
+void SingleBattleScene::update_PLAYER_MOVES(Inputs const* inputs)
 {
     if (playerMoveSpeech)
     {
@@ -466,7 +466,7 @@ void EncounterScene::update_PLAYER_MOVES(Inputs const* inputs)
         state = WEATHER;
 }
 
-void EncounterScene::draw_PLAYER_MOVES(Fps const* fps, RenderSizes rs)
+void SingleBattleScene::draw_PLAYER_MOVES(Fps const* fps, RenderSizes rs)
 {
     if (playerMoveSpeech)
     {
@@ -475,7 +475,7 @@ void EncounterScene::draw_PLAYER_MOVES(Fps const* fps, RenderSizes rs)
     }
 }
 
-void EncounterScene::update_PLAYER_ITEMS(Inputs const* inputs)
+void SingleBattleScene::update_PLAYER_ITEMS(Inputs const* inputs)
 {
     if (itemUseSpeech)
     {
@@ -595,13 +595,13 @@ void EncounterScene::update_PLAYER_ITEMS(Inputs const* inputs)
     }
 }
 
-void EncounterScene::draw_PLAYER_ITEMS(Fps const* fps, RenderSizes rs)
+void SingleBattleScene::draw_PLAYER_ITEMS(Fps const* fps, RenderSizes rs)
 {
     if (itemUseSpeech)
         itemUseSpeech->draw(fps, rs);
 }
 
-void EncounterScene::update_PLAYER_PKMNS(Inputs const* inputs)
+void SingleBattleScene::update_PLAYER_PKMNS(Inputs const* inputs)
 {
     if (pkmnEnterSpeech)
     {
@@ -638,7 +638,7 @@ void EncounterScene::update_PLAYER_PKMNS(Inputs const* inputs)
     }
 }
 
-void EncounterScene::draw_PLAYER_PKMNS(Fps const* fps, RenderSizes rs)
+void SingleBattleScene::draw_PLAYER_PKMNS(Fps const* fps, RenderSizes rs)
 {
     if (pkmnEnterSpeech)
     {
@@ -647,7 +647,7 @@ void EncounterScene::draw_PLAYER_PKMNS(Fps const* fps, RenderSizes rs)
     }
 }
 
-void EncounterScene::update_PLAYER_RUN(Inputs const* inputs)
+void SingleBattleScene::update_PLAYER_RUN(Inputs const* inputs)
 {
     if (runSpeech)
     {
@@ -721,7 +721,7 @@ void EncounterScene::update_PLAYER_RUN(Inputs const* inputs)
     }
 }
 
-void EncounterScene::draw_PLAYER_RUN(Fps const* fps, RenderSizes rs)
+void SingleBattleScene::draw_PLAYER_RUN(Fps const* fps, RenderSizes rs)
 {
     if (runSpeech)
     {
@@ -736,28 +736,28 @@ void EncounterScene::draw_PLAYER_RUN(Fps const* fps, RenderSizes rs)
     }
 }
 
-void EncounterScene::update_OPPONENT_PKMNS(Inputs const* /*inputs*/)
+void SingleBattleScene::update_OPPONENT_PKMNS(Inputs const* /*inputs*/)
 {
     // Should never reach
 }
 
-void EncounterScene::draw_OPPONENT_PKMNS(Fps const* /*fps*/, RenderSizes /*rs*/)
+void SingleBattleScene::draw_OPPONENT_PKMNS(Fps const* /*fps*/, RenderSizes /*rs*/)
 {
     // Should never reach
 }
 
-void EncounterScene::update_OPPONENT_ITEMS(Inputs const* /*inputs*/)
+void SingleBattleScene::update_OPPONENT_ITEMS(Inputs const* /*inputs*/)
 {
     // TODO: Attached berry
 
     state = WEATHER;
 }
 
-void EncounterScene::draw_OPPONENT_ITEMS(Fps const* /*fps*/, RenderSizes /*rs*/)
+void SingleBattleScene::draw_OPPONENT_ITEMS(Fps const* /*fps*/, RenderSizes /*rs*/)
 {
 }
 
-void EncounterScene::update_OPPONENT_MOVES(Inputs const* inputs)
+void SingleBattleScene::update_OPPONENT_MOVES(Inputs const* inputs)
 {
     if (!encounterMove || encounterMove->getCurrentPP() == 0)
     {
@@ -845,7 +845,7 @@ void EncounterScene::update_OPPONENT_MOVES(Inputs const* inputs)
         state = PLAYER_MOVES;
 }
 
-void EncounterScene::draw_OPPONENT_MOVES(Fps const* fps, RenderSizes rs)
+void SingleBattleScene::draw_OPPONENT_MOVES(Fps const* fps, RenderSizes rs)
 {
     if (pkmnFaintSpeech)
     {
@@ -860,7 +860,7 @@ void EncounterScene::draw_OPPONENT_MOVES(Fps const* fps, RenderSizes rs)
     }
 }
 
-void EncounterScene::update_OPPONENT_RUN(Inputs const* inputs)
+void SingleBattleScene::update_OPPONENT_RUN(Inputs const* inputs)
 {
     if (!runSpeech)
     {
@@ -879,7 +879,7 @@ void EncounterScene::update_OPPONENT_RUN(Inputs const* inputs)
     }
 }
 
-void EncounterScene::draw_OPPONENT_RUN(Fps const* fps, RenderSizes rs)
+void SingleBattleScene::draw_OPPONENT_RUN(Fps const* fps, RenderSizes rs)
 {
     if (runSpeech)
     {
@@ -887,7 +887,7 @@ void EncounterScene::draw_OPPONENT_RUN(Fps const* fps, RenderSizes rs)
     }
 }
 
-void EncounterScene::update_EXPERIENCE(Inputs const* inputs)
+void SingleBattleScene::update_EXPERIENCE(Inputs const* inputs)
 {
     // TODO: Split experience animation for each level
     if (false) // Experience animation is running
@@ -1034,7 +1034,7 @@ void EncounterScene::update_EXPERIENCE(Inputs const* inputs)
     }
 }
 
-void EncounterScene::draw_EXPERIENCE(Fps const* fps, RenderSizes rs)
+void SingleBattleScene::draw_EXPERIENCE(Fps const* fps, RenderSizes rs)
 {
     // TODO: Experience animation
 
@@ -1057,7 +1057,7 @@ void EncounterScene::draw_EXPERIENCE(Fps const* fps, RenderSizes rs)
     }
 }
 
-void EncounterScene::update_END(Inputs const* /*inputs*/)
+void SingleBattleScene::update_END(Inputs const* /*inputs*/)
 {
     if (!fadeOutAnimation->isStarted())
     {
@@ -1070,17 +1070,17 @@ void EncounterScene::update_END(Inputs const* /*inputs*/)
     }
 }
 
-void EncounterScene::draw_END(Fps const* fps, RenderSizes rs)
+void SingleBattleScene::draw_END(Fps const* fps, RenderSizes rs)
 {
     fadeOutAnimation->draw(fps, rs);
 }
 
-bool EncounterScene::pushScene() const
+bool SingleBattleScene::pushScene() const
 {
     return shouldBreakToEvolution || state == BAG || state == PKMNS;
 }
 
-void EncounterScene::popReset()
+void SingleBattleScene::popReset()
 {
     if (shouldBreakToEvolution)
     {
@@ -1127,7 +1127,7 @@ void EncounterScene::popReset()
     }
 }
 
-std::unique_ptr<Scene> EncounterScene::nextScene()
+std::unique_ptr<Scene> SingleBattleScene::nextScene()
 {
     if (shouldBreakToEvolution)
         return std::make_unique<EvolutionScene>(renderer, expPkmn, evolutionDef);

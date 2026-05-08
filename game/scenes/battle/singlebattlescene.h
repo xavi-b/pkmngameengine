@@ -1,5 +1,5 @@
-#ifndef ENCOUNTERSCENE_H
-#define ENCOUNTERSCENE_H
+#ifndef SINGLEBATTLESCENE_H
+#define SINGLEBATTLESCENE_H
 
 #include "battlescene.h"
 #include "item.h"
@@ -8,11 +8,11 @@
 #include <SDL_image.h>
 #include <set>
 
-class EncounterScene : public BattleScene
+class SingleBattleScene : public BattleScene
 {
 public:
-    EncounterScene(SDL_Renderer* renderer);
-    virtual ~EncounterScene();
+    SingleBattleScene(SDL_Renderer* renderer);
+    virtual ~SingleBattleScene();
 
     virtual void init() override;
     virtual void draw(Fps const* fps, RenderSizes rs) override;
@@ -112,4 +112,4 @@ protected:
     PkmnDef::PkmnDefPtr evolutionDef            = nullptr;
 };
 
-#endif // ENCOUNTERSCENE_H
+#endif // SINGLEBATTLESCENE_H
