@@ -2,6 +2,7 @@
 
 #include "bagscene.h"
 #include "game.h"
+#include "itemutils.h"
 #include "pkmnsscene.h"
 #include "scenes/evolutionscene.h"
 #include "utils.h"
@@ -474,24 +475,32 @@ void EncounterScene::draw_PLAYER_MOVES(Fps const* fps, RenderSizes rs)
     }
 }
 
-void EncounterScene::update_PLAYER_ITEMS(Inputs const* /*inputs*/)
+void EncounterScene::update_PLAYER_ITEMS(Inputs const* inputs)
 {
-    bool selected = selectedItem != nullptr;
-    if (selected)
+    if (itemUseSpeech)
     {
-        // TODO
-        // Remove item from inventory
-        // Item computation
-        // Item animation
-        // If pkball
-        //    Capture computation
-        //    Pkdex scene/animation
-        selectedItem.reset();
+        itemUseSpeech->update(inputs);
+        if (!itemUseSpeech->shouldClose())
+            return;
+
+        itemUseSpeech.release();
+
+        if (!itemUseResultUsed)
+        {
+            battleActions->reset();
+            state = ACTIONS;
+            return;
+        }
+
+        if (itemUseResultCaptureSuccess)
+        {
+            state = END;
+            return;
+        }
 
         chooseOpponentAction();
 
         playerFirst = true;
-
         switch (opponentAction)
         {
         case BattleActions::BAG:
@@ -508,6 +517,76 @@ void EncounterScene::update_PLAYER_ITEMS(Inputs const* /*inputs*/)
             state = OPPONENT_MOVES;
             break;
         }
+        return;
+    }
+
+    bool selected = selectedItem != nullptr;
+    if (selected)
+    {
+        bool                     used           = false;
+        bool                     captureSuccess = false;
+        std::vector<std::string> itemMessages;
+        auto                     def = selectedItem->getDefinition();
+        if (def)
+        {
+            std::string itemName = def->getName();
+            switch (def->getBattleUse())
+            {
+            case ItemDef::BattleUse::OnPkmn: {
+                auto target = itemTargetPkmn ? itemTargetPkmn : playerPkmn;
+                used        = ItemUtils::useItemOnPkmn(selectedItem, target, true);
+                itemTargetPkmn.reset();
+                if (used && target)
+                {
+                    boost::format itemText = boost::format(lc::translate("%1% used %2% on %3% !"))
+                                           % Game::instance()->data.player.name % itemName % target->getDisplayName();
+                    itemMessages.push_back(itemText.str());
+                }
+                break;
+            }
+            case ItemDef::BattleUse::OnMove:
+                // TODO: Implement
+                used = false;
+                break;
+            case ItemDef::BattleUse::OnFoe: {
+                used = true;
+                boost::format throwText =
+                    boost::format(lc::translate("%1% threw %2% !")) % Game::instance()->data.player.name % itemName;
+                itemMessages.push_back(throwText.str());
+                captureSuccess = ItemUtils::useCaptureBall(selectedItem, encounterPkmn);
+                if (captureSuccess)
+                    ItemUtils::addPkmnToPlayer(encounterPkmn);
+                if (captureSuccess)
+                    itemMessages.push_back(lc::translate("Gotcha ! The Pkmn was caught !"));
+                else
+                    itemMessages.push_back(lc::translate("Oh no ! The Pkmn broke free !"));
+                break;
+            }
+            case ItemDef::BattleUse::Direct:
+            case ItemDef::BattleUse::OnBattler:
+            case ItemDef::BattleUse::None:
+            default:
+                used = false;
+                break;
+            }
+        }
+
+        if (!used)
+        {
+            battleActions->reset();
+            selectedItem.reset();
+            state = ACTIONS;
+            return;
+        }
+
+        ItemUtils::consumePlayerItem(Game::instance()->data.player, selectedItem);
+        selectedItem.reset();
+        itemUseResultUsed           = used;
+        itemUseResultCaptureSuccess = captureSuccess;
+        itemUseSpeech               = std::make_unique<TextSpeech>(renderer);
+        itemUseSpeech->setTexts(itemMessages.empty() ? std::vector<std::string>{lc::translate("Item used !")}
+                                                     : itemMessages);
+        itemUseSpeech->start();
     }
     else
     {
@@ -516,8 +595,10 @@ void EncounterScene::update_PLAYER_ITEMS(Inputs const* /*inputs*/)
     }
 }
 
-void EncounterScene::draw_PLAYER_ITEMS(Fps const* /*fps*/, RenderSizes /*rs*/)
+void EncounterScene::draw_PLAYER_ITEMS(Fps const* fps, RenderSizes rs)
 {
+    if (itemUseSpeech)
+        itemUseSpeech->draw(fps, rs);
 }
 
 void EncounterScene::update_PLAYER_PKMNS(Inputs const* inputs)
@@ -668,8 +749,6 @@ void EncounterScene::draw_OPPONENT_PKMNS(Fps const* /*fps*/, RenderSizes /*rs*/)
 void EncounterScene::update_OPPONENT_ITEMS(Inputs const* /*inputs*/)
 {
     // TODO: Attached berry
-    // TODO: Item computation
-    // TODO: Item animation
 
     state = WEATHER;
 }
@@ -998,7 +1077,7 @@ void EncounterScene::draw_END(Fps const* fps, RenderSizes rs)
 
 bool EncounterScene::pushScene() const
 {
-    return state == BAG || state == PKMNS;
+    return shouldBreakToEvolution || state == BAG || state == PKMNS;
 }
 
 void EncounterScene::popReset()
@@ -1060,7 +1139,7 @@ std::unique_ptr<Scene> EncounterScene::nextScene()
     switch (state)
     {
     case BAG:
-        return std::make_unique<BagScene>(renderer, selectedItem);
+        return std::make_unique<BagScene>(renderer, selectedItem, itemTargetPkmn);
     case PKMNS:
         newSelectedPkmn = playerPkmn;
         return std::make_unique<PkmnsScene>(renderer, newSelectedPkmn, playerPkmn == nullptr);

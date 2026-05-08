@@ -18,6 +18,19 @@ size_t Item::getCount() const
     return count;
 }
 
+void Item::setCount(size_t newCount)
+{
+    count = newCount;
+}
+
+void Item::decreaseCount(size_t n)
+{
+    if (n >= count)
+        count = 0;
+    else
+        count -= n;
+}
+
 void tag_invoke(js::value_from_tag, js::value& jv, Item::ItemPtr const& o)
 {
     if (o)

@@ -4,9 +4,12 @@
 #include "pkmnutils.h"
 #include "utils.h"
 
-PkmnsScene::PkmnsScene(SDL_Renderer* renderer, Pkmn::PkmnPtr& currentPkmn, bool forceSelectedPkmn)
+PkmnsScene::PkmnsScene(SDL_Renderer* renderer,
+                       Pkmn::PkmnPtr& currentPkmn,
+                       bool           forceSelectedPkmn,
+                       bool           allowFaintedPkmn)
     : Scene(renderer), selectingPkmn(forceSelectedPkmn || currentPkmn != nullptr), forceSelectedPkmn(forceSelectedPkmn),
-      selectedPkmn(currentPkmn)
+      allowFaintedPkmn(allowFaintedPkmn), selectedPkmn(currentPkmn)
 {
     bgSurface = IMG_Load("resources/Graphics/UI/Party/bg.png");
     bgTexture = SDL_CreateTextureFromSurface(renderer, bgSurface);
@@ -123,7 +126,7 @@ void PkmnsScene::update(Inputs const* inputs)
         if (selectingPkmn)
         {
             selectedPkmn = Game::instance()->data.player.pkmns[currentIndex];
-            if (!selectedPkmn->isKO())
+            if (selectedPkmn && (allowFaintedPkmn || !selectedPkmn->isKO()))
                 leave = true;
         }
         else

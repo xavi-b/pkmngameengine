@@ -150,6 +150,7 @@ protected:
 
     Pkmn::PkmnPtr                                                       emptyPkmnPtr    = nullptr;
     Item::ItemPtr                                                       selectedBagItem = nullptr;
+    Pkmn::PkmnPtr                                                       selectedBagTargetPkmn = nullptr;
     Pkmn::PkmnPtr                                                       encounteredPkmn;
     std::unique_ptr<BattleIntroAnimation>                               battleIntro;
     std::unique_ptr<FadeAnimation>                                      fadeInAnimation;

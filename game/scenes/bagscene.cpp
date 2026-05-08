@@ -1,10 +1,14 @@
 #include "bagscene.h"
 
 #include "game.h"
+#include "itemutils.h"
+#include "pkmnsscene.h"
 
-BagScene::BagScene(SDL_Renderer* renderer, Item::ItemPtr& selectedItem) : Scene(renderer), selectedItem(selectedItem)
+BagScene::BagScene(SDL_Renderer* renderer, Item::ItemPtr& selectedItem, Pkmn::PkmnPtr& selectedPkmn)
+    : Scene(renderer), selectedItem(selectedItem), selectedPkmn(selectedPkmn)
 {
     selectedItem.reset();
+    selectedPkmn.reset();
     auto const& player = Game::instance()->data.player;
 
     for (size_t i = 0; i < ItemDef::NumberOfPockets; ++i)
@@ -72,8 +76,22 @@ void BagScene::update(Inputs const* inputs)
     {
         auto const& items = player.items[currentPocketIndex];
         if (!items.empty() && indices[currentPocketIndex] < items.size())
-            selectedItem = items[indices[currentPocketIndex]];
-        leave = true;
+        {
+            auto const& item = items[indices[currentPocketIndex]];
+            if (item && item->getDefinition()
+                && (item->getDefinition()->getBattleUse() == ItemDef::BattleUse::OnPkmn
+                    || item->getDefinition()->getFieldUse() == ItemDef::FieldUse::OnPkmn))
+            {
+                pendingItem = item;
+                selectedPkmn.reset();
+                allowFaintedTarget = ItemUtils::allowFaintedTarget(item);
+                openPkmnScene      = true;
+                return;
+            }
+
+            selectedItem = item;
+            leave        = true;
+        }
         return;
     }
 
@@ -246,6 +264,41 @@ void BagScene::draw(Fps const* /*fps*/, RenderSizes rs)
 bool BagScene::popScene() const
 {
     return leave;
+}
+
+bool BagScene::pushScene() const
+{
+    return openPkmnScene;
+}
+
+void BagScene::popReset()
+{
+    openPkmnScene = false;
+    if (selectedPkmn)
+    {
+        selectedItem = pendingItem;
+        leave        = true;
+    }
+    pendingItem.reset();
+}
+
+std::unique_ptr<Scene> BagScene::nextScene()
+{
+    if (!openPkmnScene)
+        return nullptr;
+
+    if (!selectedPkmn)
+    {
+        for (auto const& pkmn : Game::instance()->data.player.pkmns)
+        {
+            if (pkmn)
+            {
+                selectedPkmn = pkmn;
+                break;
+            }
+        }
+    }
+    return std::make_unique<PkmnsScene>(renderer, selectedPkmn, false, allowFaintedTarget);
 }
 
 std::string BagScene::name()

@@ -15,6 +15,8 @@ public:
 
     ItemDef::ItemDefPtr getDefinition() const;
     size_t              getCount() const;
+    void                setCount(size_t newCount);
+    void                decreaseCount(size_t n = 1);
 
 private:
     ItemDef::ItemDefPtr definition;

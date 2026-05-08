@@ -3,6 +3,7 @@
 
 #include "item.h"
 #include "itemdef.h"
+#include "pkmn.h"
 #include "scene.h"
 
 #include <SDL_image.h>
@@ -12,13 +13,16 @@
 class BagScene : public Scene
 {
 public:
-    BagScene(SDL_Renderer* renderer, Item::ItemPtr& selectedItem);
+    BagScene(SDL_Renderer* renderer, Item::ItemPtr& selectedItem, Pkmn::PkmnPtr& selectedPkmn);
     virtual ~BagScene();
 
     virtual void update(Inputs const* inputs) override;
     virtual void draw(Fps const* fps, RenderSizes rs) override;
 
     virtual bool popScene() const override;
+    virtual bool pushScene() const override;
+    virtual void popReset() override;
+    virtual std::unique_ptr<Scene> nextScene() override;
 
     virtual std::string name() override;
 
@@ -35,6 +39,10 @@ private:
 
     bool           leave = false;
     Item::ItemPtr& selectedItem;
+    Pkmn::PkmnPtr& selectedPkmn;
+    Item::ItemPtr  pendingItem = nullptr;
+    bool           openPkmnScene = false;
+    bool           allowFaintedTarget = false;
 
     size_t currentPocketIndex = 0;
 

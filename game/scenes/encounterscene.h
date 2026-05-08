@@ -88,6 +88,7 @@ protected:
     std::unique_ptr<TextSpeech> moveToLearnSpeech;
     std::unique_ptr<TextSpeech> playerMoveSpeech;
     std::unique_ptr<TextSpeech> opponentMoveSpeech;
+    std::unique_ptr<TextSpeech> itemUseSpeech;
     std::unique_ptr<TextSpeech> endSpeech;
     std::unique_ptr<TextSpeech> pkmnEnterSpeech;
     std::unique_ptr<TextSpeech> pkmnFaintSpeech;
@@ -95,6 +96,9 @@ protected:
     BattleActions::Type             opponentAction  = BattleActions::Type::MOVES;
     Pkmn::PkmnPtr                   newSelectedPkmn = nullptr;
     Item::ItemPtr                   selectedItem    = nullptr;
+    Pkmn::PkmnPtr                   itemTargetPkmn  = nullptr;
+    bool                            itemUseResultUsed           = false;
+    bool                            itemUseResultCaptureSuccess = false;
     std::set<Pkmn::PkmnPtr>         participatingPlayerPkmns;
     std::map<Pkmn::PkmnPtr, size_t> expGained;
 

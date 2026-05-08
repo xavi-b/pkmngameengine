@@ -12,6 +12,7 @@
 #include "bagscene.h"
 #include "entities/erasableentity.h"
 #include "game.h"
+#include "itemutils.h"
 #include "pkmnsscene.h"
 #include "scenes/encounterscene.h"
 #include "sprites/bikesprite.h"
@@ -20,6 +21,7 @@
 #include "sprites/surfsprite.h"
 
 #include <cmath>
+#include <cctype>
 #include <fstream>
 #include <iostream>
 #include <numbers>
@@ -1804,6 +1806,19 @@ bool MapScene::pushScene() const
 
 void MapScene::popReset()
 {
+    if (selectedBagItem && selectedBagTargetPkmn)
+    {
+        if (ItemUtils::useItemOnPkmn(selectedBagItem, selectedBagTargetPkmn, false))
+            ItemUtils::consumePlayerItem(Game::instance()->data.player, selectedBagItem);
+        // TODO: message information (Item overlay ?)
+    }
+    else if (selectedBagItem)
+    {
+        ItemUtils::useItemInField(Game::instance()->data.player, selectedBagItem);
+        // TODO: message information (Item overlay ?)
+        // TODO: action
+    }
+
     fadeInAnimation->reset();
     fadeInAnimation->start();
 
@@ -1822,7 +1837,7 @@ std::unique_ptr<Scene> MapScene::nextScene()
     }
     else if (openBag && fadeOutAnimation->isFinished())
     {
-        auto scene = std::make_unique<BagScene>(renderer, selectedBagItem);
+        auto scene = std::make_unique<BagScene>(renderer, selectedBagItem, selectedBagTargetPkmn);
         return scene;
     }
     else if (encounteredPkmn && battleIntro && battleIntro->isFinished())
