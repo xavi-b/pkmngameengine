@@ -219,6 +219,7 @@ void Game::save()
         json["playerY"]       = y;
         json["playerL"]       = l;
         json["player"]        = js::value_from<Player const&>(data.player);
+        json["storage"]       = js::value_from<Storage const&>(data.storage);
 
         std::string dataPath = Utils::dataDir();
         fs::create_directories(dataPath);

@@ -6,6 +6,7 @@
 #include "itemdef.h"
 #include "pkmndef.h"
 #include "type.h"
+#include "storage.h"
 
 #include <string>
 
@@ -27,6 +28,7 @@ public:
     Player      player;
     GameTime    time;
     std::string location;
+    Storage     storage;
 };
 
 #endif // GAMEDATA_H
