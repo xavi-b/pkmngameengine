@@ -46,6 +46,7 @@ void Road1Scene::init()
 
     {
         auto entity       = std::make_unique<Entity>();
+        trainerNpc        = entity.get();
         entity->x         = 4;
         entity->y         = 10;
         entity->previousX = 4;
@@ -54,6 +55,7 @@ void Road1Scene::init()
         auto entitySprite = std::make_unique<Sprite>(renderer);
         entitySprite->load("resources/Graphics/Characters/NPC 07.png", shouldShowNightTextures());
         entitySprite->forceSpriteDirection(Entity::Direction::UP);
+        trainerSprite = entitySprite.get();
         entities.emplace(std::move(entity), std::move(entitySprite));
     }
 
@@ -62,6 +64,9 @@ void Road1Scene::init()
 
     childSpeech = std::make_unique<TextSpeech>(renderer);
     childSpeech->setTexts({lc::translate("First NPC chat of the game !"), lc::translate("Are we cool ?")});
+
+    trainerSpeech = std::make_unique<TextSpeech>(renderer);
+    trainerSpeech->setTexts({lc::translate("Let's battle !")});
 }
 
 void Road1Scene::update(Inputs const* inputs)
@@ -80,6 +85,19 @@ void Road1Scene::update(Inputs const* inputs)
     {
         childSpeech->update(inputs);
         preventInputs = true;
+    }
+
+    if (trainerSpeech->isStarted())
+    {
+        if (!trainerSpeech->shouldClose())
+        {
+            trainerSpeech->update(inputs);
+            preventInputs = true;
+        }
+        else
+        {
+            // TODO: start battle
+        }
     }
 
     if (!preventInputs)
@@ -115,6 +133,16 @@ void Road1Scene::update(Inputs const* inputs)
                     childNpc->previousDirection = childNpc->direction;
                     childSpeech->reset();
                     childSpeech->start();
+                    preventInputs = true;
+                }
+
+                if (entity == trainerNpc)
+                {
+                    trainerSprite->forceSpriteDirection(Entity::getOppositeDirection(player.direction));
+                    trainerNpc->previousDirection = trainerNpc->direction;
+                    trainerNpc->direction         = Entity::getOppositeDirection(trainerNpc->direction);
+                    trainerSpeech->reset();
+                    trainerSpeech->start();
                     preventInputs = true;
                 }
             }
@@ -219,6 +247,11 @@ void Road1Scene::draw(Fps const* fps, RenderSizes rs)
     if (childSpeech->isStarted() && !childSpeech->shouldClose())
     {
         childSpeech->draw(fps, rs);
+    }
+
+    if (trainerSpeech->isStarted() && !trainerSpeech->shouldClose())
+    {
+        trainerSpeech->draw(fps, rs);
     }
 }
 

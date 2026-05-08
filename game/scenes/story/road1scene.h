@@ -33,10 +33,13 @@ private:
     std::unique_ptr<FogAnimation> fogAnimation;
     std::unique_ptr<TextSpeech>   text1Speech;
     std::unique_ptr<TextSpeech>   childSpeech;
+    std::unique_ptr<TextSpeech>   trainerSpeech;
 
     Entity* childNpc;
     Sprite* childSprite;
     Entity* ladyNpc;
+    Entity* trainerNpc;
+    Sprite* trainerSprite;
 };
 
 #endif // ROAD1SCENE_H
