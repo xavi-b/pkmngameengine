@@ -1,4 +1,4 @@
-#include "encounterscene.h"
+#include "singlebattlescene.h"
 
 #include "game.h"
 #include "itemutils.h"
@@ -31,9 +31,7 @@ void SingleBattleScene::init()
     battleSpeech->setTexts({whatShouldDoText.str()});
     battleSpeech->init();
 
-    boost::format pkmnEncounterText = boost::format(lc::translate("A wild %1% appears !"))
-                                    % (encounterPkmn ? encounterPkmn->getDisplayName() : "#ERROR");
-    pkmnEncounterSpeech->setTexts({pkmnEncounterText.str()});
+    pkmnEncounterSpeech->setTexts({encounterStartText()});
     pkmnEncounterSpeech->start();
 
     boost::format firstPkmnText =
@@ -96,9 +94,7 @@ void SingleBattleScene::chooseOpponentAction()
             size_t randomMove      = Utils::randuint(0, nonNullMovesCount - 1);
             encounterMove          = moves.at(randomMove);
             opponentMoveSpeech     = std::make_unique<TextSpeech>(renderer);
-            boost::format moveText = boost::format(lc::translate("Wild %1% uses %2% !"))
-                                   % encounterPkmn->getDisplayName() % encounterMove->getDefinition()->getName();
-            opponentMoveSpeech->setTexts({moveText.str()});
+            opponentMoveSpeech->setTexts({opponentMoveText(encounterMove)});
             opponentMoveSpeech->start();
         }
         else
@@ -390,7 +386,7 @@ void SingleBattleScene::update_PLAYER_MOVES(Inputs const* inputs)
             };
 
             // https://bulbapedia.bulbagarden.net/wiki/Experience#Experience_gain_in_battle
-            float  a = 1.0; // 1.5 for Trainer, 1.0 for Wild
+            float  a = battleExperienceMultiplier();
             size_t b = encounterPkmn->getDefinition()->getBaseExp();
             bool   hasLuckyEgg =
                 playerPkmn->getHeldItem() && playerPkmn->getHeldItem()->getDefinition()->getId() == "LUCKYEGG";
@@ -549,6 +545,13 @@ void SingleBattleScene::update_PLAYER_ITEMS(Inputs const* inputs)
                 used = false;
                 break;
             case ItemDef::BattleUse::OnFoe: {
+                if (!canCaptureOpponent())
+                {
+                    itemMessages.push_back(lc::translate("You cannot catch this Pkmn !"));
+                    used = false;
+                    break;
+                }
+
                 used = true;
                 boost::format throwText =
                     boost::format(lc::translate("%1% threw %2% !")) % Game::instance()->data.player.name % itemName;
@@ -573,6 +576,17 @@ void SingleBattleScene::update_PLAYER_ITEMS(Inputs const* inputs)
 
         if (!used)
         {
+            if (!itemMessages.empty())
+            {
+                selectedItem.reset();
+                itemUseResultUsed           = false;
+                itemUseResultCaptureSuccess = false;
+                itemUseSpeech               = std::make_unique<TextSpeech>(renderer);
+                itemUseSpeech->setTexts(itemMessages);
+                itemUseSpeech->start();
+                return;
+            }
+
             battleActions->reset();
             selectedItem.reset();
             state = ACTIONS;
@@ -649,6 +663,25 @@ void SingleBattleScene::draw_PLAYER_PKMNS(Fps const* fps, RenderSizes rs)
 
 void SingleBattleScene::update_PLAYER_RUN(Inputs const* inputs)
 {
+    if (!canPlayerRun())
+    {
+        if (!failedRunSpeech)
+        {
+            failedRunSpeech = std::make_unique<TextSpeech>(renderer);
+            failedRunSpeech->setTexts({lc::translate("No! There's no running from a trainer battle !")});
+            failedRunSpeech->start();
+        }
+
+        failedRunSpeech->update(inputs);
+        if (failedRunSpeech->shouldClose())
+        {
+            failedRunSpeech.release();
+            battleActions->reset();
+            state = ACTIONS;
+        }
+        return;
+    }
+
     if (runSpeech)
     {
         runSpeech->update(inputs);
@@ -691,18 +724,7 @@ void SingleBattleScene::update_PLAYER_RUN(Inputs const* inputs)
         return;
     }
 
-    ++runAttemps;
-    bool   run       = true;
-    size_t wildSpeed = encounterPkmn->getStats()[PkmnDef::SPEED];
-
-    if (wildSpeed > 0)
-    {
-        // https://bulbapedia.bulbagarden.net/wiki/Escape#Generation_III_and_IV
-        size_t playerSpeed = playerPkmn->getStats()[PkmnDef::SPEED];
-        size_t odds        = ((playerSpeed * 128 / wildSpeed) + 30 * runAttemps) % 256;
-        size_t random      = Utils::randuint(0, 255);
-        run                = random < odds;
-    }
+    bool run = tryPlayerRun();
 
     if (Game::instance()->isDebug())
         std::cout << __PRETTY_FUNCTION__ << " run: " << run << std::endl;
@@ -864,10 +886,8 @@ void SingleBattleScene::update_OPPONENT_RUN(Inputs const* inputs)
 {
     if (!runSpeech)
     {
-        runSpeech             = std::make_unique<TextSpeech>(renderer);
-        boost::format runText = boost::format(lc::translate("Wild %1% fled !"))
-                              % (encounterPkmn ? encounterPkmn->getDisplayName() : "#ERROR");
-        runSpeech->setTexts({runText.str()});
+        runSpeech = std::make_unique<TextSpeech>(renderer);
+        runSpeech->setTexts({opponentRunText()});
         runSpeech->start();
     }
 

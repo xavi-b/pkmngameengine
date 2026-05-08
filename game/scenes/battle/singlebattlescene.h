@@ -72,6 +72,14 @@ public:
     virtual void draw_END(Fps const* fps, RenderSizes rs) override;
 
 protected:
+    virtual std::string encounterStartText() const = 0;
+    virtual std::string opponentMoveText(Move::MovePtr const& move) const = 0;
+    virtual std::string opponentRunText() const = 0;
+    virtual bool        canCaptureOpponent() const = 0;
+    virtual bool        canPlayerRun() const = 0;
+    virtual bool        tryPlayerRun() = 0;
+    virtual float       battleExperienceMultiplier() const = 0;
+
     Pkmn::PkmnPtr encounterPkmn;
     Pkmn::PkmnPtr playerPkmn;
     size_t        runAttemps    = 0;
