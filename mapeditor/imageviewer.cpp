@@ -38,14 +38,14 @@ void ImageViewer::wheelEvent(QWheelEvent* event)
 {
     if (event->modifiers() & Qt::ControlModifier)
     {
-        if (event->pixelDelta().y() > 0)
+        if (event->angleDelta().y() > 0)
         {
             if (scaleFactor < 3.0)
                 scaleContent(1.25);
             event->accept();
             return;
         }
-        else if (event->pixelDelta().y() < 0)
+        else if (event->angleDelta().y() < 0)
         {
             if (scaleFactor > 0.333)
                 scaleContent(0.8);

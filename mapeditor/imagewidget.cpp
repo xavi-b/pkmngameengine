@@ -93,6 +93,7 @@ void ImageWidget::resizeEvent(QResizeEvent* event)
     float selSize     = selectionSize * scaleFactor;
     QSize size        = {1 + releasePoint.x() - pressPoint.x(), 1 + releasePoint.y() - pressPoint.y()};
 
-    rubberBand->setGeometry(QRect(pressPoint * selSize, size * selSize));
+    if (selSize != std::numeric_limits<float>::infinity())
+        rubberBand->setGeometry(QRect(pressPoint * selSize, size * selSize));
     event->accept();
 }
