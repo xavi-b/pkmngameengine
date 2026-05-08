@@ -4,7 +4,6 @@
 
 EncounterScene::EncounterScene(SDL_Renderer* renderer) : SingleBattleScene(renderer)
 {
-
 }
 
 EncounterScene::~EncounterScene()
@@ -16,25 +15,52 @@ std::string EncounterScene::name()
     return "EncounterScene";
 }
 
+void EncounterScene::setEncounterPkmn(Pkmn::PkmnPtr const& newEncounterPkmn)
+{
+    setOpponentPkmn(newEncounterPkmn);
+}
+
+void EncounterScene::chooseOpponentAction()
+{
+    // TODO: randomize with weights ?
+    // TODO: special cases like Latias/Latios
+    opponentAction = BattleActions::Type::MOVES;
+
+    switch (opponentAction)
+    {
+    case BattleActions::RUN:
+        state = OPPONENT_RUN;
+        break;
+    case BattleActions::BAG:
+    case BattleActions::PKMNS:
+        // Cannot happen for encounters
+    case BattleActions::MOVES:
+    default: {
+        chooseOpponentMove();
+        break;
+    }
+    }
+}
+
 std::string EncounterScene::encounterStartText() const
 {
     boost::format pkmnEncounterText = boost::format(lc::translate("A wild %1% appears !"))
-                                    % (encounterPkmn ? encounterPkmn->getDisplayName() : "#ERROR");
+                                    % (opponentPkmn ? opponentPkmn->getDisplayName() : "#ERROR");
     return pkmnEncounterText.str();
 }
 
 std::string EncounterScene::opponentMoveText(Move::MovePtr const& move) const
 {
     boost::format moveText = boost::format(lc::translate("Wild %1% uses %2% !"))
-                           % (encounterPkmn ? encounterPkmn->getDisplayName() : "#ERROR")
+                           % (opponentPkmn ? opponentPkmn->getDisplayName() : "#ERROR")
                            % (move && move->getDefinition() ? move->getDefinition()->getName() : "#ERROR");
     return moveText.str();
 }
 
 std::string EncounterScene::opponentRunText() const
 {
-    boost::format runText = boost::format(lc::translate("Wild %1% fled !"))
-                          % (encounterPkmn ? encounterPkmn->getDisplayName() : "#ERROR");
+    boost::format runText =
+        boost::format(lc::translate("Wild %1% fled !")) % (opponentPkmn ? opponentPkmn->getDisplayName() : "#ERROR");
     return runText.str();
 }
 
@@ -52,7 +78,7 @@ bool EncounterScene::tryPlayerRun()
 {
     ++runAttemps;
     bool   run       = true;
-    size_t wildSpeed = encounterPkmn ? encounterPkmn->getStats()[PkmnDef::SPEED] : 0;
+    size_t wildSpeed = opponentPkmn ? opponentPkmn->getStats()[PkmnDef::SPEED] : 0;
 
     if (wildSpeed > 0)
     {
@@ -69,4 +95,13 @@ bool EncounterScene::tryPlayerRun()
 float EncounterScene::battleExperienceMultiplier() const
 {
     return 1.0f;
+}
+
+void EncounterScene::onOpponentPkmnDefeated()
+{
+}
+
+bool EncounterScene::onExperienceResolvedNextPkmn()
+{
+    return true;
 }

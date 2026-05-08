@@ -45,11 +45,17 @@ void Road1Scene::init()
     }
 
     {
-        auto entity       = std::make_unique<Entity>();
+        auto entity = std::make_unique<Trainer>();
+        entity->setGender(Trainer::Gender::BOY);
+        entity->name     = "Trainer from Road 1";
+        entity->pkmns[0] = std::make_shared<Pkmn>(Game::instance()->data.pkmnDefFor("PIKACHU"), 6);
+        entity->pkmns[0]->generateFromPkmnDef();
+        entity->pkmns[1] = std::make_shared<Pkmn>(Game::instance()->data.pkmnDefFor("TOGEPI"), 6);
+        entity->pkmns[1]->generateFromPkmnDef();
         trainerNpc        = entity.get();
-        entity->x         = 4;
+        entity->x         = 5;
         entity->y         = 10;
-        entity->previousX = 4;
+        entity->previousX = 5;
         entity->previousY = 10;
         entity->direction = Entity::Direction::NONE;
         auto entitySprite = std::make_unique<Sprite>(renderer);
@@ -129,8 +135,6 @@ void Road1Scene::update(Inputs const* inputs)
             {
                 if (entity == childNpc)
                 {
-                    childSprite->forceSpriteDirection(Entity::getOppositeDirection(player.direction));
-                    childNpc->previousDirection = childNpc->direction;
                     childSpeech->reset();
                     childSpeech->start();
                     preventInputs = true;
@@ -138,9 +142,10 @@ void Road1Scene::update(Inputs const* inputs)
 
                 if (entity == trainerNpc)
                 {
-                    trainerSprite->forceSpriteDirection(Entity::getOppositeDirection(player.direction));
-                    trainerNpc->previousDirection = trainerNpc->direction;
-                    trainerNpc->direction         = Entity::getOppositeDirection(trainerNpc->direction);
+                    auto d = Entity::getOppositeDirection(player.previousDirection);
+                    trainerSprite->forceSpriteDirection(d);
+                    trainerNpc->previousDirection = d;
+                    trainerNpc->direction         = Entity::Direction::NONE;
                     trainerSpeech->reset();
                     trainerSpeech->start();
                     preventInputs = true;
@@ -163,6 +168,12 @@ void Road1Scene::update(Inputs const* inputs)
             stop(player);
     }
 
+    if (trainerSpeech->isStarted() && !trainerSpeech->shouldClose())
+    {
+        if (playerSprite->getAccumulatedTicks() == 0)
+            stop(player);
+    }
+
     for (auto const& pair : entities)
     {
         auto entity = pair.first.get();
@@ -175,12 +186,14 @@ void Road1Scene::update(Inputs const* inputs)
                 if (childSpeech->isStarted() && !childSpeech->shouldClose()
                     && childNpc->direction != Entity::Direction::NONE)
                 {
+                    childStoppedDirection = childNpc->direction;
                     stop(*childNpc);
+                    childSprite->forceSpriteDirection(Entity::getOppositeDirection(player.previousDirection));
                 }
                 else if (!childSpeech->isStarted() || childSpeech->shouldClose())
                 {
                     if (childNpc->direction == Entity::Direction::NONE)
-                        childNpc->direction = childNpc->previousDirection;
+                        childNpc->direction = childStoppedDirection;
                     childNpc->previousDirection = Entity::Direction::NONE;
 
                     if (childNpc->x == 10 || (childNpc->x != 4 && childNpc->direction == Entity::Direction::LEFT))

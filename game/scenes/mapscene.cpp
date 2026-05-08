@@ -1761,8 +1761,6 @@ bool MapScene::manageEncounters()
                     size_t level    = Utils::randuint(e.getLevelMin(), e.getLevelMax());
                     encounteredPkmn = std::make_shared<Pkmn>(pkmnDef, level);
                     encounteredPkmn->generateFromPkmnDef();
-                    // TODO: temp
-                    encounteredPkmn->setStatusCondition(Pkmn::StatusCondition::BADLY_POISON);
                 }
                 return true;
             }

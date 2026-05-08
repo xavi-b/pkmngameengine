@@ -2,6 +2,7 @@
 #define ROAD1SCENE_H
 
 #include "animations/weather/foganimation.h"
+#include "entities/trainer.h"
 #include "scenes/mapscene.h"
 #include "textspeech.h"
 
@@ -35,11 +36,14 @@ private:
     std::unique_ptr<TextSpeech>   childSpeech;
     std::unique_ptr<TextSpeech>   trainerSpeech;
 
-    Entity* childNpc;
-    Sprite* childSprite;
+    Entity*           childNpc;
+    Sprite*           childSprite;
+    Entity::Direction childStoppedDirection;
+
     Entity* ladyNpc;
-    Entity* trainerNpc;
-    Sprite* trainerSprite;
+
+    Trainer* trainerNpc;
+    Sprite*  trainerSprite;
 };
 
 #endif // ROAD1SCENE_H

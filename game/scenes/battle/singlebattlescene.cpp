@@ -53,10 +53,10 @@ std::string SingleBattleScene::name()
     return "SingleBattleScene";
 }
 
-void SingleBattleScene::setEncounterPkmn(Pkmn::PkmnPtr const& newEncounterPkmn)
+void SingleBattleScene::setOpponentPkmn(Pkmn::PkmnPtr const& newOpponentPkmn)
 {
-    encounterPkmn = newEncounterPkmn;
-    singleBattleUi->setFoePkmn(newEncounterPkmn);
+    opponentPkmn = newOpponentPkmn;
+    singleBattleUi->setFoePkmn(newOpponentPkmn);
 }
 
 void SingleBattleScene::setPlayerPkmn(Pkmn::PkmnPtr const& newPlayerPkmn)
@@ -67,42 +67,22 @@ void SingleBattleScene::setPlayerPkmn(Pkmn::PkmnPtr const& newPlayerPkmn)
         participatingPlayerPkmns.insert(newPlayerPkmn);
 }
 
-void SingleBattleScene::chooseOpponentAction()
+void SingleBattleScene::chooseOpponentMove()
 {
-    // TODO: randomize with weights ?
-    // TODO: special cases like Latias/Latios
-    opponentAction = BattleActions::Type::MOVES;
-
-    switch (opponentAction)
+    auto const& moves              = opponentPkmn->getMoves();
+    auto const  nonNullMovesResult = std::find(moves.begin(), moves.end(), nullptr);
+    int const   nonNullMovesCount  = std::distance(moves.begin(), nonNullMovesResult);
+    if (nonNullMovesCount > 0)
     {
-    case BattleActions::BAG:
-        state = OPPONENT_ITEMS;
-        break;
-    case BattleActions::PKMNS:
-        state = OPPONENT_PKMNS;
-        break;
-    case BattleActions::RUN:
-        state = OPPONENT_RUN;
-        break;
-    case BattleActions::MOVES:
-    default: {
-        auto const& moves              = encounterPkmn->getMoves();
-        auto const  nonNullMovesResult = std::find(moves.begin(), moves.end(), nullptr);
-        int const   nonNullMovesCount  = std::distance(moves.begin(), nonNullMovesResult);
-        if (nonNullMovesCount > 0)
-        {
-            size_t randomMove      = Utils::randuint(0, nonNullMovesCount - 1);
-            encounterMove          = moves.at(randomMove);
-            opponentMoveSpeech     = std::make_unique<TextSpeech>(renderer);
-            opponentMoveSpeech->setTexts({opponentMoveText(encounterMove)});
-            opponentMoveSpeech->start();
-        }
-        else
-        {
-            encounterMove = nullptr;
-        }
-        break;
+        size_t randomMove  = Utils::randuint(0, nonNullMovesCount - 1);
+        encounterMove      = moves.at(randomMove);
+        opponentMoveSpeech = std::make_unique<TextSpeech>(renderer);
+        opponentMoveSpeech->setTexts({opponentMoveText(encounterMove)});
+        opponentMoveSpeech->start();
     }
+    else
+    {
+        encounterMove = nullptr;
     }
 }
 
@@ -297,7 +277,7 @@ void SingleBattleScene::update_MOVES(Inputs const* inputs)
                 else
                 {
                     size_t playerSpeed    = playerPkmn->getStats()[PkmnDef::SPEED];
-                    size_t encounterSpeed = encounterPkmn->getStats()[PkmnDef::SPEED];
+                    size_t encounterSpeed = opponentPkmn->getStats()[PkmnDef::SPEED];
                     if (playerSpeed > encounterSpeed)
                         playerFirst = true;
                     else if (playerSpeed < encounterSpeed)
@@ -372,9 +352,9 @@ void SingleBattleScene::update_PLAYER_MOVES(Inputs const* inputs)
     if (category != MoveDef::STATUS)
     {
         // TODO: Damage animation
-        encounterPkmn->decreaseHP(computeDamage(playerPkmn, encounterPkmn, playerMove));
+        opponentPkmn->decreaseHP(computeDamage(playerPkmn, opponentPkmn, playerMove));
 
-        if (encounterPkmn->isKO())
+        if (opponentPkmn->isKO())
         {
             auto hasExpShare = [](Pkmn::PkmnPtr const& pkmn) {
                 if (!pkmn)
@@ -387,12 +367,12 @@ void SingleBattleScene::update_PLAYER_MOVES(Inputs const* inputs)
 
             // https://bulbapedia.bulbagarden.net/wiki/Experience#Experience_gain_in_battle
             float  a = battleExperienceMultiplier();
-            size_t b = encounterPkmn->getDefinition()->getBaseExp();
+            size_t b = opponentPkmn->getDefinition()->getBaseExp();
             bool   hasLuckyEgg =
                 playerPkmn->getHeldItem() && playerPkmn->getHeldItem()->getDefinition()->getId() == "LUCKYEGG";
             float  e = hasLuckyEgg ? 1.5 : 1.0;
-            size_t L = encounterPkmn->getLevel();
-            float  t = encounterPkmn->getFirstTrainerId() == Game::instance()->data.player.id ? 1.5 : 1.0;
+            size_t L = opponentPkmn->getLevel();
+            float  t = opponentPkmn->getFirstTrainerId() == Game::instance()->data.player.id ? 1.5 : 1.0;
 
             std::vector<Pkmn::PkmnPtr> partyCopy;
             partyCopy.push_back(playerPkmn);
@@ -451,6 +431,7 @@ void SingleBattleScene::update_PLAYER_MOVES(Inputs const* inputs)
                     expGained[pkmn] += expFromBattle;
             }
 
+            onOpponentPkmnDefeated();
             state = EXPERIENCE;
             return;
         }
@@ -556,9 +537,9 @@ void SingleBattleScene::update_PLAYER_ITEMS(Inputs const* inputs)
                 boost::format throwText =
                     boost::format(lc::translate("%1% threw %2% !")) % Game::instance()->data.player.name % itemName;
                 itemMessages.push_back(throwText.str());
-                captureSuccess = ItemUtils::useCaptureBall(selectedItem, encounterPkmn);
+                captureSuccess = ItemUtils::useCaptureBall(selectedItem, opponentPkmn);
                 if (captureSuccess)
-                    ItemUtils::addPkmnToPlayer(encounterPkmn);
+                    ItemUtils::addPkmnToPlayer(opponentPkmn);
                 if (captureSuccess)
                     itemMessages.push_back(lc::translate("Gotcha ! The Pkmn was caught !"));
                 else
@@ -826,7 +807,7 @@ void SingleBattleScene::update_OPPONENT_MOVES(Inputs const* inputs)
     if (category != MoveDef::STATUS)
     {
         // TODO: Damage animation
-        playerPkmn->decreaseHP(computeDamage(encounterPkmn, playerPkmn, encounterMove));
+        playerPkmn->decreaseHP(computeDamage(opponentPkmn, playerPkmn, encounterMove));
 
         if (playerPkmn->isKO())
         {
@@ -947,6 +928,9 @@ void SingleBattleScene::update_EXPERIENCE(Inputs const* inputs)
 
     if (expGained.empty())
     {
+        if (onExperienceResolvedNextPkmn())
+            return;
+
         endSpeech = std::make_unique<TextSpeech>(renderer);
         endSpeech->setTexts({lc::translate("The battle is over ! You won !")});
         endSpeech->start();

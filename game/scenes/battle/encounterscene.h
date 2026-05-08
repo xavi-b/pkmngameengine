@@ -10,8 +10,10 @@ public:
     virtual ~EncounterScene();
 
     virtual std::string name() override;
+    void                setEncounterPkmn(Pkmn::PkmnPtr const& newEncounterPkmn);
 
 protected:
+    virtual void        chooseOpponentAction() override;
     virtual std::string encounterStartText() const override;
     virtual std::string opponentMoveText(Move::MovePtr const& move) const override;
     virtual std::string opponentRunText() const override;
@@ -19,6 +21,8 @@ protected:
     virtual bool        canPlayerRun() const override;
     virtual bool        tryPlayerRun() override;
     virtual float       battleExperienceMultiplier() const override;
+    virtual void        onOpponentPkmnDefeated() override;
+    virtual bool        onExperienceResolvedNextPkmn() override;
 };
 
 #endif // ENCOUNTERSCENE_H

@@ -24,10 +24,9 @@ public:
 
     virtual std::string name() override;
 
-    void setEncounterPkmn(Pkmn::PkmnPtr const& newEncounterPkmn);
     void setPlayerPkmn(Pkmn::PkmnPtr const& newPlayerPkmn);
 
-    virtual void chooseOpponentAction();
+    virtual void chooseOpponentAction() = 0;
 
     virtual void update_START(Inputs const* inputs) override;
     virtual void draw_START(Fps const* fps, RenderSizes rs) override;
@@ -72,15 +71,20 @@ public:
     virtual void draw_END(Fps const* fps, RenderSizes rs) override;
 
 protected:
-    virtual std::string encounterStartText() const = 0;
-    virtual std::string opponentMoveText(Move::MovePtr const& move) const = 0;
-    virtual std::string opponentRunText() const = 0;
-    virtual bool        canCaptureOpponent() const = 0;
-    virtual bool        canPlayerRun() const = 0;
-    virtual bool        tryPlayerRun() = 0;
-    virtual float       battleExperienceMultiplier() const = 0;
+    void chooseOpponentMove();
+    void setOpponentPkmn(Pkmn::PkmnPtr const& newOpponentPkmn);
 
-    Pkmn::PkmnPtr encounterPkmn;
+    virtual std::string encounterStartText() const                        = 0;
+    virtual std::string opponentMoveText(Move::MovePtr const& move) const = 0;
+    virtual std::string opponentRunText() const                           = 0;
+    virtual bool        canCaptureOpponent() const                        = 0;
+    virtual bool        canPlayerRun() const                              = 0;
+    virtual bool        tryPlayerRun()                                    = 0;
+    virtual float       battleExperienceMultiplier() const                = 0;
+    virtual void        onOpponentPkmnDefeated()                          = 0;
+    virtual bool        onExperienceResolvedNextPkmn()                            = 0;
+
+    Pkmn::PkmnPtr opponentPkmn;
     Pkmn::PkmnPtr playerPkmn;
     size_t        runAttemps    = 0;
     Move::MovePtr encounterMove = nullptr;
@@ -101,10 +105,10 @@ protected:
     std::unique_ptr<TextSpeech> pkmnEnterSpeech;
     std::unique_ptr<TextSpeech> pkmnFaintSpeech;
 
-    BattleActions::Type             opponentAction  = BattleActions::Type::MOVES;
-    Pkmn::PkmnPtr                   newSelectedPkmn = nullptr;
-    Item::ItemPtr                   selectedItem    = nullptr;
-    Pkmn::PkmnPtr                   itemTargetPkmn  = nullptr;
+    BattleActions::Type             opponentAction              = BattleActions::Type::MOVES;
+    Pkmn::PkmnPtr                   newSelectedPkmn             = nullptr;
+    Item::ItemPtr                   selectedItem                = nullptr;
+    Pkmn::PkmnPtr                   itemTargetPkmn              = nullptr;
     bool                            itemUseResultUsed           = false;
     bool                            itemUseResultCaptureSuccess = false;
     std::set<Pkmn::PkmnPtr>         participatingPlayerPkmns;
