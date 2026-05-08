@@ -1,10 +1,10 @@
 #include "encounterscene.h"
 
-#include "bagscene.h"
 #include "game.h"
 #include "itemutils.h"
-#include "pkmnsscene.h"
+#include "scenes/bagscene.h"
 #include "scenes/evolutionscene.h"
+#include "scenes/pkmnsscene.h"
 #include "utils.h"
 
 #include <cctype>

@@ -14,14 +14,14 @@
 #include "game.h"
 #include "itemutils.h"
 #include "pkmnsscene.h"
-#include "scenes/encounterscene.h"
+#include "scenes/battle/encounterscene.h"
 #include "sprites/bikesprite.h"
 #include "sprites/erasablesprite.h"
 #include "sprites/squaresprite.h"
 #include "sprites/surfsprite.h"
 
-#include <cmath>
 #include <cctype>
+#include <cmath>
 #include <fstream>
 #include <iostream>
 #include <numbers>
