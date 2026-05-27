@@ -373,27 +373,27 @@ void tag_invoke(js::value_from_tag, js::value& jv, PkmnDef::PkmnDefPtr const& o)
         js::array jsBaseStats;
         for (auto const& e : o->baseStats)
             jsBaseStats.push_back(js::value{
-                {"id",    e.first },
-                {"value", e.second}
+                {"id",    static_cast<size_t>(e.first)},
+                {"value", e.second                    }
             });
         js::array jsEvolutions;
         for (auto const& e : o->evolutions)
             jsEvolutions.push_back(js::value{
-                {"type",   e.first        },
-                {"pkmnId", e.second.pkmnId},
-                {"data",   e.second.data  }
+                {"type",   static_cast<size_t>(e.first)},
+                {"pkmnId", e.second.pkmnId             },
+                {"data",   e.second.data               }
             });
         jv = {
-            {"id",           o->id         },
-            {"name",         o->name       },
-            {"growthRate",   o->growthRate },
-            {"types",        jsTypes       },
-            {"movesToLearn", jsMovesToLearn},
-            {"stats",        jsBaseStats   },
-            {"baseExp",      o->baseExp    },
-            {"catchRate",    o->catchRate  },
-            {"happiness",    o->happiness  },
-            {"evolutions",   jsEvolutions  }
+            {"id",           o->id                             },
+            {"name",         o->name                           },
+            {"growthRate",   static_cast<size_t>(o->growthRate)},
+            {"types",        jsTypes                           },
+            {"movesToLearn", jsMovesToLearn                    },
+            {"stats",        jsBaseStats                       },
+            {"baseExp",      o->baseExp                        },
+            {"catchRate",    o->catchRate                      },
+            {"happiness",    o->happiness                      },
+            {"evolutions",   jsEvolutions                      }
         };
     }
     else

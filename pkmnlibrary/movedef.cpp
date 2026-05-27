@@ -147,14 +147,14 @@ void tag_invoke(js::value_from_tag, js::value& jv, MoveDef::MoveDefPtr const& o)
     if (o && !o->id.empty())
     {
         jv = {
-            {"id",       o->id      },
-            {"name",     o->name    },
-            {"type",     o->type    },
-            {"accuracy", o->accuracy},
-            {"power",    o->power   },
-            {"totalPP",  o->totalPP },
-            {"category", o->category},
-            {"priority", o->priority}
+            {"id",       o->id                        },
+            {"name",     o->name                      },
+            {"type",     o->type                      },
+            {"accuracy", o->accuracy                  },
+            {"power",    o->power                     },
+            {"totalPP",  o->totalPP                   },
+            {"category", static_cast<int>(o->category)},
+            {"priority", o->priority                  }
         };
     }
     else

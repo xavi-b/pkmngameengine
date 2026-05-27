@@ -333,14 +333,14 @@ void tag_invoke(js::value_from_tag, js::value& jv, Pkmn::PkmnPtr const& o)
         js::array jsIVs;
         for (auto const& e : o->IVs)
             jsIVs.push_back(js::value{
-                {"id",    e.first },
-                {"value", e.second}
+                {"id",    static_cast<int>(e.first)},
+                {"value", e.second                 }
             });
         js::array jsEVs;
         for (auto const& e : o->EVs)
             jsEVs.push_back(js::value{
-                {"id",    e.first },
-                {"value", e.second}
+                {"id",    static_cast<int>(e.first)},
+                {"value", e.second                 }
             });
         jv = {
             {"moves", js::value_from<std::array<Move::MovePtr, 4> const&>(o->moves)},
