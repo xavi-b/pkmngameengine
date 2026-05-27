@@ -13,12 +13,9 @@ public:
     Dive1Scene(SDL_Renderer* renderer);
 
     virtual void init() override;
-    virtual void update(Inputs const* inputs) override;
     virtual void draw(Fps const* fps, RenderSizes rs) override;
 
     virtual void drawAmbientOverlay(Fps const* fps, RenderSizes rs, size_t offsetX, size_t offsetY) override;
-
-    virtual bool manageEvents() override;
 
     virtual std::string name() override;
 
@@ -27,6 +24,11 @@ public:
     virtual bool shouldShowNightTextures() const override;
 
     virtual std::string currentLocation() const override;
+
+protected:
+    virtual bool updateAmbient(Inputs const* inputs) override;
+    virtual bool updateBeforeMovement(Inputs const* inputs) override;
+    virtual void updateAfterMovement(Inputs const* inputs) override;
 
 private:
     std::unique_ptr<BubblesAnimation> bubblesAnimation;

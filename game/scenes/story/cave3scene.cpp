@@ -7,11 +7,9 @@ Cave3Scene::Cave3Scene(SDL_Renderer* renderer) : MapScene(renderer, "resources/m
 {
 }
 
-void Cave3Scene::update(Inputs const* inputs)
+void Cave3Scene::updateAfterMovement(Inputs const* /*inputs*/)
 {
     auto& player = Game::instance()->data.player;
-
-    MapScene::update(inputs);
 
     if (auto event = eventAt(player.x, player.y, player.l))
     {

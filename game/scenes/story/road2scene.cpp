@@ -9,39 +9,41 @@ Road2Scene::Road2Scene(SDL_Renderer* renderer) : MapScene(renderer, "resources/m
 {
 }
 
-void Road2Scene::update(Inputs const* inputs)
+bool Road2Scene::updateBeforeMovement(Inputs const* /*inputs*/)
 {
     auto& player = Game::instance()->data.player;
 
-    MapScene::update(inputs);
-
-    if (!preventInputs)
+    if (auto event = facedPreviousEvent(player))
     {
-        if (player.x == 8 && player.direction == Entity::Direction::LEFT)
+        if (event->getId() == "Cave2")
         {
-            goToScene = "Road1";
-        }
-
-        if (player.x > 17 && player.x < 22 && player.y == 17 && player.direction == Entity::Direction::DOWN)
-        {
-            goToScene = "Sea1";
-        }
-
-        if (auto event = facedPreviousEvent(player))
-        {
-            if (event->getId() == "Cave2")
+            if (player.direction == Entity::Direction::UP)
             {
-                if (player.direction == Entity::Direction::UP)
+                if (!fadeOutAnimation->isStarted())
                 {
-                    if (!fadeOutAnimation->isStarted())
-                    {
-                        fadeOutAnimation->reset();
-                        fadeOutAnimation->start();
-                        goToScene = "Cave2";
-                    }
+                    fadeOutAnimation->reset();
+                    fadeOutAnimation->start();
+                    goToScene = "Cave2";
                 }
             }
         }
+    }
+
+    return false;
+}
+
+void Road2Scene::updateAfterMovement(Inputs const* /*inputs*/)
+{
+    auto& player = Game::instance()->data.player;
+
+    if (player.x == 8 && player.direction == Entity::Direction::LEFT)
+    {
+        goToScene = "Road1";
+    }
+
+    if (player.x > 17 && player.x < 22 && player.y == 17 && player.direction == Entity::Direction::DOWN)
+    {
+        goToScene = "Sea1";
     }
 }
 

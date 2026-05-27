@@ -11,7 +11,6 @@ class Cave2Scene : public MapScene
 public:
     Cave2Scene(SDL_Renderer* renderer);
 
-    virtual void update(Inputs const* inputs) override;
     virtual void draw(Fps const* fps, RenderSizes rs) override;
 
     virtual std::string name() override;
@@ -21,6 +20,10 @@ public:
     virtual bool shouldShowNightTextures() const override;
 
     virtual std::string currentLocation() const override;
+
+protected:
+    virtual bool updateBeforeMovement(Inputs const* inputs) override;
+    virtual void updateAfterMovement(Inputs const* inputs) override;
 };
 
 #endif // CAVE2SCENE_H

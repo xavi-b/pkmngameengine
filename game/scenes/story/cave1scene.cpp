@@ -13,30 +13,33 @@ void Cave1Scene::init()
     flash = false;
 }
 
-void Cave1Scene::update(Inputs const* inputs)
+bool Cave1Scene::updateBeforeMovement(Inputs const* /*inputs*/)
 {
     auto& player = Game::instance()->data.player;
 
-    if (!preventInputs)
+    if (auto event = facedPreviousEvent(player))
     {
-        if (auto event = facedPreviousEvent(player))
+        if (event->getId() == "Road1")
         {
-            if (event->getId() == "Road1")
+            if (player.direction == Entity::Direction::DOWN)
             {
-                if (player.direction == Entity::Direction::DOWN)
+                if (!fadeOutAnimation->isStarted())
                 {
-                    if (!fadeOutAnimation->isStarted())
-                    {
-                        fadeOutAnimation->reset();
-                        fadeOutAnimation->start();
-                        goToScene = "Road1";
-                    }
+                    fadeOutAnimation->reset();
+                    fadeOutAnimation->start();
+                    goToScene = "Road1";
+                    return true;
+                }
+                else
+                {
+                    if (playerSprite->getAccumulatedTicks() == 0)
+                        stop(player);
                 }
             }
         }
     }
 
-    MapScene::update(inputs);
+    return false;
 }
 
 void Cave1Scene::draw(Fps const* fps, RenderSizes rs)

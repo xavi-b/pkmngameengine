@@ -11,8 +11,6 @@ class Sea1Scene : public MapScene
 public:
     Sea1Scene(SDL_Renderer* renderer);
 
-    virtual void update(Inputs const* inputs) override;
-
     virtual std::string name() override;
 
     virtual std::unique_ptr<Scene> nextScene() override;
@@ -21,7 +19,8 @@ public:
 
     virtual std::string currentLocation() const override;
 
-private:
+protected:
+    virtual void updateAfterMovement(Inputs const* inputs) override;
 };
 
 #endif // SEA1SCENE_H

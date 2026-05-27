@@ -135,6 +135,20 @@ public:
     virtual std::string currentLocation() const = 0;
 
 protected:
+    virtual bool updateAmbient(Inputs const* inputs);
+    virtual bool updateBeforeMovement(Inputs const* inputs);
+    virtual void updateAfterMovement(Inputs const* inputs);
+    virtual bool handleActionButton(Inputs const* inputs);
+
+    void updateAnimations();
+    bool updateTransitions(Inputs const* inputs);
+    bool updateOverlays(Inputs const* inputs);
+    void updateTileAnimations();
+    bool isPlayerMovementFrame() const;
+    bool updateMapPassiveInteractions(Inputs const* inputs);
+    bool updateSpecialTiles(Inputs const* inputs);
+    void updatePlayerInput(Inputs const* inputs);
+
     std::map<std::string, std::pair<SDL_Surface*, SDL_Texture*>> sprites;
     std::map<std::string, std::pair<SDL_Surface*, SDL_Texture*>> lightsSprites;
 
@@ -181,7 +195,6 @@ protected:
     bool                  openBag       = false;
     bool                  flash         = true;
     bool                  diving        = false;
-    bool                  preventInputs = false;
 
     std::string goToScene = "";
 

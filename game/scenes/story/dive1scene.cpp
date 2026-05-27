@@ -16,31 +16,36 @@ void Dive1Scene::init()
     bubblesAnimation->start();
 }
 
-void Dive1Scene::update(Inputs const* inputs)
+bool Dive1Scene::updateAmbient(Inputs const* /*inputs*/)
+{
+    bubblesAnimation->incrementTicks();
+    return false;
+}
+
+bool Dive1Scene::updateBeforeMovement(Inputs const* inputs)
 {
     auto& player = Game::instance()->data.player;
 
-    MapScene::update(inputs);
+    if (!inputs->A)
+        return false;
 
-    bubblesAnimation->incrementTicks();
-
-    if (!preventInputs)
+    auto event = eventAt(player.x, player.y, player.l);
+    if (event && event->getId() == "Road1")
     {
-        if (inputs->A)
+        if (!fadeOutAnimation->isStarted())
         {
-            auto event = eventAt(player.x, player.y, player.l);
-            if (event && event->getId() == "Road1")
-            {
-                if (!fadeOutAnimation->isStarted())
-                {
-                    fadeOutAnimation->reset();
-                    fadeOutAnimation->start();
-                    goToScene = "Road1";
-                }
-                return;
-            }
+            fadeOutAnimation->reset();
+            fadeOutAnimation->start();
+            goToScene = "Road1";
         }
+        return true;
     }
+
+    return false;
+}
+
+void Dive1Scene::updateAfterMovement(Inputs const* /*inputs*/)
+{
 }
 
 void Dive1Scene::draw(Fps const* fps, RenderSizes rs)
@@ -53,11 +58,6 @@ void Dive1Scene::drawAmbientOverlay(Fps const* fps, RenderSizes rs, size_t offse
     (void)offsetX;
     (void)offsetY;
     bubblesAnimation->draw(fps, rs);
-}
-
-bool Dive1Scene::manageEvents()
-{
-    return MapScene::manageEvents();
 }
 
 std::string Dive1Scene::name()

@@ -71,75 +71,84 @@ void Road1Scene::init()
     trainerSpeech->setTexts({lc::translate("Let's battle !")});
 }
 
-void Road1Scene::update(Inputs const* inputs)
+bool Road1Scene::updateAmbient(Inputs const* inputs)
 {
-    auto& player = Game::instance()->data.player;
-
     fogAnimation->incrementTicks();
 
     if (text1Speech->isStarted() && !text1Speech->shouldClose())
     {
         text1Speech->update(inputs);
-        preventInputs = true;
+        return true;
     }
 
     if (childSpeech->isStarted() && !childSpeech->shouldClose())
     {
         childSpeech->update(inputs);
-        preventInputs = true;
+        return true;
     }
 
     if (trainerSpeech->isStarted() && !trainerSpeech->shouldClose())
     {
         trainerSpeech->update(inputs);
-        preventInputs = true;
+        return true;
     }
 
-    if (!preventInputs)
+    return false;
+}
+
+bool Road1Scene::updateBeforeMovement(Inputs const* /*inputs*/)
+{
+    auto& player = Game::instance()->data.player;
+
+    if (auto event = eventAt(player.x, player.y, player.l))
     {
-        if (inputs->A)
+        if (event->getId() == "Town1")
         {
-            auto event = eventAt(player.x, player.y, player.l);
-            if (event && event->getId() == "Dive1")
+            if (player.direction == Entity::Direction::LEFT)
             {
                 if (!fadeOutAnimation->isStarted())
                 {
                     fadeOutAnimation->reset();
                     fadeOutAnimation->start();
-                    goToScene = "Dive1";
+                    goToScene = "Town1";
+                    return true;
                 }
-                return;
-            }
-
-            if (auto event = facedEvent(player))
-            {
-                if (event->getId() == "Text1")
+                else
                 {
-                    text1Speech->reset();
-                    text1Speech->start();
-                    preventInputs = true;
+                    if (playerSprite->getAccumulatedTicks() == 0)
+                        stop(player);
                 }
             }
-            else if (auto entity = facedEntity(player))
+        }
+    }
+    else if (auto event = facedPreviousEvent(player))
+    {
+        if (event->getId() == "Cave1")
+        {
+            if (player.direction == Entity::Direction::UP)
             {
-                if (entity == childNpc)
+                if (!fadeOutAnimation->isStarted())
                 {
-                    childSpeech->reset();
-                    childSpeech->start();
-                    preventInputs = true;
+                    fadeOutAnimation->reset();
+                    fadeOutAnimation->start();
+                    goToScene = "Cave1";
+                    return true;
                 }
-
-                if (entity == trainerNpc.get())
+                else
                 {
-                    trainerSpeech->reset();
-                    trainerSpeech->start();
-                    preventInputs = true;
+                    if (playerSprite->getAccumulatedTicks() == 0)
+                        stop(player);
                 }
             }
         }
     }
 
-    MapScene::update(inputs);
+    return false;
+}
+
+void Road1Scene::updateAfterMovement(Inputs const* /*inputs*/)
+{
+    auto& player = Game::instance()->data.player;
 
     if (childSpeech->isStarted() && !childSpeech->shouldClose())
     {
@@ -219,29 +228,60 @@ void Road1Scene::update(Inputs const* inputs)
         }
     }
 
-    if (!preventInputs)
+    if (player.x == map->getNCol() - 9 && player.direction == Entity::Direction::RIGHT)
     {
-        if (player.x == map->getNCol() - 9 && player.direction == Entity::Direction::RIGHT)
+        goToScene = "Road2";
+    }
+}
+
+bool Road1Scene::handleActionButton(Inputs const* inputs)
+{
+    auto& player = Game::instance()->data.player;
+
+    if (inputs->A)
+    {
+        if (auto event = eventAt(player.x, player.y, player.l))
         {
-            goToScene = "Road2";
+            if (event->getId() == "Dive1")
+            {
+                if (!fadeOutAnimation->isStarted())
+                {
+                    fadeOutAnimation->reset();
+                    fadeOutAnimation->start();
+                    goToScene = "Dive1";
+                }
+                return true;
+            }
         }
 
-        if (auto event = facedPreviousEvent(player))
+        if (auto faced = facedEvent(player))
         {
-            if (event->getId() == "Cave1")
+            if (faced->getId() == "Text1")
             {
-                if (player.direction == Entity::Direction::UP)
-                {
-                    if (!fadeOutAnimation->isStarted())
-                    {
-                        fadeOutAnimation->reset();
-                        fadeOutAnimation->start();
-                        goToScene = "Cave1";
-                    }
-                }
+                text1Speech->reset();
+                text1Speech->start();
+                return true;
+            }
+        }
+        else if (auto entity = facedEntity(player))
+        {
+            if (entity == childNpc)
+            {
+                childSpeech->reset();
+                childSpeech->start();
+                return true;
+            }
+
+            if (entity == trainerNpc.get())
+            {
+                trainerSpeech->reset();
+                trainerSpeech->start();
+                return true;
             }
         }
     }
+
+    return MapScene::handleActionButton(inputs);
 }
 
 void Road1Scene::draw(Fps const* fps, RenderSizes rs)
@@ -280,34 +320,6 @@ bool Road1Scene::manageEvents()
     auto& event  = (*layer.get())(player.x, player.y);
     if (event)
     {
-        if (event->getId() == "Town1")
-        {
-            if (player.direction == Entity::Direction::LEFT)
-            {
-                if (!fadeOutAnimation->isStarted())
-                {
-                    fadeOutAnimation->reset();
-                    fadeOutAnimation->start();
-                    goToScene = "Town1";
-                    return true;
-                }
-            }
-        }
-
-        if (event->getId() == "Dive1")
-        {
-            if (player.direction == Entity::Direction::UP)
-            {
-                if (!fadeOutAnimation->isStarted())
-                {
-                    fadeOutAnimation->reset();
-                    fadeOutAnimation->start();
-                    goToScene = "Dive1";
-                    return true;
-                }
-            }
-        }
-
         if (event->getId() == "Up1")
         {
             if (player.direction == Entity::Direction::UP)
@@ -343,7 +355,6 @@ bool Road1Scene::manageTrainers()
         trainerNpc->pkmns[1] = std::make_shared<Pkmn>(Game::instance()->data.pkmnDefFor("TOGEPI"), 6);
         trainerNpc->pkmns[1]->generateFromPkmnDef();
         opponentTrainer = trainerNpc;
-        preventInputs   = true;
         return true;
     }
 

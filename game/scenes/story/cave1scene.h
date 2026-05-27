@@ -12,7 +12,6 @@ public:
     Cave1Scene(SDL_Renderer* renderer);
 
     virtual void init() override;
-    virtual void update(Inputs const* inputs) override;
     virtual void draw(Fps const* fps, RenderSizes rs) override;
 
     virtual bool manageEvents() override;
@@ -24,6 +23,9 @@ public:
     virtual bool shouldShowNightTextures() const override;
 
     virtual std::string currentLocation() const override;
+
+protected:
+    virtual bool updateBeforeMovement(Inputs const* inputs) override;
 };
 
 #endif // CAVE1SCENE_H

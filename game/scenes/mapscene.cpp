@@ -142,6 +142,53 @@ void MapScene::init()
 
 void MapScene::update(Inputs const* inputs)
 {
+    bool preventInputs = false;
+
+    preventInputs |= updateAmbient(inputs);
+
+    updateAnimations();
+
+    preventInputs |= updateTransitions(inputs);
+
+    preventInputs |= updateOverlays(inputs);
+
+    preventInputs |= updateBeforeMovement(inputs);
+
+    updateTileAnimations();
+
+    if (playerSprite->getAccumulatedTicks() == 0)
+    {
+        preventInputs |= updateMapPassiveInteractions(inputs);
+
+        preventInputs |= updateSpecialTiles(inputs);
+
+        if (!preventInputs && isPlayerMovementFrame())
+        {
+            updatePlayerInput(inputs);
+
+            preventInputs = false;
+        }
+    }
+
+    updateAfterMovement(inputs);
+}
+
+bool MapScene::updateAmbient(Inputs const* /*inputs*/)
+{
+    return false;
+}
+
+bool MapScene::updateBeforeMovement(Inputs const* /*inputs*/)
+{
+    return false;
+}
+
+void MapScene::updateAfterMovement(Inputs const* /*inputs*/)
+{
+}
+
+void MapScene::updateAnimations()
+{
     auto& player = Game::instance()->data.player;
 
     player.previousSpeed = player.speed;
@@ -213,6 +260,11 @@ void MapScene::update(Inputs const* inputs)
 
     if (locationAnimation->isRunning())
         locationAnimation->incrementTicks();
+}
+
+bool MapScene::updateTransitions(Inputs const* /*inputs*/)
+{
+    auto& player = Game::instance()->data.player;
 
     if (stairsExitAnimation)
     {
@@ -231,16 +283,14 @@ void MapScene::update(Inputs const* inputs)
             }
 
             stairsExitAnimation->incrementTicks();
-            preventInputs = true;
-            return;
+            return true;
         }
     }
 
     if (fadeOutAnimation->isRunning())
     {
         fadeOutAnimation->incrementTicks();
-        preventInputs = true;
-        return;
+        return true;
     }
 
     if (doorOpeningAnimation)
@@ -251,8 +301,7 @@ void MapScene::update(Inputs const* inputs)
                 stop(player);
 
             doorOpeningAnimation->incrementTicks();
-            preventInputs = true;
-            return;
+            return true;
         }
 
         if (doorOpeningAnimation->isFinished())
@@ -277,8 +326,7 @@ void MapScene::update(Inputs const* inputs)
                 stop(player);
 
             stairsEntranceAnimation->incrementTicks();
-            preventInputs = true;
-            return;
+            return true;
         }
 
         if (stairsEntranceAnimation->isFinished())
@@ -295,8 +343,7 @@ void MapScene::update(Inputs const* inputs)
                 incrementLedgeJump(player);
 
             ledgeAnimation->incrementTicks();
-            preventInputs = true;
-            return;
+            return true;
         }
         else
         {
@@ -326,8 +373,7 @@ void MapScene::update(Inputs const* inputs)
     if (fallExitAnimation && fallExitAnimation->isRunning())
     {
         fallExitAnimation->incrementTicks();
-        preventInputs = true;
-        return;
+        return true;
     }
 
     if (fallEntranceAnimation && fallEntranceAnimation->isStarted())
@@ -335,8 +381,7 @@ void MapScene::update(Inputs const* inputs)
         if (!fallEntranceAnimation->isFinished())
         {
             fallEntranceAnimation->incrementTicks();
-            preventInputs = true;
-            return;
+            return true;
         }
         else
         {
@@ -360,11 +405,15 @@ void MapScene::update(Inputs const* inputs)
         }
     }
 
+    return false;
+}
+
+bool MapScene::updateOverlays(Inputs const* inputs)
+{
     if (battleIntro && !battleIntro->isFinished())
     {
         battleIntro->incrementTicks();
-        preventInputs = true;
-        return;
+        return true;
     }
 
     if (openMenu)
@@ -409,37 +458,43 @@ void MapScene::update(Inputs const* inputs)
             menu->reset();
         }
 
-        preventInputs = true;
-        return;
+        return true;
     }
 
+    return false;
+}
+
+void MapScene::updateTileAnimations()
+{
     for (auto it = tilesAnimations.begin(); it != tilesAnimations.end(); ++it)
     {
         auto& anim = *(it->second.get());
         anim.incrementTicks();
     }
+}
 
-    if (playerSprite->getAccumulatedTicks() != 0)
-        return;
+bool MapScene::isPlayerMovementFrame() const
+{
+    return playerSprite->getAccumulatedTicks() == 0;
+}
+
+bool MapScene::updateMapPassiveInteractions(Inputs const* /*inputs*/)
+{
+    auto& player = Game::instance()->data.player;
 
     bool event     = manageEvents();
     bool encounter = manageEncounters();
     bool trainer   = manageTrainers();
 
     if (event)
-    {
-        stop(player);
-        preventInputs = true;
-        return;
-    }
+        return true;
 
     if (encounter)
     {
         stop(player);
         battleIntro = manageBattleIntro();
         battleIntro->start();
-        preventInputs = true;
-        return;
+        return true;
     }
 
     if (trainer)
@@ -447,9 +502,15 @@ void MapScene::update(Inputs const* inputs)
         stop(player);
         battleIntro = manageBattleIntro();
         battleIntro->start();
-        preventInputs = true;
-        return;
+        return true;
     }
+
+    return false;
+}
+
+bool MapScene::updateSpecialTiles(Inputs const* /*inputs*/)
+{
+    auto& player = Game::instance()->data.player;
 
     if (isWaterfallTile(player.x, player.y, player.l)
         || (player.l > 0 && isWaterfallTile(player.x, player.y, player.l - 1)))
@@ -459,8 +520,7 @@ void MapScene::update(Inputs const* inputs)
         if (player.direction == Entity::Direction::DOWN && isWaterTile(player.x, player.y + 1, player.l - 1))
             player.l--;
         move(player, true);
-        preventInputs = true;
-        return;
+        return true;
     }
     else if (!isWaterfallTile(player.x, player.y, player.l)
              && (isWaterfallTile(player.previousX, player.previousY, player.l)
@@ -478,8 +538,7 @@ void MapScene::update(Inputs const* inputs)
             {
                 player.surfing = true;
                 move(player);
-                preventInputs = true;
-                return;
+                return true;
             }
         }
     }
@@ -502,8 +561,7 @@ void MapScene::update(Inputs const* inputs)
         }
         else
         {
-            preventInputs = true;
-            return;
+            return true;
         }
     }
     else if (!isIceTile(player.x, player.y, player.l) && isIceTile(player.previousX, player.previousY, player.l))
@@ -534,12 +592,12 @@ void MapScene::update(Inputs const* inputs)
         {
             fallExitAnimation = std::make_unique<FallExitAnimation>(renderer, shouldShowNightTextures());
             fallExitAnimation->start();
-            preventInputs = true;
             stop(player);
-            return;
+            return true;
         }
     }
-    else if (isBreakableGroundTile(player.x, player.y, player.l))
+    else if (isBreakableGroundTile(player.x, player.y, player.l)
+             && (player.x != player.previousX || player.y != player.previousY))
     {
         tilesDataCount[{player.x, player.y}]++;
 
@@ -565,17 +623,71 @@ void MapScene::update(Inputs const* inputs)
         {
             fallExitAnimation = std::make_unique<FallExitAnimation>(renderer, shouldShowNightTextures());
             fallExitAnimation->start();
-            preventInputs = true;
             stop(player);
-            return;
+            return true;
         }
     }
 
-    if (preventInputs)
+    return false;
+}
+
+bool MapScene::handleActionButton(Inputs const* inputs)
+{
+    auto& player = Game::instance()->data.player;
+
+    if (!inputs->A)
+        return false;
+
+    if (!player.surfing && isEntityFacingWaterTile(player))
     {
-        preventInputs = false;
-        return;
+        player.surfing   = true;
+        player.direction = player.previousDirection;
+        move(player);
+        return true;
     }
+
+    if (isEntityFacingTreeTile(player))
+    {
+        auto erasableEntity = dynamic_cast<ErasableEntity*>(facedEntity(player));
+        if (erasableEntity)
+            erasableEntity->startErase();
+        return true;
+    }
+
+    if (isEntityFacingRockTile(player))
+    {
+        auto erasableEntity = dynamic_cast<ErasableEntity*>(facedEntity(player));
+        if (erasableEntity)
+            erasableEntity->startErase();
+        return true;
+    }
+
+    if (isEntityFacingWaterfallTile(player))
+    {
+        player.surfing   = true;
+        player.direction = player.previousDirection;
+        if (player.direction == Entity::Direction::UP)
+            player.l++;
+        move(player, true);
+        return true;
+    }
+
+    if (auto entity = facedEntity(player))
+    {
+        if (entity->boulder)
+        {
+            entity->direction = player.previousDirection;
+            move(*entity);
+        }
+        return true;
+    }
+
+    return false;
+}
+
+void MapScene::updatePlayerInput(Inputs const* inputs)
+{
+    auto& player = Game::instance()->data.player;
 
     if (inputs->select && !player.surfing && !player.sliding && allowBike())
     {
@@ -593,52 +705,8 @@ void MapScene::update(Inputs const* inputs)
             player.speed = Entity::Speed::WALK;
     }
 
-    if (inputs->A)
-    {
-        if (!player.surfing && isEntityFacingWaterTile(player))
-        {
-            player.surfing   = true;
-            player.direction = player.previousDirection;
-            move(player);
-            return;
-        }
-
-        if (isEntityFacingTreeTile(player))
-        {
-            auto erasableEntity = dynamic_cast<ErasableEntity*>(facedEntity(player));
-            if (erasableEntity)
-                erasableEntity->startErase();
-            return;
-        }
-
-        if (isEntityFacingRockTile(player))
-        {
-            auto erasableEntity = dynamic_cast<ErasableEntity*>(facedEntity(player));
-            if (erasableEntity)
-                erasableEntity->startErase();
-            return;
-        }
-
-        if (isEntityFacingWaterfallTile(player))
-        {
-            player.surfing   = true;
-            player.direction = player.previousDirection;
-            if (player.direction == Entity::Direction::UP)
-                player.l++;
-            move(player, true);
-            return;
-        }
-
-        if (auto entity = facedEntity(player))
-        {
-            if (entity->boulder)
-            {
-                entity->direction = player.previousDirection;
-                move(*entity);
-            }
-            return;
-        }
-    }
+    if (handleActionButton(inputs))
+        return;
 
     if (inputs->start)
     {
@@ -646,8 +714,8 @@ void MapScene::update(Inputs const* inputs)
         openMenu = true;
         return;
     }
-    else
-        openMenu = false;
+
+    openMenu = false;
 
     if (inputs->up)
     {

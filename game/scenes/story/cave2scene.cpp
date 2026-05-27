@@ -8,30 +8,38 @@ Cave2Scene::Cave2Scene(SDL_Renderer* renderer) : MapScene(renderer, "resources/m
 {
 }
 
-void Cave2Scene::update(Inputs const* inputs)
+bool Cave2Scene::updateBeforeMovement(Inputs const* /*inputs*/)
 {
     auto& player = Game::instance()->data.player;
 
-    if (!preventInputs)
+    if (auto event = facedPreviousEvent(player))
     {
-        if (auto event = facedPreviousEvent(player))
+        if (event->getId() == "Road2")
         {
-            if (event->getId() == "Road2")
+            if (player.direction == Entity::Direction::DOWN)
             {
-                if (player.direction == Entity::Direction::DOWN)
+                if (!fadeOutAnimation->isStarted())
                 {
-                    if (!fadeOutAnimation->isStarted())
-                    {
-                        fadeOutAnimation->reset();
-                        fadeOutAnimation->start();
-                        goToScene = "Road2";
-                    }
+                    fadeOutAnimation->reset();
+                    fadeOutAnimation->start();
+                    goToScene = "Road2";
+                    return true;
+                }
+                else
+                {
+                    if (playerSprite->getAccumulatedTicks() == 0)
+                        stop(player);
                 }
             }
         }
     }
 
-    MapScene::update(inputs);
+    return false;
+}
+
+void Cave2Scene::updateAfterMovement(Inputs const* /*inputs*/)
+{
+    auto& player = Game::instance()->data.player;
 
     if (isBreakableIceTile(player.x, player.y, player.l))
     {
@@ -48,7 +56,7 @@ void Cave2Scene::update(Inputs const* inputs)
     {
         if (tilesDataCount[{player.x, player.y}] > 0)
         {
-            if (fallExitAnimation && fallExitAnimation->isStarted())
+            if (fallExitAnimation->isStarted())
             {
                 goToScene = "FallCave3";
             }

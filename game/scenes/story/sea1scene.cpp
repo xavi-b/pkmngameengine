@@ -7,18 +7,13 @@ Sea1Scene::Sea1Scene(SDL_Renderer* renderer) : MapScene(renderer, "resources/map
 {
 }
 
-void Sea1Scene::update(Inputs const* inputs)
+void Sea1Scene::updateAfterMovement(Inputs const* /*inputs*/)
 {
     auto& player = Game::instance()->data.player;
 
-    MapScene::update(inputs);
-
-    if (!preventInputs)
+    if (player.y == 8 && player.direction == Entity::Direction::UP)
     {
-        if (player.y == 8 && player.direction == Entity::Direction::UP)
-        {
-            goToScene = "Road2";
-        }
+        goToScene = "Road2";
     }
 }
 

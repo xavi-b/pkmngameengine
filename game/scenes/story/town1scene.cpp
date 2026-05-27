@@ -24,10 +24,39 @@ void Town1Scene::init()
     entities.emplace(std::move(entity), std::move(entitySprite));
 }
 
-void Town1Scene::update(Inputs const* inputs)
+bool Town1Scene::updateBeforeMovement(Inputs const* /*inputs*/)
 {
-    MapScene::update(inputs);
+    auto& player = Game::instance()->data.player;
 
+    auto event = eventAt(player.x, player.y, player.l);
+
+    if (event)
+    {
+        if (event->getId() == "Road1")
+        {
+            if (player.direction == Entity::Direction::RIGHT)
+            {
+                if (!fadeOutAnimation->isStarted())
+                {
+                    fadeOutAnimation->reset();
+                    fadeOutAnimation->start();
+                    goToScene = "Road1";
+                    return true;
+                }
+                else
+                {
+                    if (playerSprite->getAccumulatedTicks() == 0)
+                        stop(player);
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+void Town1Scene::updateAfterMovement(Inputs const* /*inputs*/)
+{
     auto& player = Game::instance()->data.player;
 
     auto& entity = *(entities.begin()->first.get());
@@ -45,23 +74,20 @@ void Town1Scene::update(Inputs const* inputs)
         move(entity);
     }
 
-    if (!preventInputs)
+    if (auto event = facedPreviousEvent(player))
     {
-        if (auto event = facedPreviousEvent(player))
+        if (event->getId() == "House1")
         {
-            if (event->getId() == "House1")
+            if (player.direction == Entity::Direction::UP)
             {
-                if (player.direction == Entity::Direction::UP)
+                if (!doorOpeningAnimation)
                 {
-                    if (!doorOpeningAnimation)
-                    {
-                        doorOpeningAnimation = std::make_unique<DoorAnimation>(renderer, shouldShowNightTextures());
-                        doorOpeningAnimation->start();
-                        doorOpeningPosition = {player.x, player.y - 1};
-                        goToScene           = "House1";
-                        player.direction    = Entity::Direction::UP;
-                        move(player, true);
-                    }
+                    doorOpeningAnimation = std::make_unique<DoorAnimation>(renderer, shouldShowNightTextures());
+                    doorOpeningAnimation->start();
+                    doorOpeningPosition = {player.x, player.y - 1};
+                    goToScene           = "House1";
+                    player.direction    = Entity::Direction::UP;
+                    move(player, true);
                 }
             }
         }
@@ -71,29 +97,6 @@ void Town1Scene::update(Inputs const* inputs)
 void Town1Scene::draw(Fps const* fps, RenderSizes rs)
 {
     MapScene::draw(fps, rs);
-}
-
-bool Town1Scene::manageEvents()
-{
-    auto& player = Game::instance()->data.player;
-    auto& layer  = map->getLevels()[player.l]->getEventLayer();
-    auto& event  = (*layer.get())(player.x, player.y);
-
-    if (event && event->getId() == "Road1")
-    {
-        if (player.direction == Entity::Direction::RIGHT)
-        {
-            if (!fadeOutAnimation->isStarted())
-            {
-                fadeOutAnimation->reset();
-                fadeOutAnimation->start();
-                goToScene = "Road1";
-                return true;
-            }
-        }
-    }
-
-    return MapScene::manageEvents();
 }
 
 std::string Town1Scene::name()
