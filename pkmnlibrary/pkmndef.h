@@ -106,6 +106,12 @@ public:
     std::vector<std::string> const& getTypes() const;
     void                            setTypes(std::vector<std::string> const& newTypes);
 
+    std::vector<std::string> const& getAbilities() const;
+    void                            setAbilities(std::vector<std::string> const& newAbilities);
+
+    std::vector<std::string> const& getHiddenAbilities() const;
+    void                            setHiddenAbilities(std::vector<std::string> const& newHiddenAbilities);
+
     std::vector<MoveToLearn> const& getMovesToLearn() const;
     void                            setMovesToLearn(std::vector<MoveToLearn> const& newMovesToLearn);
 
@@ -134,6 +140,8 @@ private:
     std::string                             id;
     std::string                             name;
     std::vector<std::string>                types;
+    std::vector<std::string>                abilities;
+    std::vector<std::string>                hiddenAbilities;
     std::vector<MoveToLearn>                movesToLearn;
     std::map<PkmnDef::Stat, size_t>         baseStats;
     std::map<PkmnDef::Stat, size_t>         EVsToLearn;

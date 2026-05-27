@@ -18,6 +18,9 @@ public:
     QStringList getSelectedIds() const;
     void        setSelectedIds(QStringList const& newSelectedIds);
 
+signals:
+    void selectionChanged();
+
 private:
     QStringListModel* idsModel;
     QListView*        listView;

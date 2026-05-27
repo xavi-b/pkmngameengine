@@ -12,11 +12,13 @@ EvolutionsWidget::EvolutionsWidget(QWidget* parent) : QWidget(parent)
 
     QTableView* tableView = new QTableView;
     tableView->horizontalHeader()->hide();
+    tableView->horizontalHeader()->setStretchLastSection(true);
+    tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     tableView->setModel(proxyModel);
     vLayout->addWidget(tableView, 1);
     QPushButton* addButton = new QPushButton(tr("Add"));
     connect(addButton, &QPushButton::clicked, this, [=]() {
-        EvolutionDialog d(this);
+        EvolutionDialog d(availablePkmnIds, {}, this);
         if (d.exec() == QDialog::Accepted)
         {
             model->addEvolution(d.getEvolution());
@@ -45,4 +47,9 @@ std::multimap<PkmnDef::EvolutionType, PkmnDef::Evolution> EvolutionsWidget::getE
 void EvolutionsWidget::setEvolutions(std::multimap<PkmnDef::EvolutionType, PkmnDef::Evolution> newEvolutions)
 {
     model->setEvolutions(newEvolutions);
+}
+
+void EvolutionsWidget::setAvailablePkmnIds(QStringList const& pkmnIds)
+{
+    availablePkmnIds = pkmnIds;
 }

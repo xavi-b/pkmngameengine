@@ -15,7 +15,10 @@ MovesToLearnWidget::MovesToLearnWidget(QWidget* parent) : QWidget(parent)
     vLayout->addWidget(listView, 1);
     QPushButton* addButton = new QPushButton(tr("Add"));
     connect(addButton, &QPushButton::clicked, this, [=]() {
-        MoveToLearnDialog d(this);
+        QStringList excludeIds;
+        for (auto const& moveToLearn : model->getMovesToLearn())
+            excludeIds.append(moveToLearn.id.c_str());
+        MoveToLearnDialog d(availableMoveIds, excludeIds, this);
         if (d.exec() == QDialog::Accepted)
         {
             model->addMoveToLearn(d.getMoveToLearn());
@@ -44,4 +47,9 @@ std::vector<PkmnDef::MoveToLearn> MovesToLearnWidget::getMovesToLearn()
 void MovesToLearnWidget::setMovesToLearn(std::vector<PkmnDef::MoveToLearn> newMovesToLearn)
 {
     model->setMovesToLearn(newMovesToLearn);
+}
+
+void MovesToLearnWidget::setAvailableMoveIds(QStringList const& moveIds)
+{
+    availableMoveIds = moveIds;
 }

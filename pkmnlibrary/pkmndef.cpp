@@ -188,6 +188,22 @@ PkmnDef::PkmnDefPtr PkmnDef::fromPropertyTree(std::string const& id, pt::ptree c
     while (std::getline(tokenStreamTypes, token, delimiter))
         pkmn->types.push_back(token);
 
+    std::string        strAbilities = pt.get<std::string>("Abilities", "");
+    std::istringstream tokenStreamAbilities(strAbilities);
+    while (std::getline(tokenStreamAbilities, token, delimiter))
+    {
+        if (!token.empty())
+            pkmn->abilities.push_back(token);
+    }
+
+    std::string        strHiddenAbilities = pt.get<std::string>("HiddenAbilities", "");
+    std::istringstream tokenStreamHiddenAbilities(strHiddenAbilities);
+    while (std::getline(tokenStreamHiddenAbilities, token, delimiter))
+    {
+        if (!token.empty())
+            pkmn->hiddenAbilities.push_back(token);
+    }
+
     std::string        strMovesToLearn = pt.get<std::string>("Moves", "");
     std::istringstream tokenStreamMovesToLearn(strMovesToLearn);
     while (std::getline(tokenStreamMovesToLearn, token, delimiter))
@@ -277,6 +293,26 @@ void PkmnDef::setTypes(std::vector<std::string> const& newTypes)
     types = newTypes;
 }
 
+std::vector<std::string> const& PkmnDef::getAbilities() const
+{
+    return abilities;
+}
+
+void PkmnDef::setAbilities(std::vector<std::string> const& newAbilities)
+{
+    abilities = newAbilities;
+}
+
+std::vector<std::string> const& PkmnDef::getHiddenAbilities() const
+{
+    return hiddenAbilities;
+}
+
+void PkmnDef::setHiddenAbilities(std::vector<std::string> const& newHiddenAbilities)
+{
+    hiddenAbilities = newHiddenAbilities;
+}
+
 std::vector<PkmnDef::MoveToLearn> const& PkmnDef::getMovesToLearn() const
 {
     return movesToLearn;
@@ -364,6 +400,12 @@ void tag_invoke(js::value_from_tag, js::value& jv, PkmnDef::PkmnDefPtr const& o)
         js::array jsTypes;
         for (auto const& e : o->types)
             jsTypes.push_back(js::value(e));
+        js::array jsAbilities;
+        for (auto const& e : o->abilities)
+            jsAbilities.push_back(js::value(e));
+        js::array jsHiddenAbilities;
+        for (auto const& e : o->hiddenAbilities)
+            jsHiddenAbilities.push_back(js::value(e));
         js::array jsMovesToLearn;
         for (auto const& e : o->movesToLearn)
             jsMovesToLearn.push_back(js::value{
@@ -384,16 +426,18 @@ void tag_invoke(js::value_from_tag, js::value& jv, PkmnDef::PkmnDefPtr const& o)
                 {"data",   e.second.data               }
             });
         jv = {
-            {"id",           o->id                             },
-            {"name",         o->name                           },
-            {"growthRate",   static_cast<size_t>(o->growthRate)},
-            {"types",        jsTypes                           },
-            {"movesToLearn", jsMovesToLearn                    },
-            {"stats",        jsBaseStats                       },
-            {"baseExp",      o->baseExp                        },
-            {"catchRate",    o->catchRate                      },
-            {"happiness",    o->happiness                      },
-            {"evolutions",   jsEvolutions                      }
+            {"id",              o->id                             },
+            {"name",            o->name                           },
+            {"growthRate",      static_cast<size_t>(o->growthRate)},
+            {"types",           jsTypes                           },
+            {"abilities",       jsAbilities                       },
+            {"hiddenAbilities", jsHiddenAbilities                 },
+            {"movesToLearn",    jsMovesToLearn                    },
+            {"stats",           jsBaseStats                       },
+            {"baseExp",         o->baseExp                        },
+            {"catchRate",       o->catchRate                      },
+            {"happiness",       o->happiness                      },
+            {"evolutions",      jsEvolutions                      }
         };
     }
     else
@@ -419,6 +463,16 @@ PkmnDef::PkmnDefPtr tag_invoke(js::value_to_tag<PkmnDef::PkmnDefPtr>, js::value 
         pkmn->growthRate = static_cast<PkmnDef::GrowthRate>(js::value_to<size_t>(obj.at("growthRate")));
         for (auto& value : obj.at("types").as_array())
             pkmn->types.push_back(js::value_to<std::string>(value));
+        if (obj.contains("abilities"))
+        {
+            for (auto& value : obj.at("abilities").as_array())
+                pkmn->abilities.push_back(js::value_to<std::string>(value));
+        }
+        if (obj.contains("hiddenAbilities"))
+        {
+            for (auto& value : obj.at("hiddenAbilities").as_array())
+                pkmn->hiddenAbilities.push_back(js::value_to<std::string>(value));
+        }
         for (auto& value : obj.at("movesToLearn").as_array())
         {
             js::object const& obj   = value.as_object();

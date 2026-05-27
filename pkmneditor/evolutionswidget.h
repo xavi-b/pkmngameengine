@@ -20,12 +20,14 @@ public:
 
     std::multimap<PkmnDef::EvolutionType, PkmnDef::Evolution> getEvolutions();
     void setEvolutions(std::multimap<PkmnDef::EvolutionType, PkmnDef::Evolution> newEvolutions);
+    void setAvailablePkmnIds(QStringList const& pkmnIds);
 
 signals:
     void evolutionsChanged();
 
 private:
     EvolutionsModel* model;
+    QStringList      availablePkmnIds;
 };
 
 #endif // EVOLUTIONSWIDGET_H

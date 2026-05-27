@@ -1,9 +1,12 @@
 #ifndef PKMNWIDGET_H
 #define PKMNWIDGET_H
 
+#include "../abilityidswidget.h"
 #include "../evolutionswidget.h"
 #include "../movestolearnwidget.h"
 #include "../statswidget.h"
+#include "ability.h"
+#include "movedef.h"
 #include "pkmndef.h"
 
 #include <QComboBox>
@@ -12,6 +15,7 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QSpinBox>
+#include <QTabWidget>
 #include <QWidget>
 
 class PkmnWidget : public QWidget
@@ -22,6 +26,10 @@ public:
     explicit PkmnWidget(QWidget* parent = nullptr);
 
     void setPkmn(PkmnDef::PkmnDefPtr const& pkmn);
+
+    void setAvailableAbilities(std::vector<Ability::AbilityPtr> const& abilities);
+    void setAvailableMoves(std::vector<MoveDef::MoveDefPtr> const& moves);
+    void setAvailablePkmns(std::vector<PkmnDef::PkmnDefPtr> const& pkmns);
 
     void setSpritesDirectory(QString const& dirName);
 
@@ -40,8 +48,12 @@ private:
     QSpinBox*           happinessSpinBox;
     StatsWidget*        baseStatsWidget;
     StatsWidget*        EVsToLearnWidget;
+    AbilityIdsWidget*   abilitiesWidget;
+    AbilityIdsWidget*   hiddenAbilitiesWidget;
     MovesToLearnWidget* movesToLearnWidget;
     EvolutionsWidget*   evolutionsWidget;
+
+    QStringList availableAbilityIds;
 
     QString spritesDirectory;
 };

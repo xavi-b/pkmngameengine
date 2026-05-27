@@ -2,6 +2,8 @@
 #define PKMNSVIEW_H
 
 #include "../objectlistmodel.h"
+#include "ability.h"
+#include "movedef.h"
 #include "pkmnwidget.h"
 
 #include <QInputDialog>
@@ -20,6 +22,9 @@ public:
     explicit PkmnsView(QWidget* parent = nullptr);
 
     void setPkmns(std::vector<PkmnDef::PkmnDefPtr> const& newPkmns);
+    void setAvailableAbilities(std::vector<Ability::AbilityPtr> const& abilities);
+    void setAvailableMoves(std::vector<MoveDef::MoveDefPtr> const& moves);
+    void setAvailablePkmns(std::vector<PkmnDef::PkmnDefPtr> const& pkmns);
     void setSpritesDirectory(QString const& dirName);
 
 signals:

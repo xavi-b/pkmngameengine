@@ -11,6 +11,8 @@ IdsSelector::IdsSelector(QWidget* parent) : QWidget(parent)
     listView->setModel(idsModel);
     layout->addWidget(listView);
 
+    connect(listView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &IdsSelector::selectionChanged);
+
     setLayout(layout);
 }
 

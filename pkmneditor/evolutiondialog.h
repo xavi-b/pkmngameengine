@@ -12,14 +12,14 @@
 class EvolutionDialog : public QDialog
 {
 public:
-    EvolutionDialog(QWidget* parent = nullptr);
+    EvolutionDialog(QStringList const& availablePkmnIds, QStringList const& excludeIds = {}, QWidget* parent = nullptr);
 
     std::pair<PkmnDef::EvolutionType, PkmnDef::Evolution> getEvolution() const;
 
 private:
     void onTypeChanged();
 
-    QLineEdit*     pkmnIdLineEdit;
+    QComboBox*     pkmnIdComboBox;
     QComboBox*     typeComboBox;
     QLineEdit*     dataLineEdit;
     QIntValidator* intValidator;

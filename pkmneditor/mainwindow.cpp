@@ -8,6 +8,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
 
     typesView = new TypesView;
     pkmnsView = new PkmnsView;
+    abilitiesView = new AbilitiesView;
     movesView = new MovesView;
     itemsView = new ItemsView;
 
@@ -25,6 +26,9 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
     QPushButton* button2 = new QPushButton(tr("Abilities"));
     button2->setFixedSize(200, 150);
     gridLayout->addWidget(button2, 0, 1);
+    connect(button2, &QPushButton::clicked, this, [=]() {
+        stackedWidget->setCurrentWidget(abilitiesView);
+    });
     QPushButton* button3 = new QPushButton(tr("Moves"));
     button3->setFixedSize(200, 150);
     connect(button3, &QPushButton::clicked, this, [=]() {
@@ -42,6 +46,9 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
     QPushButton* button5 = new QPushButton(tr("Pkmns"));
     button5->setFixedSize(200, 150);
     connect(button5, &QPushButton::clicked, this, [=]() {
+        pkmnsView->setAvailableAbilities(abilities);
+        pkmnsView->setAvailableMoves(moves);
+        pkmnsView->setAvailablePkmns(pkmns);
         stackedWidget->setCurrentWidget(pkmnsView);
     });
     gridLayout->addWidget(button5, 1, 1);
@@ -57,6 +64,10 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
         stackedWidget->setCurrentIndex(0);
     });
     stackedWidget->addWidget(typesView);
+    connect(abilitiesView, &AbilitiesView::back, this, [=]() {
+        stackedWidget->setCurrentIndex(0);
+    });
+    stackedWidget->addWidget(abilitiesView);
     connect(pkmnsView, &PkmnsView::back, this, [=]() {
         stackedWidget->setCurrentIndex(0);
     });
@@ -104,6 +115,12 @@ void MainWindow::createMenus()
             // Items
             items = ItemDef::vectorFromPropertyTree(readPropertyTree(dirName, "items.txt"));
             itemsView->setItems(items);
+            // Abilities
+            abilities = Ability::vectorFromPropertyTree(readPropertyTree(dirName, "abilities.txt"));
+            abilitiesView->setAbilities(abilities);
+            pkmnsView->setAvailableAbilities(abilities);
+            pkmnsView->setAvailableMoves(moves);
+            pkmnsView->setAvailablePkmns(pkmns);
 
             stackedWidget->setCurrentIndex(0);
             QSettings().setValue("lastDir", dirName);
@@ -144,6 +161,20 @@ void MainWindow::createMenus()
             // Items
             items = js::value_to<std::vector<ItemDef::ItemDefPtr>>(json.as_object()["items"]);
             itemsView->setItems(items);
+            // Abilities (optional for backwards compatibility)
+            if (json.as_object().contains("abilities"))
+            {
+                abilities = js::value_to<std::vector<Ability::AbilityPtr>>(json.as_object()["abilities"]);
+                abilitiesView->setAbilities(abilities);
+            }
+            else
+            {
+                abilities.clear();
+                abilitiesView->setAbilities(abilities);
+            }
+            pkmnsView->setAvailableAbilities(abilities);
+            pkmnsView->setAvailableMoves(moves);
+            pkmnsView->setAvailablePkmns(pkmns);
 
             stackedWidget->setCurrentIndex(0);
             QSettings().setValue("lastDir", QFileInfo(fileName).dir().path());
@@ -213,6 +244,8 @@ QString MainWindow::saveFile(bool saveAs)
         json["moves"] = js::value_from(moves);
         // Items
         json["items"] = js::value_from(items);
+        // Abilities
+        json["abilities"] = js::value_from(abilities);
 
         file.write(js::serialize(json).c_str());
     }

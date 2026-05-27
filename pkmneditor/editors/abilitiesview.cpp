@@ -1,11 +1,15 @@
-#include "pkmnsview.h"
+#include "abilitiesview.h"
 
-PkmnsView::PkmnsView(QWidget* parent) : QWidget(parent)
+#include <QHBoxLayout>
+#include <QLineEdit>
+#include <QModelIndex>
+
+AbilitiesView::AbilitiesView(QWidget* parent) : QWidget(parent)
 {
     QVBoxLayout* vLayout = new QVBoxLayout;
 
     QPushButton* backButton = new QPushButton(tr("Back"));
-    connect(backButton, &QPushButton::clicked, this, &PkmnsView::back);
+    connect(backButton, &QPushButton::clicked, this, &AbilitiesView::back);
     QHBoxLayout* hLayout = new QHBoxLayout;
     hLayout->addWidget(backButton);
     hLayout->addStretch(1);
@@ -39,12 +43,12 @@ PkmnsView::PkmnsView(QWidget* parent) : QWidget(parent)
     connect(addButton, &QPushButton::clicked, this, [=]() {
         bool    ok = false;
         QString id =
-            QInputDialog::getText(this, tr("New Pkmn"), tr("Enter Pkmn ID:"), QLineEdit::Normal, QString(), &ok);
+            QInputDialog::getText(this, tr("New Ability"), tr("Enter ability ID:"), QLineEdit::Normal, QString(), &ok);
         if (ok)
         {
-            auto pkmn = std::make_shared<PkmnDef>();
-            pkmn->setId(id.toStdString());
-            model->appendItem(pkmn);
+            auto ability = std::make_shared<Ability>();
+            ability->setId(id.toStdString());
+            model->appendItem(ability);
         }
     });
     leftLayout->addWidget(addButton);
@@ -64,12 +68,11 @@ PkmnsView::PkmnsView(QWidget* parent) : QWidget(parent)
     leftWidget->setLayout(leftLayout);
     splitter->addWidget(leftWidget);
 
-    pkmnWidget = new PkmnWidget;
-    splitter->addWidget(pkmnWidget);
+    abilityWidget = new AbilityWidget;
+    splitter->addWidget(abilityWidget);
     splitter->setStretchFactor(1, 1);
 
     vLayout->addWidget(splitter, 1);
-
     setLayout(vLayout);
 
     model      = new ObjectListModel(this);
@@ -79,49 +82,27 @@ PkmnsView::PkmnsView(QWidget* parent) : QWidget(parent)
     listView->setModel(proxyModel);
 
     connect(listView->selectionModel(), &QItemSelectionModel::currentRowChanged, this, [=](QModelIndex const& index) {
-        if (index.isValid())
-        {
-            QModelIndex const&         originalIndex = proxyModel->mapToSource(index);
-            TemplateListItem<PkmnDef>* item = dynamic_cast<TemplateListItem<PkmnDef>*>(model->getItem(originalIndex));
-            if (item)
-            {
-                auto pkmn = item->getPtr();
-                pkmnWidget->setPkmn(pkmn);
-            }
-        }
+        if (!index.isValid())
+            return;
+
+        QModelIndex const&         originalIndex = proxyModel->mapToSource(index);
+        TemplateListItem<Ability>* item = dynamic_cast<TemplateListItem<Ability>*>(model->getItem(originalIndex));
+
+        if (item)
+            abilityWidget->setAbility(item->getPtr());
     });
 
-    connect(pkmnWidget, &PkmnWidget::idChanged, this, [=]() {
+    connect(abilityWidget, &AbilityWidget::idChanged, this, [=]() {
         QModelIndex const& index = listView->selectionModel()->currentIndex();
-        if (index.isValid())
-        {
-            QModelIndex const& originalIndex = proxyModel->mapToSource(index);
-            emit               model->dataChanged(originalIndex, originalIndex);
-        }
+        if (!index.isValid())
+            return;
+
+        QModelIndex const& originalIndex = proxyModel->mapToSource(index);
+        emit               model->dataChanged(originalIndex, originalIndex);
     });
 }
 
-void PkmnsView::setPkmns(std::vector<PkmnDef::PkmnDefPtr> const& newPkmns)
+void AbilitiesView::setAbilities(std::vector<Ability::AbilityPtr> const& newAbilities)
 {
-    model->setObjects(newPkmns);
-}
-
-void PkmnsView::setAvailableAbilities(std::vector<Ability::AbilityPtr> const& newAbilities)
-{
-    pkmnWidget->setAvailableAbilities(newAbilities);
-}
-
-void PkmnsView::setAvailableMoves(std::vector<MoveDef::MoveDefPtr> const& moves)
-{
-    pkmnWidget->setAvailableMoves(moves);
-}
-
-void PkmnsView::setAvailablePkmns(std::vector<PkmnDef::PkmnDefPtr> const& newPkmns)
-{
-    pkmnWidget->setAvailablePkmns(newPkmns);
-}
-
-void PkmnsView::setSpritesDirectory(QString const& dirName)
-{
-    pkmnWidget->setSpritesDirectory(dirName);
+    model->setObjects(newAbilities);
 }

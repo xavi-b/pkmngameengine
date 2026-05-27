@@ -3,21 +3,23 @@
 
 #include "pkmndef.h"
 
+#include <QComboBox>
 #include <QDialog>
 #include <QDialogButtonBox>
 #include <QFormLayout>
-#include <QLineEdit>
 #include <QSpinBox>
 
 class MoveToLearnDialog : public QDialog
 {
 public:
-    MoveToLearnDialog(QWidget* parent = nullptr);
+    MoveToLearnDialog(QStringList const& availableMoveIds,
+                      QStringList const& excludeIds = {},
+                      QWidget*           parent     = nullptr);
 
     PkmnDef::MoveToLearn getMoveToLearn() const;
 
 private:
-    QLineEdit* moveIdLineEdit;
+    QComboBox* moveIdComboBox;
     QSpinBox*  levelSpinBox;
 };
 
