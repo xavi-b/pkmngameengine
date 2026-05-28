@@ -34,8 +34,7 @@ bool House1Scene::updateBeforeMovement(Inputs const* /*inputs*/)
                 }
                 else
                 {
-                    if (playerSprite->getAccumulatedTicks() == 0)
-                        stop(player);
+                    stopAfterLastMovementFrame(player);
                 }
             }
         }

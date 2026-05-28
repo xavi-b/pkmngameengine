@@ -77,6 +77,7 @@ public:
     void            incrementLedgeJump(Entity& entity);
     void            finishLedgeJump(Entity& entity);
     void            stop(Entity& entity);
+    void            stopAfterLastMovementFrame(Entity& entity);
     virtual void    move(Entity& entity, bool force = false);
     virtual Entity* entityAt(size_t x, size_t y, size_t l) const;
     virtual Entity* entityPreviousAt(size_t x, size_t y, size_t l) const;

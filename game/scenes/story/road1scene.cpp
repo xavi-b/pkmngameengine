@@ -115,8 +115,7 @@ bool Road1Scene::updateBeforeMovement(Inputs const* /*inputs*/)
                 }
                 else
                 {
-                    if (playerSprite->getAccumulatedTicks() == 0)
-                        stop(player);
+                    stopAfterLastMovementFrame(player);
                 }
             }
         }
@@ -136,8 +135,7 @@ bool Road1Scene::updateBeforeMovement(Inputs const* /*inputs*/)
                 }
                 else
                 {
-                    if (playerSprite->getAccumulatedTicks() == 0)
-                        stop(player);
+                    stopAfterLastMovementFrame(player);
                 }
             }
         }
@@ -152,20 +150,17 @@ void Road1Scene::updateAfterMovement(Inputs const* /*inputs*/)
 
     if (childSpeech->isStarted() && !childSpeech->shouldClose())
     {
-        if (playerSprite->getAccumulatedTicks() == 0)
-            stop(player);
+        stopAfterLastMovementFrame(player);
     }
 
     if (text1Speech->isStarted() && !text1Speech->shouldClose())
     {
-        if (playerSprite->getAccumulatedTicks() == 0)
-            stop(player);
+        stopAfterLastMovementFrame(player);
     }
 
     if (trainerSpeech->isStarted() && !trainerSpeech->shouldClose())
     {
-        if (playerSprite->getAccumulatedTicks() == 0)
-            stop(player);
+        stopAfterLastMovementFrame(player);
     }
 
     for (auto const& pair : entities)

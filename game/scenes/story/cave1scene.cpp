@@ -32,10 +32,18 @@ bool Cave1Scene::updateBeforeMovement(Inputs const* /*inputs*/)
                 }
                 else
                 {
-                    if (playerSprite->getAccumulatedTicks() == 0)
-                        stop(player);
+                    stopAfterLastMovementFrame(player);
                 }
             }
+        }
+    }
+
+    if (auto event = eventAt(player.x, player.y, player.l))
+    {
+        if (event->getId() == "TurnOnFlash")
+        {
+            if (turnOnFlash())
+                return true;
         }
     }
 
@@ -45,23 +53,6 @@ bool Cave1Scene::updateBeforeMovement(Inputs const* /*inputs*/)
 void Cave1Scene::draw(Fps const* fps, RenderSizes rs)
 {
     MapScene::draw(fps, rs);
-}
-
-bool Cave1Scene::manageEvents()
-{
-    auto& player = Game::instance()->data.player;
-    auto& layer  = map->getLevels()[player.l]->getEventLayer();
-    auto& event  = (*layer.get())(player.x, player.y);
-    if (event)
-    {
-        if (event->getId() == "TurnOnFlash")
-        {
-            if (turnOnFlash())
-                return true;
-        }
-    }
-
-    return MapScene::manageEvents();
 }
 
 std::string Cave1Scene::name()

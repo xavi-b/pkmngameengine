@@ -22,30 +22,26 @@ bool Dive1Scene::updateAmbient(Inputs const* /*inputs*/)
     return false;
 }
 
-bool Dive1Scene::updateBeforeMovement(Inputs const* inputs)
+bool Dive1Scene::handleActionButton(Inputs const* inputs)
 {
     auto& player = Game::instance()->data.player;
 
-    if (!inputs->A)
-        return false;
-
-    auto event = eventAt(player.x, player.y, player.l);
-    if (event && event->getId() == "Road1")
+    if (inputs->A)
     {
-        if (!fadeOutAnimation->isStarted())
+        auto event = eventAt(player.x, player.y, player.l);
+        if (event && event->getId() == "Road1")
         {
-            fadeOutAnimation->reset();
-            fadeOutAnimation->start();
-            goToScene = "Road1";
+            if (!fadeOutAnimation->isStarted())
+            {
+                fadeOutAnimation->reset();
+                fadeOutAnimation->start();
+                goToScene = "Road1";
+            }
+            return true;
         }
-        return true;
     }
 
-    return false;
-}
-
-void Dive1Scene::updateAfterMovement(Inputs const* /*inputs*/)
-{
+    return MapScene::handleActionButton(inputs);
 }
 
 void Dive1Scene::draw(Fps const* fps, RenderSizes rs)

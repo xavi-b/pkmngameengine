@@ -27,8 +27,7 @@ public:
 
 protected:
     virtual bool updateAmbient(Inputs const* inputs) override;
-    virtual bool updateBeforeMovement(Inputs const* inputs) override;
-    virtual void updateAfterMovement(Inputs const* inputs) override;
+    virtual bool handleActionButton(Inputs const* inputs);
 
 private:
     std::unique_ptr<BubblesAnimation> bubblesAnimation;

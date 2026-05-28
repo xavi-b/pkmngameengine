@@ -156,7 +156,7 @@ void MapScene::update(Inputs const* inputs)
 
     updateTileAnimations();
 
-    if (playerSprite->getAccumulatedTicks() == 0)
+    if (isPlayerMovementFrame())
     {
         preventInputs |= updateMapPassiveInteractions(inputs);
 
@@ -270,8 +270,7 @@ bool MapScene::updateTransitions(Inputs const* /*inputs*/)
     {
         if (player.x == stairsExitPosition.first && player.y == stairsExitPosition.second)
         {
-            if (playerSprite->getAccumulatedTicks() == 0)
-                stop(player);
+            stopAfterLastMovementFrame(player);
         }
 
         if (stairsExitAnimation->isRunning())
@@ -297,8 +296,7 @@ bool MapScene::updateTransitions(Inputs const* /*inputs*/)
     {
         if (doorOpeningAnimation->isRunning())
         {
-            if (playerSprite->getAccumulatedTicks() == 0)
-                stop(player);
+            stopAfterLastMovementFrame(player);
 
             doorOpeningAnimation->incrementTicks();
             return true;
@@ -322,8 +320,7 @@ bool MapScene::updateTransitions(Inputs const* /*inputs*/)
     {
         if (stairsEntranceAnimation->isRunning())
         {
-            if (playerSprite->getAccumulatedTicks() == 0)
-                stop(player);
+            stopAfterLastMovementFrame(player);
 
             stairsEntranceAnimation->incrementTicks();
             return true;
@@ -339,7 +336,7 @@ bool MapScene::updateTransitions(Inputs const* /*inputs*/)
     {
         if (!ledgeAnimation->isFinished())
         {
-            if (playerSprite->getAccumulatedTicks() == 0)
+            if (isPlayerMovementFrame())
                 incrementLedgeJump(player);
 
             ledgeAnimation->incrementTicks();
@@ -347,7 +344,7 @@ bool MapScene::updateTransitions(Inputs const* /*inputs*/)
         }
         else
         {
-            if (playerSprite->getAccumulatedTicks() == 0)
+            if (isPlayerMovementFrame())
                 finishLedgeJump(player);
 
             auto it = tilesAnimations.find({player.x, player.y});
@@ -1264,6 +1261,12 @@ void MapScene::stop(Entity& entity)
     entity.direction = Entity::Direction::NONE;
     entity.previousY = entity.y;
     entity.previousX = entity.x;
+}
+
+void MapScene::stopAfterLastMovementFrame(Entity& entity)
+{
+    if (isPlayerMovementFrame())
+        stop(entity);
 }
 
 void MapScene::move(Entity& entity, bool force)

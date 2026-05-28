@@ -27,8 +27,7 @@ bool Cave2Scene::updateBeforeMovement(Inputs const* /*inputs*/)
                 }
                 else
                 {
-                    if (playerSprite->getAccumulatedTicks() == 0)
-                        stop(player);
+                    stopAfterLastMovementFrame(player);
                 }
             }
         }
@@ -75,8 +74,7 @@ void Cave2Scene::updateAfterMovement(Inputs const* /*inputs*/)
             }
             else
             {
-                if (playerSprite->getAccumulatedTicks() == 0)
-                    stop(player);
+                stopAfterLastMovementFrame(player);
             }
         }
     }

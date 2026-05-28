@@ -23,8 +23,7 @@ void Cave3Scene::updateAfterMovement(Inputs const* /*inputs*/)
             }
             else
             {
-                if (playerSprite->getAccumulatedTicks() == 0)
-                    stop(player);
+                stopAfterLastMovementFrame(player);
             }
         }
     }
