@@ -7,6 +7,7 @@
 
 Pkmn::Pkmn(PkmnDef::PkmnDefPtr definition, size_t level) : definition(definition), level(level)
 {
+    nature = static_cast<Nature>(Utils::randuint(0, static_cast<size_t>(Nature::__SIZE_NATURE) - 1));
 }
 
 std::map<PkmnDef::Stat, size_t> Pkmn::getStats() const
@@ -15,12 +16,67 @@ std::map<PkmnDef::Stat, size_t> Pkmn::getStats() const
     std::map<PkmnDef::Stat, size_t> IVs       = getIVs();
     std::map<PkmnDef::Stat, size_t> EVs       = getEVs();
     std::map<PkmnDef::Stat, size_t> stats;
+
+    auto natureMultiplier = [this](PkmnDef::Stat stat) {
+        switch (nature)
+        {
+        case Nature::LONELY:
+            return stat == PkmnDef::ATTACK ? 110 : stat == PkmnDef::DEFENSE ? 90 : 100;
+        case Nature::BRAVE:
+            return stat == PkmnDef::ATTACK ? 110 : stat == PkmnDef::SPEED ? 90 : 100;
+        case Nature::ADAMANT:
+            return stat == PkmnDef::ATTACK ? 110 : stat == PkmnDef::SPECIAL_ATTACK ? 90 : 100;
+        case Nature::NAUGHTY:
+            return stat == PkmnDef::ATTACK ? 110 : stat == PkmnDef::SPECIAL_DEFENSE ? 90 : 100;
+        case Nature::BOLD:
+            return stat == PkmnDef::DEFENSE ? 110 : stat == PkmnDef::ATTACK ? 90 : 100;
+        case Nature::RELAXED:
+            return stat == PkmnDef::DEFENSE ? 110 : stat == PkmnDef::SPEED ? 90 : 100;
+        case Nature::IMPISH:
+            return stat == PkmnDef::DEFENSE ? 110 : stat == PkmnDef::SPECIAL_ATTACK ? 90 : 100;
+        case Nature::LAX:
+            return stat == PkmnDef::DEFENSE ? 110 : stat == PkmnDef::SPECIAL_DEFENSE ? 90 : 100;
+        case Nature::TIMID:
+            return stat == PkmnDef::SPEED ? 110 : stat == PkmnDef::ATTACK ? 90 : 100;
+        case Nature::HASTY:
+            return stat == PkmnDef::SPEED ? 110 : stat == PkmnDef::DEFENSE ? 90 : 100;
+        case Nature::JOLLY:
+            return stat == PkmnDef::SPEED ? 110 : stat == PkmnDef::SPECIAL_ATTACK ? 90 : 100;
+        case Nature::NAIVE:
+            return stat == PkmnDef::SPEED ? 110 : stat == PkmnDef::SPECIAL_DEFENSE ? 90 : 100;
+        case Nature::MODEST:
+            return stat == PkmnDef::SPECIAL_ATTACK ? 110 : stat == PkmnDef::ATTACK ? 90 : 100;
+        case Nature::MILD:
+            return stat == PkmnDef::SPECIAL_ATTACK ? 110 : stat == PkmnDef::DEFENSE ? 90 : 100;
+        case Nature::QUIET:
+            return stat == PkmnDef::SPECIAL_ATTACK ? 110 : stat == PkmnDef::SPEED ? 90 : 100;
+        case Nature::RASH:
+            return stat == PkmnDef::SPECIAL_ATTACK ? 110 : stat == PkmnDef::SPECIAL_DEFENSE ? 90 : 100;
+        case Nature::CALM:
+            return stat == PkmnDef::SPECIAL_DEFENSE ? 110 : stat == PkmnDef::ATTACK ? 90 : 100;
+        case Nature::GENTLE:
+            return stat == PkmnDef::SPECIAL_DEFENSE ? 110 : stat == PkmnDef::DEFENSE ? 90 : 100;
+        case Nature::SASSY:
+            return stat == PkmnDef::SPECIAL_DEFENSE ? 110 : stat == PkmnDef::SPEED ? 90 : 100;
+        case Nature::CAREFUL:
+            return stat == PkmnDef::SPECIAL_DEFENSE ? 110 : stat == PkmnDef::SPECIAL_ATTACK ? 90 : 100;
+        case Nature::HARDY:
+        case Nature::DOCILE:
+        case Nature::SERIOUS:
+        case Nature::BASHFUL:
+        case Nature::QUIRKY:
+        default:
+            return 100;
+        }
+    };
+
     stats[PkmnDef::HP] =
         (((2 * baseStats[PkmnDef::HP] + IVs.at(PkmnDef::HP) + EVs.at(PkmnDef::HP) / 4) * level) / 100) + level + 10;
     for (size_t i = static_cast<int>(PkmnDef::HP) + 1; i < PkmnDef::StatCount; ++i)
     {
-        PkmnDef::Stat stat = static_cast<PkmnDef::Stat>(i);
-        stats[stat] = ((((2 * baseStats[stat] + IVs.at(stat) + EVs.at(stat) / 4) * level) / 100) + 5); // TODO * nature
+        PkmnDef::Stat stat      = static_cast<PkmnDef::Stat>(i);
+        size_t        statValue = ((((2 * baseStats[stat] + IVs.at(stat) + EVs.at(stat) / 4) * level) / 100) + 5);
+        stats[stat]             = (statValue * natureMultiplier(stat)) / 100;
     }
     return stats;
 }
@@ -294,6 +350,16 @@ void Pkmn::setGender(Gender newGender)
     gender = newGender;
 }
 
+Pkmn::Nature Pkmn::getNature() const
+{
+    return nature;
+}
+
+void Pkmn::setNature(Nature newNature)
+{
+    nature = newNature;
+}
+
 Item::ItemPtr Pkmn::getHeldItem() const
 {
     return heldItem;
@@ -354,6 +420,7 @@ void tag_invoke(js::value_from_tag, js::value& jv, Pkmn::PkmnPtr const& o)
             {"statusCondition", static_cast<int>(o->statusCondition)},
             {"happiness", o->happiness},
             {"gender", static_cast<int>(o->gender)},
+            {"nature", static_cast<int>(o->nature)},
             {"firstTrainerId", o->firstTrainerId},
             {"heldItem", js::value_from<Item::ItemPtr const&>(o->heldItem)}
         };
@@ -380,6 +447,11 @@ Pkmn::PkmnPtr tag_invoke(js::value_to_tag<Pkmn::PkmnPtr>, js::value const& jv)
     pkmn->statusCondition = static_cast<Pkmn::StatusCondition>(js::value_to<int>(obj.at("statusCondition")));
     pkmn->happiness       = js::value_to<unsigned char>(obj.at("happiness"));
     pkmn->gender          = static_cast<Pkmn::Gender>(js::value_to<int>(obj.at("gender")));
+    if (obj.contains("nature"))
+        pkmn->nature = static_cast<Pkmn::Nature>(js::value_to<int>(obj.at("nature")));
+    else
+        pkmn->nature =
+            static_cast<Pkmn::Nature>(Utils::randuint(0, static_cast<size_t>(Pkmn::Nature::__SIZE_NATURE) - 1));
     if (obj.contains("firstTrainerId"))
         pkmn->firstTrainerId = js::value_to<uint64_t>(obj.at("firstTrainerId"));
     else

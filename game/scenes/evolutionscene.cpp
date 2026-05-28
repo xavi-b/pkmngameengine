@@ -15,7 +15,7 @@ EvolutionScene::~EvolutionScene()
 void EvolutionScene::init()
 {
     std::string pkmnName = pkmn ? pkmn->getDisplayName() : "#ERROR";
-    speech->setTexts({pkmnName + " is evolving !", "Press A to confirm evolution.", "Press B to cancel evolution."});
+    speech->setTexts({pkmnName + " is evolving !", "Press A to confirm evolution, press B to cancel."});
     speech->start();
 }
 

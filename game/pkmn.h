@@ -29,6 +29,36 @@ public:
         GENDERLESS
     };
 
+    enum class Nature : size_t
+    {
+        HARDY,
+        LONELY,
+        BRAVE,
+        ADAMANT,
+        NAUGHTY,
+        BOLD,
+        DOCILE,
+        RELAXED,
+        IMPISH,
+        LAX,
+        TIMID,
+        HASTY,
+        SERIOUS,
+        JOLLY,
+        NAIVE,
+        MODEST,
+        MILD,
+        QUIET,
+        BASHFUL,
+        RASH,
+        CALM,
+        GENTLE,
+        SASSY,
+        CAREFUL,
+        QUIRKY,
+        __SIZE_NATURE
+    };
+
     static constexpr unsigned char HighFriendship = 160;
 
     using PkmnPtr = std::shared_ptr<Pkmn>;
@@ -84,6 +114,8 @@ public:
     bool   isFemale() const;
     Gender getGender() const;
     void   setGender(Gender newGender);
+    Nature getNature() const;
+    void   setNature(Nature newNature);
 
     Item::ItemPtr getHeldItem() const;
     void          setHeldItem(Item::ItemPtr const& newHeldItem);
@@ -107,6 +139,7 @@ private:
     StatusCondition                 statusCondition = StatusCondition::NONE;
     unsigned char                   happiness       = 0;
     Gender                          gender          = Gender::MALE;
+    Nature                          nature          = Nature::HARDY;
     Item::ItemPtr                   heldItem        = nullptr;
     bool                            shiny           = false;
     uint64_t                        firstTrainerId  = 0;
