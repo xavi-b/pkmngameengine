@@ -3,6 +3,7 @@
 
 #include "entities/trainer.h"
 #include "singlebattlescene.h"
+#include "trainerscenedata.h"
 
 class TrainerScene : public SingleBattleScene
 {
@@ -15,25 +16,12 @@ public:
     virtual void        init() override;
 
 protected:
-    virtual void        chooseOpponentAction() override;
     virtual std::string encounterStartText() const override;
-    virtual std::string opponentMoveText(Move::MovePtr const& move) const override;
-    virtual std::string opponentRunText() const override;
-    virtual bool        canCaptureOpponent() const override;
-    virtual bool        canPlayerRun() const override;
-    virtual bool        tryPlayerRun() override;
-    virtual float       battleExperienceMultiplier() const override;
-    virtual void        onOpponentPkmnDefeated() override;
-    virtual bool        onExperienceResolvedNextPkmn() override;
+
+    virtual void initPhases() override;
 
 private:
     Pkmn::PkmnPtr nextUsableOpponentPkmn() const;
-
-    Trainer::TrainerPtr opponentTrainer;
-    bool                shouldSwitchOpponentPkmn = false;
-    bool                opponentSwitchAnnounced  = false;
-    std::string         defeatedOpponentPkmnName;
-    Pkmn::PkmnPtr       nextOpponentPkmn = nullptr;
 };
 
 #endif // TRAINERSCENE_H

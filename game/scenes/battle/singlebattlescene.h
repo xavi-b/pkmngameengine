@@ -1,22 +1,32 @@
 #ifndef SINGLEBATTLESCENE_H
 #define SINGLEBATTLESCENE_H
 
-#include "battlescene.h"
-#include "item.h"
-#include "pkmn.h"
+#include "battles/battleactions.h"
+#include "battles/battlebackground.h"
+#include "battles/battlespeech.h"
+#include "battles/moveselection.h"
+#include "battles/singlebattleui.h"
+#include "phases/singlebattlephases.h"
+#include "scene.h"
+#include "singlebattlescenedata.h"
 
 #include <SDL_image.h>
-#include <set>
 
-class SingleBattleScene : public BattleScene
+class SingleBattleScene : public Scene
 {
 public:
+    using State = BattleState;
+
+    friend class SingleBattlePhase;
+
     SingleBattleScene(SDL_Renderer* renderer);
     virtual ~SingleBattleScene();
 
     virtual void init() override;
+    virtual void update(Inputs const* inputs) override;
     virtual void draw(Fps const* fps, RenderSizes rs) override;
 
+    virtual bool popScene() const override;
     virtual bool pushScene() const override;
     virtual void popReset() override;
 
@@ -24,104 +34,42 @@ public:
 
     virtual std::string name() override;
 
+    void changeWeather(Map::Weather weather);
+
     void setPlayerPkmn(Pkmn::PkmnPtr const& newPlayerPkmn);
-
-    virtual void chooseOpponentAction() = 0;
-
-    virtual void update_START(Inputs const* inputs) override;
-    virtual void draw_START(Fps const* fps, RenderSizes rs) override;
-
-    virtual void update_WEATHER(Inputs const* inputs) override;
-    virtual void draw_WEATHER(Fps const* fps, RenderSizes rs) override;
-
-    virtual void update_ACTIONS(Inputs const* inputs) override;
-    virtual void draw_ACTIONS(Fps const* fps, RenderSizes rs) override;
-
-    virtual void update_MOVES(Inputs const* inputs) override;
-    virtual void draw_MOVES(Fps const* fps, RenderSizes rs) override;
-
-    virtual void update_PLAYER_MOVES(Inputs const* inputs) override;
-    virtual void draw_PLAYER_MOVES(Fps const* fps, RenderSizes rs) override;
-
-    virtual void update_PLAYER_ITEMS(Inputs const* inputs) override;
-    virtual void draw_PLAYER_ITEMS(Fps const* fps, RenderSizes rs) override;
-
-    virtual void update_PLAYER_PKMNS(Inputs const* inputs) override;
-    virtual void draw_PLAYER_PKMNS(Fps const* fps, RenderSizes rs) override;
-
-    virtual void update_PLAYER_RUN(Inputs const* inputs) override;
-    virtual void draw_PLAYER_RUN(Fps const* fps, RenderSizes rs) override;
-
-    virtual void update_OPPONENT_PKMNS(Inputs const* inputs) override;
-    virtual void draw_OPPONENT_PKMNS(Fps const* fps, RenderSizes rs) override;
-
-    virtual void update_OPPONENT_ITEMS(Inputs const* inputs) override;
-    virtual void draw_OPPONENT_ITEMS(Fps const* fps, RenderSizes rs) override;
-
-    virtual void update_OPPONENT_MOVES(Inputs const* inputs) override;
-    virtual void draw_OPPONENT_MOVES(Fps const* fps, RenderSizes rs) override;
-
-    virtual void update_OPPONENT_RUN(Inputs const* inputs) override;
-    virtual void draw_OPPONENT_RUN(Fps const* fps, RenderSizes rs) override;
-
-    virtual void update_EXPERIENCE(Inputs const* inputs) override;
-    virtual void draw_EXPERIENCE(Fps const* fps, RenderSizes rs) override;
-
-    virtual void update_END(Inputs const* inputs) override;
-    virtual void draw_END(Fps const* fps, RenderSizes rs) override;
-
-protected:
-    void chooseOpponentMove();
     void setOpponentPkmn(Pkmn::PkmnPtr const& newOpponentPkmn);
 
-    virtual std::string encounterStartText() const                        = 0;
-    virtual std::string opponentMoveText(Move::MovePtr const& move) const = 0;
-    virtual std::string opponentRunText() const                           = 0;
-    virtual bool        canCaptureOpponent() const                        = 0;
-    virtual bool        canPlayerRun() const                              = 0;
-    virtual bool        tryPlayerRun()                                    = 0;
-    virtual float       battleExperienceMultiplier() const                = 0;
-    virtual void        onOpponentPkmnDefeated()                          = 0;
-    virtual bool        onExperienceResolvedNextPkmn()                            = 0;
+    static std::string canEvolve(Pkmn::PkmnPtr const& pkmn);
+    static size_t      computeDamage(Pkmn::PkmnPtr const& attacker,
+                                     Pkmn::PkmnPtr const& defender,
+                                     Move::MovePtr const& move,
+                                     Map::Weather const&  weather);
 
-    Pkmn::PkmnPtr opponentPkmn;
-    Pkmn::PkmnPtr playerPkmn;
-    size_t        runAttemps    = 0;
-    Move::MovePtr encounterMove = nullptr;
-    Move::MovePtr playerMove    = nullptr;
-    bool          playerFirst   = true;
+protected:
+    virtual std::string encounterStartText() const = 0;
 
-    std::unique_ptr<TextSpeech> pkmnEncounterSpeech;
-    std::unique_ptr<TextSpeech> firstPkmnSpeech;
-    std::unique_ptr<TextSpeech> runSpeech;
-    std::unique_ptr<TextSpeech> failedRunSpeech;
-    std::unique_ptr<TextSpeech> noPpLeftSpeech;
-    std::unique_ptr<TextSpeech> experienceSpeech;
-    std::unique_ptr<TextSpeech> moveToLearnSpeech;
-    std::unique_ptr<TextSpeech> playerMoveSpeech;
-    std::unique_ptr<TextSpeech> opponentMoveSpeech;
-    std::unique_ptr<TextSpeech> itemUseSpeech;
-    std::unique_ptr<TextSpeech> endSpeech;
-    std::unique_ptr<TextSpeech> pkmnEnterSpeech;
-    std::unique_ptr<TextSpeech> pkmnFaintSpeech;
+    std::shared_ptr<SingleBattleSceneData> data;
 
-    BattleActions::Type             opponentAction              = BattleActions::Type::MOVES;
-    Pkmn::PkmnPtr                   newSelectedPkmn             = nullptr;
-    Item::ItemPtr                   selectedItem                = nullptr;
-    Pkmn::PkmnPtr                   itemTargetPkmn              = nullptr;
-    bool                            itemUseResultUsed           = false;
-    bool                            itemUseResultCaptureSuccess = false;
-    std::set<Pkmn::PkmnPtr>         participatingPlayerPkmns;
-    std::map<Pkmn::PkmnPtr, size_t> expGained;
+    std::unique_ptr<BattleBackground> battleBackground;
+    std::unique_ptr<SingleBattleUi>   singleBattleUi;
 
-    // Current pkmn experience gain information
-    bool                shouldBreakToEvolution  = false;
-    bool                shouldBreakToLevelUp    = false;
-    bool                shouldBreakToNewMove    = false;
-    bool                shouldGoToNewMovesScene = false;
-    Pkmn::PkmnPtr       expPkmn                 = nullptr;
-    size_t              expFromBattle           = 0;
-    PkmnDef::PkmnDefPtr evolutionDef            = nullptr;
+    SingleBattlePhase* currentPhase();
+    virtual void       initPhases();
+
+    std::unique_ptr<SingleBattleStartPhase>         startPhase;
+    std::unique_ptr<SingleBattleWeatherPhase>       weatherPhase;
+    std::unique_ptr<SingleBattleActionsPhase>       actionsPhase;
+    std::unique_ptr<SingleBattleMovesPhase>         movesPhase;
+    std::unique_ptr<SingleBattlePlayerMovesPhase>   playerMovesPhase;
+    std::unique_ptr<SingleBattlePlayerItemsPhase>   playerItemsPhase;
+    std::unique_ptr<SingleBattlePlayerPkmnsPhase>   playerPkmnsPhase;
+    std::unique_ptr<SingleBattlePlayerRunPhase>     playerRunPhase;
+    std::unique_ptr<SingleBattleOpponentPkmnsPhase> opponentPkmnsPhase;
+    std::unique_ptr<SingleBattleOpponentItemsPhase> opponentItemsPhase;
+    std::unique_ptr<SingleBattleOpponentMovesPhase> opponentMovesPhase;
+    std::unique_ptr<SingleBattleOpponentRunPhase>   opponentRunPhase;
+    std::unique_ptr<SingleBattleExperiencePhase>    experiencePhase;
+    std::unique_ptr<SingleBattleEndPhase>           endPhase;
 };
 
 #endif // SINGLEBATTLESCENE_H
