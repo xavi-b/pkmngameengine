@@ -102,13 +102,13 @@ void MoveSelection::draw(Fps const* /*fps*/, RenderSizes rs)
     int height    = 2 /* lines */ * TextSpeech::TextBoxHeight;
     int dstHeight = height * rs.wh / rs.ah;
 
-    int fontSize      = RenderUtils::TextSize;
+    int fontSize      = RenderUtils::TextSize * 3 / 4;
     int dstTextHeight = fontSize * rs.wh / rs.ah;
 
     int dstPaddingY = (dstHeight - dstTextHeight * NElements) / (NElements + 1);
     int dstPaddingX = MoveSelection::TextPaddingX * rs.ww / rs.aw;
 
-    int percentage    = 60;
+    int percentage    = 70;
     int dstMovesWidth = rs.ww * percentage / 100;
     int dstInfoWidth  = rs.ww - dstMovesWidth;
 

@@ -16,7 +16,7 @@ public:
     static constexpr int NElements    = 2;
     static constexpr int TextWidth    = 60;
     static constexpr int ArrowSize    = 16;
-    static constexpr int TextPaddingX = 10;
+    static constexpr int TextPaddingX = 0;
 
     static constexpr size_t MaxMoveCount = 4;
 
