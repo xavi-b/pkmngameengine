@@ -2,7 +2,7 @@
 #define PLAYER_H
 
 #include "entity.h"
-#include "item.h"
+#include "itemdef.h"
 #include "pkmn.h"
 
 #include <array>
@@ -25,6 +25,9 @@ public:
 
     Gender getGender() const;
     void   setGender(Gender newGender);
+
+    void addOneItem(ItemDef::ItemDefPtr itemDef);
+    bool removeOneItem(ItemDef::ItemDefPtr itemDef);
 
     std::string name;
 

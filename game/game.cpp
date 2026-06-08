@@ -220,6 +220,7 @@ void Game::save()
         json["playerL"]       = l;
         json["player"]        = js::value_from<Player const&>(data.player);
         json["storage"]       = js::value_from<Storage const&>(data.storage);
+        json["flags"]         = js::value_from<std::unordered_map<std::string, bool> const&>(data.flags);
 
         std::string dataPath = Utils::dataDir();
         fs::create_directories(dataPath);
@@ -266,6 +267,8 @@ bool Game::loadData()
                 data.time.setMinutes(js::value_to<short>(obj.at("gameMinutes")));
             if (obj.contains("location"))
                 data.location = js::value_to<std::string>(obj.at("location"));
+            if (obj.contains("flags"))
+                data.flags = js::value_to<std::unordered_map<std::string, bool>>(obj.at("flags"));
             return true;
         }
         catch (...)

@@ -24,3 +24,9 @@ bool ErasableEntity::erased() const
 {
     return ticks >= 4;
 }
+
+void ErasableEntity::forceErase()
+{
+    erase = true;
+    ticks = 4;
+}

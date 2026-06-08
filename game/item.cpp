@@ -23,6 +23,11 @@ void Item::setCount(size_t newCount)
     count = newCount;
 }
 
+void Item::increaseCount(size_t n)
+{
+    count += n;
+}
+
 void Item::decreaseCount(size_t n)
 {
     if (n >= count)

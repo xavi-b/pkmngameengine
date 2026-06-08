@@ -136,7 +136,7 @@ void SingleBattlePlayerItemsPhase::update(Inputs const* inputs)
             return;
         }
 
-        ItemUtils::consumePlayerItem(Game::instance()->data.player, data->selectedItem);
+        Game::instance()->data.player.removeOneItem(data->selectedItem->getDefinition());
         data->selectedItem.reset();
         data->itemUseResultUsed           = used;
         data->itemUseResultCaptureSuccess = captureSuccess;

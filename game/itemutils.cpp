@@ -66,20 +66,6 @@ bool curesStatus(std::string const& itemId, Pkmn::StatusCondition status)
 }
 } // namespace
 
-bool ItemUtils::consumePlayerItem(Player& player, Item::ItemPtr const& item)
-{
-    if (!item || !item->getDefinition())
-        return false;
-    auto& pocketItems = player.items[item->getDefinition()->getPocket()];
-    auto  it          = std::find(pocketItems.begin(), pocketItems.end(), item);
-    if (it == pocketItems.end())
-        return false;
-    (*it)->decreaseCount(1);
-    if ((*it)->getCount() == 0)
-        pocketItems.erase(it);
-    return true;
-}
-
 bool ItemUtils::useItemOnPkmn(Item::ItemPtr const& item, Pkmn::PkmnPtr const& target, bool inBattle)
 {
     if (!item || !item->getDefinition() || !target)
@@ -174,7 +160,7 @@ bool ItemUtils::useItemInField(Player& player, Item::ItemPtr const& item)
     }
 
     if (used)
-        consumePlayerItem(player, item);
+        player.removeOneItem(item->getDefinition());
     return used;
 }
 

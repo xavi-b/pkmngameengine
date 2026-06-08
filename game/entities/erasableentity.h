@@ -12,6 +12,7 @@ public:
     void   incrementEraseTicks();
     size_t eraseTicks();
     bool   erased() const;
+    void   forceErase();
 
 private:
     bool   erase = false;

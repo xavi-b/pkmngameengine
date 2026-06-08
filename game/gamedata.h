@@ -5,10 +5,11 @@
 #include "gametime.h"
 #include "itemdef.h"
 #include "pkmndef.h"
-#include "type.h"
 #include "storage.h"
+#include "type.h"
 
 #include <string>
+#include <unordered_map>
 
 class GameData
 {
@@ -29,6 +30,7 @@ public:
     GameTime    time;
     std::string location;
     Storage     storage;
+    std::unordered_map<std::string, bool> flags = {};
 };
 
 #endif // GAMEDATA_H

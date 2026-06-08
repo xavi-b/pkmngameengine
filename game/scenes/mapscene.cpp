@@ -1898,7 +1898,7 @@ void MapScene::popReset()
     if (selectedBagItem && selectedBagTargetPkmn)
     {
         if (ItemUtils::useItemOnPkmn(selectedBagItem, selectedBagTargetPkmn, false))
-            ItemUtils::consumePlayerItem(Game::instance()->data.player, selectedBagItem);
+            Game::instance()->data.player.removeOneItem(selectedBagItem->getDefinition());
         // TODO: message information (Item overlay ?)
     }
     else if (selectedBagItem)

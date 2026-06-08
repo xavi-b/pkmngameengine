@@ -23,6 +23,34 @@ void Player::setGender(Gender newGender)
     gender = newGender;
 }
 
+void Player::addOneItem(ItemDef::ItemDefPtr itemDef)
+{
+    auto& pocketItems = items[itemDef->getPocket()];
+    auto  it          = std::find_if(pocketItems.cbegin(), pocketItems.cend(), [&](auto const& item) {
+        return item->getDefinition() == itemDef;
+    });
+    if (it == pocketItems.end())
+        pocketItems.push_back(std::make_shared<Item>(itemDef, 1));
+    else
+        (*it)->increaseCount(1);
+}
+
+bool Player::removeOneItem(ItemDef::ItemDefPtr itemDef)
+{
+    if (!itemDef)
+        return false;
+    auto& pocketItems = items[itemDef->getPocket()];
+    auto  it          = std::find_if(pocketItems.begin(), pocketItems.end(), [&](auto const& item) {
+        return item->getDefinition() == itemDef;
+    });
+    if (it == pocketItems.end())
+        return false;
+    (*it)->decreaseCount(1);
+    if ((*it)->getCount() == 0)
+        pocketItems.erase(it);
+    return true;
+}
+
 void tag_invoke(js::value_from_tag, js::value& jv, Player const& o)
 {
     jv = {

@@ -7,7 +7,6 @@
 
 namespace ItemUtils
 {
-bool consumePlayerItem(Player& player, Item::ItemPtr const& item);
 bool useItemOnPkmn(Item::ItemPtr const& item, Pkmn::PkmnPtr const& target, bool inBattle);
 bool useCaptureBall(Item::ItemPtr const& ball, Pkmn::PkmnPtr const& foePkmn);
 bool useItemInField(Player& player, Item::ItemPtr const& item);
