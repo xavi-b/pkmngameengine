@@ -191,17 +191,21 @@ void SingleBattleUi::draw(Fps const* /*fps*/, RenderSizes rs)
     srcFoeHpRect.y = overlayYBasedOnPercentageHP(foePercentageHP) * overlayHpSurface->h / 3;
     SDL_RenderCopy(renderer, overlayHpTexture, &srcFoeHpRect, &dstFoeHpRect);
 
-    SDL_Rect dstFoeStatusRect = dstRect;
-    dstFoeStatusRect.x += dstDataboxMargin;
-    dstFoeStatusRect.y += 35 * rs.wh / rs.ah;
-    dstFoeStatusRect.w = statusSurface->w * rs.ww / rs.aw;
-    dstFoeStatusRect.h = statusSurface->h * rs.wh / rs.ah / 6;
-    SDL_Rect srcFoeStatusRect;
-    srcFoeStatusRect.w = statusSurface->w;
-    srcFoeStatusRect.h = statusSurface->h / 6;
-    srcFoeStatusRect.x = 0;
-    srcFoeStatusRect.y = statusYBasedOnStatus(foePkmn->getStatusCondition()) * statusSurface->h / 6;
-    SDL_RenderCopy(renderer, statusTexture, &srcFoeStatusRect, &dstFoeStatusRect);
+    int foeStatusY = statusYBasedOnStatus(foePkmn->getStatusCondition());
+    if (foeStatusY != -1)
+    {
+        SDL_Rect dstFoeStatusRect = dstRect;
+        dstFoeStatusRect.x += dstDataboxMargin;
+        dstFoeStatusRect.y += 35 * rs.wh / rs.ah;
+        dstFoeStatusRect.w = statusSurface->w * rs.ww / rs.aw;
+        dstFoeStatusRect.h = statusSurface->h * rs.wh / rs.ah / 6;
+        SDL_Rect srcFoeStatusRect;
+        srcFoeStatusRect.w = statusSurface->w;
+        srcFoeStatusRect.h = statusSurface->h / 6;
+        srcFoeStatusRect.x = 0;
+        srcFoeStatusRect.y = foeStatusY * statusSurface->h / 6;
+        SDL_RenderCopy(renderer, statusTexture, &srcFoeStatusRect, &dstFoeStatusRect);
+    }
 
     /* PLAYER PKMN */
     dstRect.w = playerUiSurface->w * rs.ww / rs.aw;
@@ -254,17 +258,21 @@ void SingleBattleUi::draw(Fps const* /*fps*/, RenderSizes rs)
     srcPlayerHpRect.y = overlayYBasedOnPercentageHP(playerPercentageHP) * overlayHpSurface->h / 3;
     SDL_RenderCopy(renderer, overlayHpTexture, &srcPlayerHpRect, &dstPlayerHpRect);
 
-    SDL_Rect dstPlayerStatusRect = dstRect;
-    dstPlayerStatusRect.x += dstDataboxMargin * 4;
-    dstPlayerStatusRect.y += 35 * rs.wh / rs.ah;
-    dstPlayerStatusRect.w = statusSurface->w * rs.ww / rs.aw;
-    dstPlayerStatusRect.h = statusSurface->h * rs.wh / rs.ah / 6;
-    SDL_Rect srcPlayerStatusRect;
-    srcPlayerStatusRect.w = statusSurface->w;
-    srcPlayerStatusRect.h = statusSurface->h / 6;
-    srcPlayerStatusRect.x = 0;
-    srcPlayerStatusRect.y = statusYBasedOnStatus(playerPkmn->getStatusCondition()) * statusSurface->h / 6;
-    SDL_RenderCopy(renderer, statusTexture, &srcPlayerStatusRect, &dstPlayerStatusRect);
+    int playerStatusY = statusYBasedOnStatus(playerPkmn->getStatusCondition());
+    if (playerStatusY != -1)
+    {
+        SDL_Rect dstPlayerStatusRect = dstRect;
+        dstPlayerStatusRect.x += dstDataboxMargin * 4;
+        dstPlayerStatusRect.y += 35 * rs.wh / rs.ah;
+        dstPlayerStatusRect.w = statusSurface->w * rs.ww / rs.aw;
+        dstPlayerStatusRect.h = statusSurface->h * rs.wh / rs.ah / 6;
+        SDL_Rect srcPlayerStatusRect;
+        srcPlayerStatusRect.w = statusSurface->w;
+        srcPlayerStatusRect.h = statusSurface->h / 6;
+        srcPlayerStatusRect.x = 0;
+        srcPlayerStatusRect.y = playerStatusY * statusSurface->h / 6;
+        SDL_RenderCopy(renderer, statusTexture, &srcPlayerStatusRect, &dstPlayerStatusRect);
+    }
 
     float    playerPercentageExp = playerPkmn->getPercentageExp();
     SDL_Rect dstPlayerXpRect     = dstRect;
