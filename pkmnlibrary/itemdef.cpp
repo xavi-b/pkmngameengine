@@ -1,5 +1,8 @@
 #include "itemdef.h"
 
+#include <cassert>
+#include <sstream>
+
 std::string ItemDef::FieldUseToString(FieldUse e)
 {
     switch (e)
@@ -23,14 +26,13 @@ ItemDef::FieldUse ItemDef::FieldUseFromString(std::string e)
 {
     if (e == "Direct")
         return FieldUse::Direct;
-    else if (e == "OnPkmn" || e == "OnPokemon")
+    if (e == "OnPkmn" || e == "OnPokemon")
         return FieldUse::OnPkmn;
-    else if (e == "TR")
+    if (e == "TR")
         return FieldUse::TR;
-    else if (e == "HM")
+    if (e == "HM")
         return FieldUse::HM;
-    else
-        return FieldUse::None;
+    return FieldUse::None;
 }
 
 std::string ItemDef::BattleUseToString(BattleUse e)
@@ -58,16 +60,15 @@ ItemDef::BattleUse ItemDef::BattleUseFromString(std::string e)
 {
     if (e == "Direct")
         return BattleUse::Direct;
-    else if (e == "OnPkmn" || e == "OnPokemon")
+    if (e == "OnPkmn" || e == "OnPokemon")
         return BattleUse::OnPkmn;
-    else if (e == "OnMove")
+    if (e == "OnMove")
         return BattleUse::OnMove;
-    else if (e == "OnFoe")
+    if (e == "OnFoe")
         return BattleUse::OnFoe;
-    else if (e == "OnBattler")
+    if (e == "OnBattler")
         return BattleUse::OnBattler;
-    else
-        return BattleUse::None;
+    return BattleUse::None;
 }
 
 std::string ItemDef::FlagToString(Flag e)
@@ -88,6 +89,8 @@ std::string ItemDef::FlagToString(Flag e)
         return "Fling_40";
     case Flag::Fling_50:
         return "Fling_50";
+    case Flag::Fling_55:
+        return "Fling_55";
     case Flag::Fling_60:
         return "Fling_60";
     case Flag::Fling_65:
@@ -130,9 +133,16 @@ std::string ItemDef::FlagToString(Flag e)
         return "IconMail";
     case Flag::KeyItem:
         return "KeyItem";
+    case Flag::PokeBall:
+        return "PokeBall";
+    case Flag::Berry:
+        return "Berry";
+    case Flag::MegaStone:
+        return "MegaStone";
+    case Flag::MegaRing:
+        return "MegaRing";
     case Flag::__SIZE:
         return "__SIZE";
-        break;
     }
     return "???";
 }
@@ -141,60 +151,69 @@ ItemDef::Flag ItemDef::FlagFromString(std::string e)
 {
     if (e == "Fling_10")
         return Flag::Fling_10;
-    else if (e == "Fling_20")
+    if (e == "Fling_20")
         return Flag::Fling_20;
-    else if (e == "Fling_25")
+    if (e == "Fling_25")
         return Flag::Fling_25;
-    else if (e == "Fling_30")
+    if (e == "Fling_30")
         return Flag::Fling_30;
-    else if (e == "Fling_40")
+    if (e == "Fling_40")
         return Flag::Fling_40;
-    else if (e == "Fling_50")
+    if (e == "Fling_50")
         return Flag::Fling_50;
-    else if (e == "Fling_60")
+    if (e == "Fling_55")
+        return Flag::Fling_55;
+    if (e == "Fling_60")
         return Flag::Fling_60;
-    else if (e == "Fling_65")
+    if (e == "Fling_65")
         return Flag::Fling_65;
-    else if (e == "Fling_70")
+    if (e == "Fling_70")
         return Flag::Fling_70;
-    else if (e == "Fling_75")
+    if (e == "Fling_75")
         return Flag::Fling_75;
-    else if (e == "Fling_80")
+    if (e == "Fling_80")
         return Flag::Fling_80;
-    else if (e == "Fling_85")
+    if (e == "Fling_85")
         return Flag::Fling_85;
-    else if (e == "Fling_90")
+    if (e == "Fling_90")
         return Flag::Fling_90;
-    else if (e == "Fling_100")
+    if (e == "Fling_100")
         return Flag::Fling_100;
-    else if (e == "Fling_110")
+    if (e == "Fling_110")
         return Flag::Fling_110;
-    else if (e == "Fling_120")
+    if (e == "Fling_120")
         return Flag::Fling_120;
-    else if (e == "Fling_130")
+    if (e == "Fling_130")
         return Flag::Fling_130;
-    else if (e == "Fling_150")
+    if (e == "Fling_150")
         return Flag::Fling_150;
-    else if (e == "Fling_250")
+    if (e == "Fling_250")
         return Flag::Fling_250;
-    else if (e == "Repel")
+    if (e == "Repel")
         return Flag::Repel;
-    else if (e == "EvolutionStone")
+    if (e == "EvolutionStone")
         return Flag::EvolutionStone;
-    else if (e == "Apricorn")
+    if (e == "Apricorn")
         return Flag::Apricorn;
-    else if (e == "Fossil")
+    if (e == "Fossil")
         return Flag::Fossil;
-    else if (e == "Mulch")
+    if (e == "Mulch")
         return Flag::Mulch;
-    else if (e == "TypeGem")
+    if (e == "TypeGem")
         return Flag::TypeGem;
-    else if (e == "IconMail")
+    if (e == "IconMail")
         return Flag::IconMail;
-    else if (e == "KeyItem")
+    if (e == "KeyItem")
         return Flag::KeyItem;
-    else
-        return Flag::None;
+    if (e == "PokeBall")
+        return Flag::PokeBall;
+    if (e == "Berry")
+        return Flag::Berry;
+    if (e == "MegaStone")
+        return Flag::MegaStone;
+    if (e == "MegaRing")
+        return Flag::MegaRing;
+    return Flag::None;
 }
 
 std::string ItemDef::GetPocketName(size_t pocket)
@@ -203,25 +222,46 @@ std::string ItemDef::GetPocketName(size_t pocket)
 
     if (pocket == 0)
         return "Items";
-    else if (pocket == 1)
+    if (pocket == 1)
         return "Medicine";
-    else if (pocket == 2)
+    if (pocket == 2)
         return "PkBalls";
-    else if (pocket == 3)
+    if (pocket == 3)
         return "TMs & HMs";
-    else if (pocket == 4)
+    if (pocket == 4)
         return "Berries";
-    else if (pocket == 5)
+    if (pocket == 5)
         return "Mail";
-    else if (pocket == 6)
+    if (pocket == 6)
         return "Battle Items";
-    else
-        return "Key Items";
+    return "Key Items";
 }
 
 ItemDef::ItemDef()
 {
 }
+
+namespace
+{
+bool parseBoolLoose(std::string const& s)
+{
+    return s != "false" && s != "False" && s != "0" && s != "FALSE";
+}
+
+void parseNaturalGift(std::string const& token, std::string& typeOut, size_t& powerOut)
+{
+    // NaturalGift_POISON_80
+    static std::string const prefix = "NaturalGift_";
+    if (token.rfind(prefix, 0) != 0)
+        return;
+    auto rest = token.substr(prefix.size());
+    auto us   = rest.rfind('_');
+    if (us == std::string::npos)
+        return;
+    typeOut  = rest.substr(0, us);
+    powerOut = static_cast<size_t>(std::stoul(rest.substr(us + 1)));
+}
+} // namespace
 
 ItemDef::ItemDefPtr ItemDef::fromPropertyTree(std::string const& id, pt::ptree const& pt)
 {
@@ -229,8 +269,14 @@ ItemDef::ItemDefPtr ItemDef::fromPropertyTree(std::string const& id, pt::ptree c
     item->id         = id;
     item->name       = pt.get<std::string>("Name");
     item->namePlural = pt.get<std::string>("NamePlural");
-    item->pocket     = pt.get<size_t>("Pocket") - 1;
-    item->price      = pt.get<size_t>("Price");
+    if (pt.count("PortionName"))
+        item->portionName = pt.get<std::string>("PortionName");
+    if (pt.count("PortionNamePlural"))
+        item->portionNamePlural = pt.get<std::string>("PortionNamePlural");
+    item->pocket = pt.get<size_t>("Pocket") - 1;
+    item->price  = pt.get<size_t>("Price");
+    if (pt.count("BPPrice"))
+        item->bpPrice = pt.get<size_t>("BPPrice");
     if (pt.count("FieldUse"))
         item->fieldUse = FieldUseFromString(pt.get<std::string>("FieldUse"));
     if (pt.count("BattleUse"))
@@ -239,6 +285,8 @@ ItemDef::ItemDefPtr ItemDef::fromPropertyTree(std::string const& id, pt::ptree c
         item->sellPrice = pt.get<size_t>("SellPrice");
     if (pt.count("Move"))
         item->moveId = pt.get<std::string>("Move");
+    if (pt.count("Consumable"))
+        item->consumable = parseBoolLoose(pt.get<std::string>("Consumable"));
     if (pt.count("Flags"))
     {
         std::stringstream ss(pt.get<std::string>("Flags"));
@@ -246,7 +294,16 @@ ItemDef::ItemDefPtr ItemDef::fromPropertyTree(std::string const& id, pt::ptree c
         {
             std::string substr;
             getline(ss, substr, ',');
-            item->flags.push_back(FlagFromString(substr));
+            if (substr.empty())
+                continue;
+            if (substr.rfind("NaturalGift_", 0) == 0)
+            {
+                parseNaturalGift(substr, item->naturalGiftType, item->naturalGiftPower);
+                continue;
+            }
+            Flag f = FlagFromString(substr);
+            if (f != Flag::None)
+                item->flags.push_back(f);
         }
     }
     item->description = pt.get<std::string>("Description");
@@ -292,6 +349,16 @@ std::string ItemDef::getNamePlural() const
     return namePlural;
 }
 
+std::string ItemDef::getPortionName() const
+{
+    return portionName;
+}
+
+std::string ItemDef::getPortionNamePlural() const
+{
+    return portionNamePlural;
+}
+
 size_t ItemDef::getPocket() const
 {
     return pocket;
@@ -300,6 +367,11 @@ size_t ItemDef::getPocket() const
 size_t ItemDef::getPrice() const
 {
     return price;
+}
+
+size_t ItemDef::getBPPrice() const
+{
+    return bpPrice;
 }
 
 ItemDef::FieldUse ItemDef::getFieldUse() const
@@ -317,6 +389,11 @@ size_t ItemDef::getSellPrice() const
     return sellPrice;
 }
 
+size_t ItemDef::effectiveSellPrice() const
+{
+    return sellPrice > 0 ? sellPrice : price / 2;
+}
+
 std::string ItemDef::getMoveId() const
 {
     return moveId;
@@ -325,6 +402,31 @@ std::string ItemDef::getMoveId() const
 std::vector<ItemDef::Flag> ItemDef::getFlags() const
 {
     return flags;
+}
+
+bool ItemDef::hasFlag(Flag flag) const
+{
+    for (auto f : flags)
+    {
+        if (f == flag)
+            return true;
+    }
+    return false;
+}
+
+bool ItemDef::isConsumable() const
+{
+    return consumable;
+}
+
+std::string ItemDef::getNaturalGiftType() const
+{
+    return naturalGiftType;
+}
+
+size_t ItemDef::getNaturalGiftPower() const
+{
+    return naturalGiftPower;
 }
 
 std::string ItemDef::getDescription() const
@@ -342,6 +444,16 @@ void ItemDef::setNamePlural(std::string const& newNamePlural)
     namePlural = newNamePlural;
 }
 
+void ItemDef::setPortionName(std::string const& newPortionName)
+{
+    portionName = newPortionName;
+}
+
+void ItemDef::setPortionNamePlural(std::string const& newPortionNamePlural)
+{
+    portionNamePlural = newPortionNamePlural;
+}
+
 void ItemDef::setPocket(size_t newPocket)
 {
     pocket = newPocket;
@@ -350,6 +462,11 @@ void ItemDef::setPocket(size_t newPocket)
 void ItemDef::setPrice(size_t newPrice)
 {
     price = newPrice;
+}
+
+void ItemDef::setBPPrice(size_t newBPPrice)
+{
+    bpPrice = newBPPrice;
 }
 
 void ItemDef::setFieldUse(FieldUse newFieldUse)
@@ -377,6 +494,21 @@ void ItemDef::setFlags(std::vector<Flag> const& newFlags)
     flags = newFlags;
 }
 
+void ItemDef::setConsumable(bool newConsumable)
+{
+    consumable = newConsumable;
+}
+
+void ItemDef::setNaturalGiftType(std::string const& newType)
+{
+    naturalGiftType = newType;
+}
+
+void ItemDef::setNaturalGiftPower(size_t newPower)
+{
+    naturalGiftPower = newPower;
+}
+
 void ItemDef::setDescription(std::string const& newDescription)
 {
     description = newDescription;
@@ -388,19 +520,25 @@ void tag_invoke(js::value_from_tag, js::value& jv, ItemDef::ItemDefPtr const& o)
     {
         js::array jsFlags;
         for (auto const& e : o->flags)
-            jsFlags.push_back(ItemDef::FlagToString(e).c_str());
+            jsFlags.push_back(js::value(ItemDef::FlagToString(e)));
         jv = {
-            {"id",          o->id                            },
-            {"name",        o->name                          },
-            {"namePlural",  o->namePlural                    },
-            {"pocket",      o->pocket                        },
-            {"price",       o->price                         },
-            {"fieldUse",    static_cast<size_t>(o->fieldUse) },
-            {"battleUse",   static_cast<size_t>(o->battleUse)},
-            {"sellPrice",   o->sellPrice                     },
-            {"moveId",      o->moveId                        },
-            {"flags",       jsFlags                          },
-            {"description", o->description                   }
+            {"id",                 o->id                             },
+            {"name",               o->name                           },
+            {"namePlural",         o->namePlural                     },
+            {"portionName",        o->portionName                    },
+            {"portionNamePlural",  o->portionNamePlural              },
+            {"pocket",             o->pocket                         },
+            {"price",              o->price                          },
+            {"bpPrice",            o->bpPrice                        },
+            {"fieldUse",           static_cast<size_t>(o->fieldUse)  },
+            {"battleUse",          static_cast<size_t>(o->battleUse) },
+            {"sellPrice",          o->sellPrice                      },
+            {"moveId",             o->moveId                         },
+            {"flags",              jsFlags                           },
+            {"consumable",         o->consumable                     },
+            {"naturalGiftType",    o->naturalGiftType                },
+            {"naturalGiftPower",   o->naturalGiftPower               },
+            {"description",        o->description                    }
         };
     }
     else
@@ -418,21 +556,38 @@ ItemDef::ItemDefPtr tag_invoke(js::value_to_tag<ItemDef::ItemDefPtr>, js::value 
     std::string id = js::value_to<std::string>(obj.at("id"));
     if (id.empty())
         return nullptr;
-    else
+
+    auto item        = std::make_shared<ItemDef>();
+    item->id         = id;
+    item->name       = js::value_to<std::string>(obj.at("name"));
+    item->namePlural = js::value_to<std::string>(obj.at("namePlural"));
+    if (auto const* v = obj.if_contains("portionName"))
+        item->portionName = js::value_to<std::string>(*v);
+    if (auto const* v = obj.if_contains("portionNamePlural"))
+        item->portionNamePlural = js::value_to<std::string>(*v);
+    item->pocket = js::value_to<size_t>(obj.at("pocket"));
+    item->price  = js::value_to<size_t>(obj.at("price"));
+    if (auto const* v = obj.if_contains("bpPrice"))
+        item->bpPrice = js::value_to<size_t>(*v);
+    item->fieldUse  = static_cast<ItemDef::FieldUse>(js::value_to<size_t>(obj.at("fieldUse")));
+    item->battleUse = static_cast<ItemDef::BattleUse>(js::value_to<size_t>(obj.at("battleUse")));
+    item->sellPrice = js::value_to<size_t>(obj.at("sellPrice"));
+    item->moveId    = js::value_to<std::string>(obj.at("moveId"));
+    if (auto const* fl = obj.if_contains("flags"))
     {
-        auto item        = std::make_shared<ItemDef>();
-        item->id         = id;
-        item->name       = js::value_to<std::string>(obj.at("name"));
-        item->namePlural = js::value_to<std::string>(obj.at("namePlural"));
-        item->pocket     = js::value_to<size_t>(obj.at("pocket"));
-        item->price      = js::value_to<size_t>(obj.at("price"));
-        item->fieldUse   = static_cast<ItemDef::FieldUse>(js::value_to<size_t>(obj.at("fieldUse")));
-        item->battleUse  = static_cast<ItemDef::BattleUse>(js::value_to<size_t>(obj.at("battleUse")));
-        item->sellPrice  = js::value_to<size_t>(obj.at("sellPrice"));
-        item->moveId     = js::value_to<std::string>(obj.at("moveId"));
-        for (auto& value : obj.at("flags").as_array())
-            item->flags.push_back(ItemDef::FlagFromString(js::value_to<std::string>(value)));
-        item->description = js::value_to<std::string>(obj.at("description"));
-        return item;
+        for (auto const& value : fl->as_array())
+        {
+            ItemDef::Flag f = ItemDef::FlagFromString(js::value_to<std::string>(value));
+            if (f != ItemDef::Flag::None)
+                item->flags.push_back(f);
+        }
     }
+    if (auto const* v = obj.if_contains("consumable"))
+        item->consumable = v->as_bool();
+    if (auto const* v = obj.if_contains("naturalGiftType"))
+        item->naturalGiftType = js::value_to<std::string>(*v);
+    if (auto const* v = obj.if_contains("naturalGiftPower"))
+        item->naturalGiftPower = js::value_to<size_t>(*v);
+    item->description = js::value_to<std::string>(obj.at("description"));
+    return item;
 }

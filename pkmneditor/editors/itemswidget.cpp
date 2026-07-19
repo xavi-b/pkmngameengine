@@ -1,6 +1,9 @@
 #include "itemswidget.h"
 
+#include <QAbstractItemModel>
 #include <QDir>
+#include <QSignalBlocker>
+#include <QVBoxLayout>
 
 ItemsWidget::ItemsWidget(QWidget* parent) : QWidget(parent)
 {
@@ -26,6 +29,16 @@ ItemsWidget::ItemsWidget(QWidget* parent) : QWidget(parent)
         item->setNamePlural(namePluralLineEdit->text().toStdString());
     });
     formLayout->addRow(tr("Plural"), namePluralLineEdit);
+    portionNameLineEdit = new QLineEdit;
+    connect(portionNameLineEdit, &QLineEdit::textEdited, this, [=]() {
+        item->setPortionName(portionNameLineEdit->text().toStdString());
+    });
+    formLayout->addRow(tr("Portion Name"), portionNameLineEdit);
+    portionNamePluralLineEdit = new QLineEdit;
+    connect(portionNamePluralLineEdit, &QLineEdit::textEdited, this, [=]() {
+        item->setPortionNamePlural(portionNamePluralLineEdit->text().toStdString());
+    });
+    formLayout->addRow(tr("Portion Plural"), portionNamePluralLineEdit);
     pocketComboBox = new QComboBox;
     for (size_t i = 0; i < ItemDef::NumberOfPockets; ++i)
         pocketComboBox->addItem(ItemDef::GetPocketName(i).c_str(), QVariant::fromValue(i));
@@ -40,11 +53,18 @@ ItemsWidget::ItemsWidget(QWidget* parent) : QWidget(parent)
         item->setPrice(priceSpinBox->value());
     });
     formLayout->addRow(tr("Price"), priceSpinBox);
+    bpPriceSpinBox = new QSpinBox;
+    bpPriceSpinBox->setMinimum(0);
+    bpPriceSpinBox->setMaximum(999999);
+    connect(bpPriceSpinBox, &QSpinBox::valueChanged, this, [=]() {
+        item->setBPPrice(bpPriceSpinBox->value());
+    });
+    formLayout->addRow(tr("BP Price"), bpPriceSpinBox);
     sellPriceSpinBox = new QSpinBox;
     sellPriceSpinBox->setMinimum(0);
     sellPriceSpinBox->setMaximum(999999);
     connect(sellPriceSpinBox, &QSpinBox::valueChanged, this, [=]() {
-        item->setPrice(sellPriceSpinBox->value());
+        item->setSellPrice(sellPriceSpinBox->value());
     });
     formLayout->addRow(tr("SellPrice (0 means default = Price / 2)"), sellPriceSpinBox);
     fieldUseComboBox = new QComboBox;
@@ -53,7 +73,8 @@ ItemsWidget::ItemsWidget(QWidget* parent) : QWidget(parent)
                                   QVariant::fromValue(i));
     connect(fieldUseComboBox, &QComboBox::currentIndexChanged, this, [=]() {
         item->setFieldUse(static_cast<ItemDef::FieldUse>(fieldUseComboBox->currentData().toULongLong()));
-        moveComboBox->setEnabled(item->getFieldUse() == ItemDef::FieldUse::TR);
+        moveComboBox->setEnabled(item->getFieldUse() == ItemDef::FieldUse::TR
+                                 || item->getFieldUse() == ItemDef::FieldUse::HM);
     });
     formLayout->addRow(tr("Field Use"), fieldUseComboBox);
     battleUseComboBox = new QComboBox;
@@ -84,6 +105,24 @@ ItemsWidget::ItemsWidget(QWidget* parent) : QWidget(parent)
         }
     });
     formLayout->addRow(tr("Flags"), flagsComboBox);
+    consumableCheckBox = new QCheckBox;
+    connect(consumableCheckBox, &QCheckBox::toggled, this, [=](bool checked) {
+        if (item)
+            item->setConsumable(checked);
+    });
+    formLayout->addRow(tr("Consumable"), consumableCheckBox);
+    naturalGiftTypeLineEdit = new QLineEdit;
+    connect(naturalGiftTypeLineEdit, &QLineEdit::textEdited, this, [=]() {
+        item->setNaturalGiftType(naturalGiftTypeLineEdit->text().toStdString());
+    });
+    formLayout->addRow(tr("Natural Gift Type"), naturalGiftTypeLineEdit);
+    naturalGiftPowerSpinBox = new QSpinBox;
+    naturalGiftPowerSpinBox->setMinimum(0);
+    naturalGiftPowerSpinBox->setMaximum(255);
+    connect(naturalGiftPowerSpinBox, &QSpinBox::valueChanged, this, [=]() {
+        item->setNaturalGiftPower(naturalGiftPowerSpinBox->value());
+    });
+    formLayout->addRow(tr("Natural Gift Power"), naturalGiftPowerSpinBox);
     moveComboBox = new QComboBox;
     connect(moveComboBox, &QComboBox::currentTextChanged, this, [=](QString const& text) {
         if (item)
@@ -91,6 +130,10 @@ ItemsWidget::ItemsWidget(QWidget* parent) : QWidget(parent)
     });
     formLayout->addRow(tr("TM Move"), moveComboBox);
     descriptionTextEdit = new QTextEdit;
+    connect(descriptionTextEdit, &QTextEdit::textChanged, this, [=]() {
+        if (item)
+            item->setDescription(descriptionTextEdit->toPlainText().toStdString());
+    });
     formLayout->addRow(tr("Description"), descriptionTextEdit);
 
     layout->addLayout(formLayout);
@@ -124,12 +167,17 @@ void ItemsWidget::setItem(ItemDef::ItemDefPtr const& newItem)
         QPixmap(QDir(spritesDirectory).absoluteFilePath(QString("Items/%1.png").arg(newItem->getId().c_str()))));
     nameLineEdit->setText(newItem->getName().c_str());
     namePluralLineEdit->setText(newItem->getNamePlural().c_str());
+    portionNameLineEdit->setText(newItem->getPortionName().c_str());
+    portionNamePluralLineEdit->setText(newItem->getPortionNamePlural().c_str());
     pocketComboBox->setCurrentIndex(newItem->getPocket());
     priceSpinBox->setValue(newItem->getPrice());
+    bpPriceSpinBox->setValue(newItem->getBPPrice());
     sellPriceSpinBox->setValue(newItem->getSellPrice());
     fieldUseComboBox->setCurrentIndex(static_cast<size_t>(newItem->getFieldUse()));
     battleUseComboBox->setCurrentIndex(static_cast<size_t>(newItem->getBattleUse()));
     moveComboBox->setCurrentText(newItem->getMoveId().c_str());
+    moveComboBox->setEnabled(newItem->getFieldUse() == ItemDef::FieldUse::TR
+                             || newItem->getFieldUse() == ItemDef::FieldUse::HM);
     for (size_t i = 0; i < ItemDef::FlagCount; ++i)
     {
         QSignalBlocker blocker(flagsComboBox->model());
@@ -141,7 +189,16 @@ void ItemsWidget::setItem(ItemDef::ItemDefPtr const& newItem)
         flagsComboBox->setItemData(i, found);
     }
     flagsComboBox->update();
-    descriptionTextEdit->setText(newItem->getDescription().c_str());
+    {
+        QSignalBlocker blocker(consumableCheckBox);
+        consumableCheckBox->setChecked(newItem->isConsumable());
+    }
+    naturalGiftTypeLineEdit->setText(newItem->getNaturalGiftType().c_str());
+    naturalGiftPowerSpinBox->setValue(static_cast<int>(newItem->getNaturalGiftPower()));
+    {
+        QSignalBlocker blocker(descriptionTextEdit);
+        descriptionTextEdit->setPlainText(newItem->getDescription().c_str());
+    }
 }
 
 void ItemsWidget::setSpritesDirectory(QString const& dirName)

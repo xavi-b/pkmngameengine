@@ -46,6 +46,7 @@ public:
         Fling_30,
         Fling_40,
         Fling_50,
+        Fling_55,
         Fling_60,
         Fling_65,
         Fling_70,
@@ -67,6 +68,10 @@ public:
         TypeGem,
         IconMail,
         KeyItem,
+        PokeBall,
+        Berry,
+        MegaStone,
+        MegaRing,
         __SIZE
     };
 
@@ -99,37 +104,57 @@ public:
 
     std::string       getName() const;
     std::string       getNamePlural() const;
+    std::string       getPortionName() const;
+    std::string       getPortionNamePlural() const;
     size_t            getPocket() const;
     size_t            getPrice() const;
+    size_t            getBPPrice() const;
     FieldUse          getFieldUse() const;
     BattleUse         getBattleUse() const;
     size_t            getSellPrice() const;
+    size_t            effectiveSellPrice() const; // Price/2 when sellPrice == 0
     std::string       getMoveId() const;
     std::vector<Flag> getFlags() const;
+    bool              hasFlag(Flag flag) const;
+    bool              isConsumable() const;
+    std::string       getNaturalGiftType() const;
+    size_t            getNaturalGiftPower() const;
     std::string       getDescription() const;
 
     void setName(std::string const& newName);
     void setNamePlural(std::string const& newNamePlural);
+    void setPortionName(std::string const& newPortionName);
+    void setPortionNamePlural(std::string const& newPortionNamePlural);
     void setPocket(size_t newPocket);
     void setPrice(size_t newPrice);
+    void setBPPrice(size_t newBPPrice);
     void setFieldUse(FieldUse newFieldUse);
     void setBattleUse(BattleUse newBattleUse);
     void setSellPrice(size_t newSellPrice);
     void setMoveId(std::string const& newMoveId);
     void setFlags(std::vector<Flag> const& newFlags);
+    void setConsumable(bool newConsumable);
+    void setNaturalGiftType(std::string const& newType);
+    void setNaturalGiftPower(size_t newPower);
     void setDescription(std::string const& newDescription);
 
 private:
     std::string       id;
     std::string       name;
     std::string       namePlural;
-    size_t            pocket    = 0; // / NumberOfPockets
-    size_t            price     = 0;
-    FieldUse          fieldUse  = FieldUse::None;
-    BattleUse         battleUse = BattleUse::None;
-    size_t            sellPrice = 0;
+    std::string       portionName;
+    std::string       portionNamePlural;
+    size_t            pocket     = 0; // / NumberOfPockets
+    size_t            price      = 0;
+    size_t            bpPrice    = 0;
+    FieldUse          fieldUse   = FieldUse::None;
+    BattleUse         battleUse  = BattleUse::None;
+    size_t            sellPrice  = 0;
     std::string       moveId;
     std::vector<Flag> flags;
+    bool              consumable = true; // PBS default; flutes set false
+    std::string       naturalGiftType;
+    size_t            naturalGiftPower = 0;
     std::string       description;
 };
 

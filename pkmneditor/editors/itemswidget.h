@@ -5,6 +5,7 @@
 #include "itemdef.h"
 #include "movedef.h"
 
+#include <QCheckBox>
 #include <QComboBox>
 #include <QFormLayout>
 #include <QLabel>
@@ -37,13 +38,19 @@ private:
     QLabel*            sprite;
     QLineEdit*         nameLineEdit;
     QLineEdit*         namePluralLineEdit;
+    QLineEdit*         portionNameLineEdit;
+    QLineEdit*         portionNamePluralLineEdit;
     QComboBox*         pocketComboBox;
     QSpinBox*          priceSpinBox;
+    QSpinBox*          bpPriceSpinBox;
     QComboBox*         fieldUseComboBox;
     QComboBox*         battleUseComboBox;
     QSpinBox*          sellPriceSpinBox;
     QComboBox*         moveComboBox;
     CheckableComboBox* flagsComboBox;
+    QCheckBox*         consumableCheckBox;
+    QLineEdit*         naturalGiftTypeLineEdit;
+    QSpinBox*          naturalGiftPowerSpinBox;
     QTextEdit*         descriptionTextEdit;
 
     QString spritesDirectory;
