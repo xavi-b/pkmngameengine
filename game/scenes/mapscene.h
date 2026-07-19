@@ -21,6 +21,7 @@
 #include "pkmn.h"
 #include "scene.h"
 #include "sprite.h"
+#include "textspeech.h"
 #include "utils.h"
 
 #include <SDL_image.h>
@@ -149,6 +150,9 @@ protected:
     bool updateMapPassiveInteractions(Inputs const* inputs);
     bool updateSpecialTiles(Inputs const* inputs);
     void updatePlayerInput(Inputs const* inputs);
+    void onPlayerTileStepped();
+    bool updatePoisonSpeech(Inputs const* inputs);
+    void drawPoisonEffects(Fps const* fps, RenderSizes rs);
 
     std::map<std::string, std::pair<SDL_Surface*, SDL_Texture*>> sprites;
     std::map<std::string, std::pair<SDL_Surface*, SDL_Texture*>> lightsSprites;
@@ -189,6 +193,8 @@ protected:
     std::unique_ptr<FallExitAnimation>                                  fallExitAnimation;
     std::unique_ptr<FallEntranceAnimation>                              fallEntranceAnimation;
     std::unique_ptr<ShakeAnimation>                                     shakeAnimation;
+    std::unique_ptr<TextSpeech>                                         poisonSpeech;
+    size_t                                                              poisonFlashTicks = 0;
 
     bool                  openMenu = false;
     std::unique_ptr<Menu> menu;

@@ -38,6 +38,9 @@ public:
     uint64_t money = 0;
     uint64_t id    = 0;
 
+    // Used for field poison (1 HP every 4 steps). Persist across saves.
+    size_t stepCount = 0;
+
 private:
     Gender gender = Gender::BOY;
 };

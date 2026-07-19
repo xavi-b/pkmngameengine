@@ -4,6 +4,9 @@
 #include "animations/weather/weatheranimation.h"
 #include "map.h"
 #include "singlebattlephase.h"
+#include "textspeech.h"
+
+#include <vector>
 
 class SingleBattleWeatherPhase : public SingleBattlePhase
 {
@@ -13,12 +16,30 @@ public:
                              SDL_Renderer*                          renderer);
 
     void setWeather(Map::Weather weather);
+    void preupdate() override;
     void update(Inputs const* inputs) override;
     void draw(Fps const* fps, RenderSizes rs) override;
 
 private:
+    enum class Step
+    {
+        Weather,
+        Residuals,
+        Advance
+    };
+
+    void showSpeech(std::vector<std::string> const& texts);
+    void buildResidualMessages();
+    void finishTurn();
+
+    Step                              step = Step::Weather;
     std::unique_ptr<WeatherAnimation> weatherAnimation;
     std::unique_ptr<TextSpeech>       weatherSpeech;
+    std::unique_ptr<TextSpeech>       residualSpeech;
+    std::vector<std::string>          residualMessages;
+    bool                              residualsApplied          = false;
+    bool                              playerFaintedFromResidual   = false;
+    bool                              opponentFaintedFromResidual = false;
 };
 
 #endif // SINGLEBATTLEWEATHERPHASE_H

@@ -15,12 +15,16 @@
 #include "itemutils.h"
 #include "pkmnsscene.h"
 #include "scenes/battle/encounterscene.h"
+#include "scenes/battle/statuscondition.h"
 #include "scenes/battle/trainerscene.h"
 #include "sprites/bikesprite.h"
 #include "sprites/erasablesprite.h"
 #include "sprites/squaresprite.h"
 #include "sprites/surfsprite.h"
+#include "textspeech.h"
+#include "utils.h"
 
+#include <boost/format.hpp>
 #include <cctype>
 #include <cmath>
 #include <fstream>
@@ -28,6 +32,7 @@
 #include <numbers>
 #include <random>
 #include <sstream>
+#include <vector>
 
 MapScene::MapScene(SDL_Renderer* renderer, std::string const& mapPath) : Scene(renderer)
 {
@@ -138,13 +143,18 @@ void MapScene::init()
     fadeOutAnimation = std::make_unique<FadeAnimation>(renderer, false);
 
     flashAnimation = std::make_unique<FlashAnimation>(renderer);
+
+    poisonSpeech = std::make_unique<TextSpeech>(renderer);
 }
 
 void MapScene::update(Inputs const* inputs)
 {
     bool preventInputs = false;
 
-    preventInputs |= updateAmbient(inputs);
+    preventInputs |= updatePoisonSpeech(inputs);
+
+    if (!preventInputs)
+        preventInputs |= updateAmbient(inputs);
 
     updateAnimations();
 
@@ -260,6 +270,9 @@ void MapScene::updateAnimations()
 
     if (locationAnimation->isRunning())
         locationAnimation->incrementTicks();
+
+    if (poisonFlashTicks > 0)
+        --poisonFlashTicks;
 }
 
 bool MapScene::updateTransitions(Inputs const* /*inputs*/)
@@ -640,6 +653,8 @@ bool MapScene::handleActionButton(Inputs const* inputs)
         player.surfing   = true;
         player.direction = player.previousDirection;
         move(player);
+        if (player.x != player.previousX || player.y != player.previousY)
+            onPlayerTileStepped();
         return true;
     }
 
@@ -714,37 +729,86 @@ void MapScene::updatePlayerInput(Inputs const* inputs)
 
     openMenu = false;
 
+    auto tryPlayerMove = [&](Entity::Direction direction) {
+        player.previousDirection = direction;
+        player.direction         = direction;
+        move(player);
+        if (player.x != player.previousX || player.y != player.previousY)
+            onPlayerTileStepped();
+    };
+
     if (inputs->up)
-    {
-        player.previousDirection = Entity::Direction::UP;
-        player.direction         = Entity::Direction::UP;
-        move(player);
-    }
+        tryPlayerMove(Entity::Direction::UP);
     else if (inputs->down)
-    {
-        player.previousDirection = Entity::Direction::DOWN;
-        player.direction         = Entity::Direction::DOWN;
-        move(player);
-    }
+        tryPlayerMove(Entity::Direction::DOWN);
     else if (inputs->left)
-    {
-        player.previousDirection = Entity::Direction::LEFT;
-        player.direction         = Entity::Direction::LEFT;
-        move(player);
-    }
+        tryPlayerMove(Entity::Direction::LEFT);
     else if (inputs->right)
-    {
-        player.previousDirection = Entity::Direction::RIGHT;
-        player.direction         = Entity::Direction::RIGHT;
-        move(player);
-    }
+        tryPlayerMove(Entity::Direction::RIGHT);
     else
-    {
         stop(player);
-    }
 
     if (Game::instance()->data.location != currentLocation() && currentLocation() != "")
         startCurrentLocationOverlay();
+}
+
+void MapScene::onPlayerTileStepped()
+{
+    auto& player = Game::instance()->data.player;
+
+    ++player.stepCount;
+    if (player.stepCount % 4 != 0)
+        return;
+
+    std::vector<std::string> messages;
+    if (!tickFieldPoison(player, messages))
+        return;
+
+    // Essentials-style red flash when field poison deals damage.
+    poisonFlashTicks = 8;
+
+    if (!messages.empty() && poisonSpeech)
+    {
+        poisonSpeech->setTexts(messages);
+        poisonSpeech->reset();
+        poisonSpeech->start();
+        stop(player);
+    }
+}
+
+bool MapScene::updatePoisonSpeech(Inputs const* inputs)
+{
+    if (!poisonSpeech)
+        return false;
+
+    if (poisonSpeech->isStarted() && !poisonSpeech->shouldClose())
+    {
+        poisonSpeech->update(inputs);
+        return true;
+    }
+
+    if (poisonSpeech->shouldClose())
+        poisonSpeech->reset();
+
+    return false;
+}
+
+void MapScene::drawPoisonEffects(Fps const* fps, RenderSizes rs)
+{
+    if (poisonFlashTicks > 0)
+    {
+        SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+        // Fade out over the flash duration.
+        Uint8 alpha = static_cast<Uint8>(128 * poisonFlashTicks / 8);
+        SDL_SetRenderDrawColor(renderer, 255, 0, 0, alpha);
+        SDL_Rect fullScreen{0, 0, rs.ww, rs.wh};
+        SDL_RenderFillRect(renderer, &fullScreen);
+        SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    }
+
+    if (poisonSpeech && poisonSpeech->isStarted() && !poisonSpeech->shouldClose())
+        poisonSpeech->draw(fps, rs);
 }
 
 void MapScene::draw(Fps const* fps, RenderSizes rs)
@@ -1004,6 +1068,8 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
         fadeOutAnimation->draw(fps, rs);
 
     drawCurrentLocationOverlay(fps, rs);
+
+    drawPoisonEffects(fps, rs);
 }
 
 void MapScene::drawPlayer(Fps const* fps, RenderSizes rs, SDL_Rect dstPlayerRect)
