@@ -75,6 +75,26 @@ void SingleBattleScene::init()
     data->state = START;
     data->expGained.clear();
     data->participatingPlayerPkmns.clear();
+    data->playerConfusion.clear();
+    data->opponentConfusion.clear();
+    data->playerBattler.clear();
+    data->opponentBattler.clear();
+    data->playerSpikes         = 0;
+    data->opponentSpikes       = 0;
+    data->playerToxicSpikes    = 0;
+    data->opponentToxicSpikes  = 0;
+    data->playerStealthRock    = false;
+    data->opponentStealthRock  = false;
+    data->playerStickyWeb      = false;
+    data->opponentStickyWeb    = false;
+    data->trickRoom            = false;
+    data->trickRoomTurns       = 0;
+    data->gravity              = false;
+    data->gravityTurns         = 0;
+    data->wonderRoom           = false;
+    data->magicRoom            = false;
+    data->terrain              = SingleBattleSceneData::Terrain::None;
+    data->terrainTurns         = 0;
     if (data->playerPkmn)
         data->participatingPlayerPkmns.insert(data->playerPkmn);
 
@@ -124,7 +144,11 @@ std::string SingleBattleScene::name()
 size_t SingleBattleScene::computeDamage(Pkmn::PkmnPtr const& attacker,
                                         Pkmn::PkmnPtr const& defender,
                                         Move::MovePtr const& move,
-                                        Map::Weather const&  weather)
+                                        Map::Weather const&  weather,
+                                        BattleBattler const* attackerBattler,
+                                        BattleBattler const* defenderBattler,
+                                        size_t               powerOverride,
+                                        bool                 forceNoCrit)
 {
     if (!attacker || !defender || !move)
         return 0;
@@ -135,11 +159,31 @@ size_t SingleBattleScene::computeDamage(Pkmn::PkmnPtr const& attacker,
 
     // https://bulbapedia.bulbagarden.net/wiki/Damage#Generation_III
     float  level = attacker->getLevel();
-    size_t power = move->getDefinition()->getPower();
+    size_t power = powerOverride > 0 ? powerOverride : move->getDefinition()->getPower();
     size_t a     = category == MoveDef::PHYSICAL ? attacker->getStats()[PkmnDef::ATTACK]
                                                  : attacker->getStats()[PkmnDef::SPECIAL_ATTACK];
     size_t d     = category == MoveDef::PHYSICAL ? defender->getStats()[PkmnDef::DEFENSE]
                                                  : defender->getStats()[PkmnDef::SPECIAL_DEFENSE];
+
+    bool criticalRoll = !forceNoCrit && Utils::randuint(0, 15) == 0;
+    if (!forceNoCrit && attackerBattler && attackerBattler->focusEnergy)
+        criticalRoll = Utils::randuint(0, 7) == 0;
+    if (!forceNoCrit && move->getDefinition()->hasFlag(MoveDef::Flag::HighCriticalHitRate))
+        criticalRoll = Utils::randuint(0, 7) == 0;
+
+    if (attackerBattler)
+    {
+        auto atkStat = category == MoveDef::PHYSICAL ? BattleBattler::StageStat::Attack
+                                                     : BattleBattler::StageStat::SpecialAttack;
+        a            = attackerBattler->effectiveStat(a, atkStat, criticalRoll, true);
+    }
+    if (defenderBattler)
+    {
+        auto defStat = category == MoveDef::PHYSICAL ? BattleBattler::StageStat::Defense
+                                                     : BattleBattler::StageStat::SpecialDefense;
+        d            = defenderBattler->effectiveStat(d, defStat, criticalRoll, false);
+    }
+
     if (d == 0)
         d = 1;
     float burn =
@@ -164,15 +208,13 @@ size_t SingleBattleScene::computeDamage(Pkmn::PkmnPtr const& attacker,
     float  ff     = 1.0;
     float  damage = (((2 * level / 5 + 2) * power * a / d) / 50 + 2) * burn * screen * targets * weatherMultiplier * ff;
     size_t stockpile = 1;
-    // https://bulbapedia.bulbagarden.net/wiki/Critical_hit
-    float       critical  = Utils::randuint(0, 15) == 0 ? 2.0 : 1.0;
-    size_t      doubledmg = 1;
-    size_t      charge    = 1;
-    size_t      hh        = 1;
+    float  critical  = criticalRoll ? 2.0 : 1.0;
+    size_t doubledmg = 1;
+    size_t charge    = 1;
+    size_t hh        = 1;
     auto const& pkmnTypes = attacker->getDefinition()->getTypes();
     float       stab =
         std::find(pkmnTypes.begin(), pkmnTypes.end(), move->getDefinition()->getType()) != pkmnTypes.end() ? 1.5 : 1.0;
-    // https://bulbapedia.bulbagarden.net/wiki/Type#Type_effectiveness
     float typeEffectiveness = 1.0;
     for (auto const& defenderTypeId : defender->getDefinition()->getTypes())
     {
@@ -194,7 +236,7 @@ size_t SingleBattleScene::computeDamage(Pkmn::PkmnPtr const& attacker,
     }
     float random = Utils::randuint(85, 100) / 100.0;
     damage *= stockpile * critical * doubledmg * charge * hh * stab * typeEffectiveness * random;
-    if (damage < 1.0)
+    if (damage < 1.0 && typeEffectiveness > 0.0)
         damage = 1.0;
     return static_cast<size_t>(damage);
 }
@@ -331,6 +373,8 @@ void SingleBattleScene::changeWeather(Map::Weather weather)
 void SingleBattleScene::setOpponentPkmn(Pkmn::PkmnPtr const& newOpponentPkmn)
 {
     data->opponentPkmn = newOpponentPkmn;
+    data->opponentConfusion.clear();
+    data->opponentBattler.clearOnSwitch();
 
     data->expGained.clear();
     data->participatingPlayerPkmns.clear();
@@ -343,9 +387,17 @@ void SingleBattleScene::setOpponentPkmn(Pkmn::PkmnPtr const& newOpponentPkmn)
 void SingleBattleScene::setPlayerPkmn(Pkmn::PkmnPtr const& newPlayerPkmn)
 {
     data->playerPkmn = newPlayerPkmn;
+    data->playerConfusion.clear();
+    data->playerBattler.clearOnSwitch();
     singleBattleUi->setPlayerPkmn(newPlayerPkmn);
     if (newPlayerPkmn)
         data->participatingPlayerPkmns.insert(newPlayerPkmn);
+}
+
+void SingleBattleScene::resolveOpponentFaint()
+{
+    if (playerMovesPhase)
+        playerMovesPhase->resolveOpponentFaint();
 }
 
 bool SingleBattleScene::pushScene() const

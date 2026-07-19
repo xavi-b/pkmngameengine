@@ -2,6 +2,9 @@
 #define SINGLEBATTLEPLAYERMOVESPHASE_H
 
 #include "singlebattlephase.h"
+#include "textspeech.h"
+
+#include <vector>
 
 class SingleBattlePlayerMovesPhase : public SingleBattlePhase
 {
@@ -17,8 +20,29 @@ public:
     virtual float battleExperienceMultiplier() const = 0;
     virtual void  onOpponentPkmnDefeated()           = 0;
 
+    void resolveOpponentFaint();
+
 private:
-    std::unique_ptr<TextSpeech> playerMoveSpeech;
+    enum class Step
+    {
+        MajorStatus,
+        Confusion,
+        AnnounceMove,
+        ExecuteMove,
+        Advance,
+        GoToPkmns,
+        GoToEnd,
+        GoToExperience
+    };
+
+    void showSpeech(std::vector<std::string> const& texts);
+    void awardExperienceForOpponentKo();
+    void advanceAfterAction();
+    void executePlayerMove();
+    void handlePlayerFaintFromMove(std::vector<std::string> texts);
+
+    Step                        step = Step::MajorStatus;
+    std::unique_ptr<TextSpeech> speech;
 };
 
 #endif // SINGLEBATTLEPLAYERMOVESPHASE_H

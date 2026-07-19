@@ -2,6 +2,8 @@
 #define SINGLEBATTLESCENEDATA_H
 
 #include "battles/battleactions.h"
+#include "battlebattler.h"
+#include "confusionstatus.h"
 #include "item.h"
 #include "map.h"
 #include "pkmn.h"
@@ -46,12 +48,44 @@ struct SingleBattleSceneData
     Move::MovePtr playerMove    = nullptr;
     bool          playerFirst   = true;
 
+    ConfusionStatus playerConfusion;
+    ConfusionStatus opponentConfusion;
+
+    BattleBattler playerBattler;
+    BattleBattler opponentBattler;
+
+    // Side field effects
+    int  playerSpikes      = 0;
+    int  opponentSpikes    = 0;
+    int  playerToxicSpikes = 0;
+    int  opponentToxicSpikes = 0;
+    bool playerStealthRock   = false;
+    bool opponentStealthRock = false;
+    bool playerStickyWeb     = false;
+    bool opponentStickyWeb   = false;
+    bool trickRoom           = false;
+    int  trickRoomTurns       = 0;
+    bool gravity             = false;
+    int  gravityTurns        = 0;
+    bool wonderRoom          = false;
+    bool magicRoom           = false;
+    int  terrainTurns        = 0; // 0 = none; positive remaining
+    enum class Terrain
+    {
+        None,
+        Electric,
+        Grassy,
+        Misty,
+        Psychic
+    } terrain = Terrain::None;
+
     BattleActions::Type             opponentAction              = BattleActions::Type::MOVES;
     Pkmn::PkmnPtr                   newSelectedPkmn             = nullptr;
     Item::ItemPtr                   selectedItem                = nullptr;
     Pkmn::PkmnPtr                   itemTargetPkmn              = nullptr;
     bool                            itemUseResultUsed           = false;
     bool                            itemUseResultCaptureSuccess = false;
+    bool                            itemUseResultEndsBattle     = false;
     std::set<Pkmn::PkmnPtr>         participatingPlayerPkmns;
     std::map<Pkmn::PkmnPtr, size_t> expGained;
 

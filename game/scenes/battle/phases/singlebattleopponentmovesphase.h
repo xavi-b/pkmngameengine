@@ -3,8 +3,10 @@
 
 #include "pkmn.h"
 #include "singlebattlephase.h"
+#include "textspeech.h"
 
 #include <string>
+#include <vector>
 
 class SingleBattleOpponentMovesPhase : public SingleBattlePhase
 {
@@ -20,9 +22,26 @@ public:
     virtual std::string opponentMoveText(Move::MovePtr const& move) const = 0;
 
 private:
-    std::unique_ptr<TextSpeech> opponentMoveSpeech;
-    std::unique_ptr<TextSpeech> pkmnFaintSpeech;
-    std::unique_ptr<TextSpeech> endSpeech;
+    enum class Step
+    {
+        MajorStatus,
+        Confusion,
+        AnnounceMove,
+        ExecuteMove,
+        Advance,
+        GoToPkmns,
+        GoToEnd,
+        GoToExperience,
+        GoToPlayerFaint
+    };
+
+    void showSpeech(std::vector<std::string> const& texts);
+    void advanceAfterAction();
+    void executeOpponentMove();
+    void handlePlayerFaint();
+
+    Step                        step = Step::MajorStatus;
+    std::unique_ptr<TextSpeech> speech;
 };
 
 #endif // SINGLEBATTLEOPPONENTMOVESPHASE_H

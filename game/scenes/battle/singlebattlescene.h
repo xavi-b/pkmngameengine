@@ -38,12 +38,17 @@ public:
 
     void setPlayerPkmn(Pkmn::PkmnPtr const& newPlayerPkmn);
     void setOpponentPkmn(Pkmn::PkmnPtr const& newOpponentPkmn);
+    void resolveOpponentFaint();
 
     static std::string canEvolve(Pkmn::PkmnPtr const& pkmn);
-    static size_t      computeDamage(Pkmn::PkmnPtr const& attacker,
-                                     Pkmn::PkmnPtr const& defender,
-                                     Move::MovePtr const& move,
-                                     Map::Weather const&  weather);
+    static size_t computeDamage(Pkmn::PkmnPtr const&     attacker,
+                                Pkmn::PkmnPtr const&     defender,
+                                Move::MovePtr const&     move,
+                                Map::Weather const&      weather,
+                                BattleBattler const*     attackerBattler = nullptr,
+                                BattleBattler const*     defenderBattler = nullptr,
+                                size_t                   powerOverride   = 0,
+                                bool                     forceNoCrit     = false);
 
 protected:
     virtual std::string encounterStartText() const = 0;

@@ -1,6 +1,7 @@
 #include "singlebattlemovesphase.h"
 
 #include "../singlebattlescene.h"
+#include "../statuscondition.h"
 #include "battles/battleactions.h"
 #include "game.h"
 #include "textspeech.h"
@@ -60,8 +61,10 @@ void SingleBattleMovesPhase::update(Inputs const* inputs)
                     data->playerFirst = false;
                 else
                 {
-                    size_t playerSpeed    = data->playerPkmn->getStats()[PkmnDef::SPEED];
-                    size_t encounterSpeed = data->opponentPkmn->getStats()[PkmnDef::SPEED];
+                    size_t playerSpeed    = battleSpeed(data->playerPkmn, &data->playerBattler);
+                    size_t encounterSpeed = battleSpeed(data->opponentPkmn, &data->opponentBattler);
+                    if (data->trickRoom)
+                        std::swap(playerSpeed, encounterSpeed);
                     if (playerSpeed > encounterSpeed)
                         data->playerFirst = true;
                     else if (playerSpeed < encounterSpeed)
