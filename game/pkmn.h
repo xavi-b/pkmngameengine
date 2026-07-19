@@ -89,6 +89,9 @@ public:
     StatusCondition getStatusCondition() const;
     void            setStatusCondition(StatusCondition newStatusCondition);
 
+    size_t getStatusTurns() const;
+    void   setStatusTurns(size_t newStatusTurns);
+
     PkmnDef::PkmnDefPtr getDefinition() const;
     void                setDefinition(PkmnDef::PkmnDefPtr const& newDefinition);
 
@@ -137,6 +140,7 @@ private:
     std::map<PkmnDef::Stat, size_t> IVs;
     std::map<PkmnDef::Stat, size_t> EVs;
     StatusCondition                 statusCondition = StatusCondition::NONE;
+    size_t                          statusTurns     = 0;
     unsigned char                   happiness       = 0;
     Gender                          gender          = Gender::MALE;
     Nature                          nature          = Nature::HARDY;

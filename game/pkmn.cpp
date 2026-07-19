@@ -214,6 +214,18 @@ Pkmn::StatusCondition Pkmn::getStatusCondition() const
 void Pkmn::setStatusCondition(StatusCondition newStatusCondition)
 {
     statusCondition = newStatusCondition;
+    if (statusCondition != StatusCondition::SLEEP)
+        statusTurns = 0;
+}
+
+size_t Pkmn::getStatusTurns() const
+{
+    return statusTurns;
+}
+
+void Pkmn::setStatusTurns(size_t newStatusTurns)
+{
+    statusTurns = newStatusTurns;
 }
 
 PkmnDef::PkmnDefPtr Pkmn::getDefinition() const
@@ -418,6 +430,7 @@ void tag_invoke(js::value_from_tag, js::value& jv, Pkmn::PkmnPtr const& o)
             {"IVs", jsIVs},
             {"EVs", jsEVs},
             {"statusCondition", static_cast<int>(o->statusCondition)},
+            {"statusTurns", o->statusTurns},
             {"happiness", o->happiness},
             {"gender", static_cast<int>(o->gender)},
             {"nature", static_cast<int>(o->nature)},
@@ -445,6 +458,8 @@ Pkmn::PkmnPtr tag_invoke(js::value_to_tag<Pkmn::PkmnPtr>, js::value const& jv)
     pkmn->nickName        = js::value_to<std::string>(obj.at("nickName"));
     pkmn->moves           = js::value_to<std::array<Move::MovePtr, 4>>(obj.at("moves"));
     pkmn->statusCondition = static_cast<Pkmn::StatusCondition>(js::value_to<int>(obj.at("statusCondition")));
+    if (auto const* turns = obj.if_contains("statusTurns"))
+        pkmn->statusTurns = js::value_to<size_t>(*turns);
     pkmn->happiness       = js::value_to<unsigned char>(obj.at("happiness"));
     pkmn->gender          = static_cast<Pkmn::Gender>(js::value_to<int>(obj.at("gender")));
     if (obj.contains("nature"))
