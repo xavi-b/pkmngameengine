@@ -32,7 +32,7 @@ void SingleBattlePlayerItemsPhase::update(Inputs const* inputs)
             return;
         }
 
-        if (data->itemUseResultCaptureSuccess)
+        if (data->itemUseResultCaptureSuccess || data->itemUseResultEndsBattle)
         {
             data->state = END;
             return;
@@ -65,6 +65,7 @@ void SingleBattlePlayerItemsPhase::update(Inputs const* inputs)
     {
         bool                     used           = false;
         bool                     captureSuccess = false;
+        bool                     endsBattle     = false;
         std::vector<std::string> itemMessages;
         auto                     def = data->selectedItem->getDefinition();
         if (def)
@@ -75,6 +76,12 @@ void SingleBattlePlayerItemsPhase::update(Inputs const* inputs)
             case ItemDef::BattleUse::OnPkmn: {
                 auto target = data->itemTargetPkmn ? data->itemTargetPkmn : data->playerPkmn;
                 used        = ItemUtils::useItemOnPkmn(data->selectedItem, target, true);
+                if (ItemUtils::curesConfusion(def->getId()) && target == data->playerPkmn
+                    && data->playerConfusion.active)
+                {
+                    data->playerConfusion.clear();
+                    used = true;
+                }
                 data->itemTargetPkmn.reset();
                 if (used && target)
                 {
@@ -84,10 +91,18 @@ void SingleBattlePlayerItemsPhase::update(Inputs const* inputs)
                 }
                 break;
             }
-            case ItemDef::BattleUse::OnMove:
-                // TODO: Implement
-                used = false;
+            case ItemDef::BattleUse::OnMove: {
+                auto target = data->itemTargetPkmn ? data->itemTargetPkmn : data->playerPkmn;
+                used        = ItemUtils::useItemOnMove(data->selectedItem, target);
+                data->itemTargetPkmn.reset();
+                if (used && target)
+                {
+                    boost::format itemText = boost::format(lc::translate("%1% used %2% on %3% !"))
+                                           % Game::instance()->data.player.name % itemName % target->getDisplayName();
+                    itemMessages.push_back(itemText.str());
+                }
                 break;
+            }
             case ItemDef::BattleUse::OnFoe: {
                 if (!canCaptureOpponent())
                 {
@@ -109,8 +124,34 @@ void SingleBattlePlayerItemsPhase::update(Inputs const* inputs)
                     itemMessages.push_back(lc::translate("Oh no ! The Pkmn broke free !"));
                 break;
             }
-            case ItemDef::BattleUse::Direct:
-            case ItemDef::BattleUse::OnBattler:
+            case ItemDef::BattleUse::OnBattler: {
+                if (!data->playerPkmn)
+                    break;
+                used = ItemUtils::useItemOnBattler(data->selectedItem, data->playerPkmn, data->playerBattler,
+                                                   &data->playerConfusion);
+                if (used)
+                {
+                    boost::format itemText = boost::format(lc::translate("%1% used %2% on %3% !"))
+                                           % Game::instance()->data.player.name % itemName
+                                           % data->playerPkmn->getDisplayName();
+                    itemMessages.push_back(itemText.str());
+                }
+                break;
+            }
+            case ItemDef::BattleUse::Direct: {
+                std::string msg;
+                used = ItemUtils::useBattleItemDirect(data->selectedItem, data->playerPkmn, data->playerBattler,
+                                                      endsBattle, msg);
+                if (used)
+                {
+                    boost::format itemText =
+                        boost::format(lc::translate("%1% used %2% !")) % Game::instance()->data.player.name % itemName;
+                    itemMessages.push_back(itemText.str());
+                    if (!msg.empty())
+                        itemMessages.push_back(msg);
+                }
+                break;
+            }
             case ItemDef::BattleUse::None:
             default:
                 used = false;
@@ -125,6 +166,7 @@ void SingleBattlePlayerItemsPhase::update(Inputs const* inputs)
                 data->selectedItem.reset();
                 data->itemUseResultUsed           = false;
                 data->itemUseResultCaptureSuccess = false;
+                data->itemUseResultEndsBattle     = false;
                 itemUseSpeech                     = std::make_unique<TextSpeech>(renderer);
                 itemUseSpeech->setTexts(itemMessages);
                 itemUseSpeech->start();
@@ -136,10 +178,12 @@ void SingleBattlePlayerItemsPhase::update(Inputs const* inputs)
             return;
         }
 
-        Game::instance()->data.player.removeOneItem(data->selectedItem->getDefinition());
+        if (def && def->isConsumable())
+            Game::instance()->data.player.removeOneItem(data->selectedItem->getDefinition());
         data->selectedItem.reset();
         data->itemUseResultUsed           = used;
         data->itemUseResultCaptureSuccess = captureSuccess;
+        data->itemUseResultEndsBattle     = endsBattle;
         itemUseSpeech                     = std::make_unique<TextSpeech>(renderer);
         itemUseSpeech->setTexts(itemMessages.empty() ? std::vector<std::string>{lc::translate("Item used !")}
                                                      : itemMessages);

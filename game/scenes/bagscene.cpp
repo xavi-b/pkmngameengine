@@ -80,6 +80,7 @@ void BagScene::update(Inputs const* inputs)
             auto const& item = items[indices[currentPocketIndex]];
             if (item && item->getDefinition()
                 && (item->getDefinition()->getBattleUse() == ItemDef::BattleUse::OnPkmn
+                    || item->getDefinition()->getBattleUse() == ItemDef::BattleUse::OnMove
                     || item->getDefinition()->getFieldUse() == ItemDef::FieldUse::OnPkmn))
             {
                 pendingItem = item;
