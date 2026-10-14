@@ -2,6 +2,7 @@
 
 #include "layers/tilelayer.h"
 
+#include <cstdint>
 #include <iostream>
 
 RenderUtils* RenderUtils::instance()
@@ -29,7 +30,9 @@ int RenderUtils::drawText(SDL_Renderer*      renderer,
 
     SDL_Rect rect;
 
-    SDL_Surface* bgSurface1 = TTF_RenderText_Solid(RenderUtils::instance()->font, text.c_str(), bgColor);
+    SDL_Surface* bgSurface1 = TTF_RenderUTF8_Solid(RenderUtils::instance()->font, text.c_str(), bgColor);
+    if (!bgSurface1)
+        return 0;
     SDL_Texture* bgTexture1 = SDL_CreateTextureFromSurface(renderer, bgSurface1);
     if (w > 0) // Centered
         offsetX = (w - bgSurface1->w * rs.ww / rs.aw) / 2;
@@ -43,7 +46,9 @@ int RenderUtils::drawText(SDL_Renderer*      renderer,
     SDL_DestroyTexture(bgTexture1);
     SDL_FreeSurface(bgSurface1);
 
-    SDL_Surface* bgSurface2 = TTF_RenderText_Solid(RenderUtils::instance()->font, text.c_str(), bgColor);
+    SDL_Surface* bgSurface2 = TTF_RenderUTF8_Solid(RenderUtils::instance()->font, text.c_str(), bgColor);
+    if (!bgSurface2)
+        return 0;
     SDL_Texture* bgTexture2 = SDL_CreateTextureFromSurface(renderer, bgSurface2);
     if (w > 0) // Centered
         offsetX = (w - bgSurface2->w * rs.ww / rs.aw) / 2;
@@ -57,7 +62,9 @@ int RenderUtils::drawText(SDL_Renderer*      renderer,
     SDL_DestroyTexture(bgTexture2);
     SDL_FreeSurface(bgSurface2);
 
-    SDL_Surface* surface = TTF_RenderText_Solid(RenderUtils::instance()->font, text.c_str(), color);
+    SDL_Surface* surface = TTF_RenderUTF8_Solid(RenderUtils::instance()->font, text.c_str(), color);
+    if (!surface)
+        return 0;
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
     if (w > 0) // Centered
         offsetX = (w - surface->w * rs.ww / rs.aw) / 2;
@@ -68,10 +75,11 @@ int RenderUtils::drawText(SDL_Renderer*      renderer,
     rect.w = surface->w * rs.ww / rs.aw;
     rect.h = surface->h * rs.wh / rs.ah;
     SDL_RenderCopy(renderer, texture, NULL, &rect);
+    int textWidth = surface->w;
     SDL_DestroyTexture(texture);
     SDL_FreeSurface(surface);
 
-    return surface->w;
+    return textWidth;
 }
 
 int RenderUtils::drawWhiteText(SDL_Renderer*      renderer,
@@ -184,7 +192,9 @@ void RenderUtils::drawTextWrapped(SDL_Renderer*      renderer,
 
     SDL_Rect rect;
 
-    SDL_Surface* bgSurface1 = TTF_RenderText_Solid_Wrapped(RenderUtils::instance()->font, text.c_str(), bgColor, width);
+    SDL_Surface* bgSurface1 = TTF_RenderUTF8_Solid_Wrapped(RenderUtils::instance()->font, text.c_str(), bgColor, width);
+    if (!bgSurface1)
+        return;
     SDL_Texture* bgTexture1 = SDL_CreateTextureFromSurface(renderer, bgSurface1);
     rect.x                  = x + 2 * rs.ww / rs.aw;
     rect.y                  = y;
@@ -194,7 +204,9 @@ void RenderUtils::drawTextWrapped(SDL_Renderer*      renderer,
     SDL_DestroyTexture(bgTexture1);
     SDL_FreeSurface(bgSurface1);
 
-    SDL_Surface* bgSurface2 = TTF_RenderText_Solid_Wrapped(RenderUtils::instance()->font, text.c_str(), bgColor, width);
+    SDL_Surface* bgSurface2 = TTF_RenderUTF8_Solid_Wrapped(RenderUtils::instance()->font, text.c_str(), bgColor, width);
+    if (!bgSurface2)
+        return;
     SDL_Texture* bgTexture2 = SDL_CreateTextureFromSurface(renderer, bgSurface2);
     rect.x                  = x;
     rect.y                  = y + 2 * rs.wh / rs.ah;
@@ -204,7 +216,9 @@ void RenderUtils::drawTextWrapped(SDL_Renderer*      renderer,
     SDL_DestroyTexture(bgTexture2);
     SDL_FreeSurface(bgSurface2);
 
-    SDL_Surface* surface = TTF_RenderText_Solid_Wrapped(RenderUtils::instance()->font, text.c_str(), color, width);
+    SDL_Surface* surface = TTF_RenderUTF8_Solid_Wrapped(RenderUtils::instance()->font, text.c_str(), color, width);
+    if (!surface)
+        return;
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
     rect.x               = x;
     rect.y               = y;
@@ -277,10 +291,27 @@ void RenderUtils::drawUnicodeSymbol(SDL_Renderer*  renderer,
 {
     TTF_SetFontSize(RenderUtils::instance()->font, fontSize);
 
+    // wchar_t is 32-bit here. SDL_ttf expects a UTF-16 code unit string.
+    Uint16 units[3] = {0, 0, 0};
+    if (symbol < 0 || symbol > 0x10FFFF)
+        return;
+    auto codePoint = static_cast<uint32_t>(symbol);
+    if (codePoint >= 0x10000)
+    {
+        codePoint -= 0x10000;
+        units[0] = static_cast<Uint16>(0xD800 + (codePoint >> 10));
+        units[1] = static_cast<Uint16>(0xDC00 + (codePoint & 0x3FF));
+    }
+    else
+    {
+        units[0] = static_cast<Uint16>(codePoint);
+    }
+
     SDL_Rect rect;
 
-    SDL_Surface* bgSurface1 =
-        TTF_RenderUNICODE_Solid(RenderUtils::instance()->font, (Uint16 const*)std::wstring(1, symbol).c_str(), bgColor);
+    SDL_Surface* bgSurface1 = TTF_RenderUNICODE_Solid(RenderUtils::instance()->font, units, bgColor);
+    if (!bgSurface1)
+        return;
     SDL_Texture* bgTexture1 = SDL_CreateTextureFromSurface(renderer, bgSurface1);
     rect.x                  = x + 2 * rs.ww / rs.aw;
     rect.y                  = y;
@@ -290,8 +321,9 @@ void RenderUtils::drawUnicodeSymbol(SDL_Renderer*  renderer,
     SDL_DestroyTexture(bgTexture1);
     SDL_FreeSurface(bgSurface1);
 
-    SDL_Surface* bgSurface2 =
-        TTF_RenderUNICODE_Solid(RenderUtils::instance()->font, (Uint16 const*)std::wstring(1, symbol).c_str(), bgColor);
+    SDL_Surface* bgSurface2 = TTF_RenderUNICODE_Solid(RenderUtils::instance()->font, units, bgColor);
+    if (!bgSurface2)
+        return;
     SDL_Texture* bgTexture2 = SDL_CreateTextureFromSurface(renderer, bgSurface2);
     rect.x                  = x;
     rect.y                  = y + 2 * rs.wh / rs.ah;
@@ -301,8 +333,9 @@ void RenderUtils::drawUnicodeSymbol(SDL_Renderer*  renderer,
     SDL_DestroyTexture(bgTexture2);
     SDL_FreeSurface(bgSurface2);
 
-    SDL_Surface* surface =
-        TTF_RenderUNICODE_Solid(RenderUtils::instance()->font, (Uint16 const*)std::wstring(1, symbol).c_str(), color);
+    SDL_Surface* surface = TTF_RenderUNICODE_Solid(RenderUtils::instance()->font, units, color);
+    if (!surface)
+        return;
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
     rect.x               = x;
     rect.y               = y;
