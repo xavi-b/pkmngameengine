@@ -1,8 +1,8 @@
 #ifndef SINGLEBATTLESCENEDATA_H
 #define SINGLEBATTLESCENEDATA_H
 
-#include "battles/battleactions.h"
 #include "battlebattler.h"
+#include "battles/battleactions.h"
 #include "confusionstatus.h"
 #include "item.h"
 #include "map.h"
@@ -11,6 +11,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <vector>
 
 enum BattleState
 {
@@ -55,16 +56,16 @@ struct SingleBattleSceneData
     BattleBattler opponentBattler;
 
     // Side field effects
-    int  playerSpikes      = 0;
-    int  opponentSpikes    = 0;
-    int  playerToxicSpikes = 0;
+    int  playerSpikes        = 0;
+    int  opponentSpikes      = 0;
+    int  playerToxicSpikes   = 0;
     int  opponentToxicSpikes = 0;
     bool playerStealthRock   = false;
     bool opponentStealthRock = false;
     bool playerStickyWeb     = false;
     bool opponentStickyWeb   = false;
     bool trickRoom           = false;
-    int  trickRoomTurns       = 0;
+    int  trickRoomTurns      = 0;
     bool gravity             = false;
     int  gravityTurns        = 0;
     bool wonderRoom          = false;
@@ -89,13 +90,16 @@ struct SingleBattleSceneData
     std::set<Pkmn::PkmnPtr>         participatingPlayerPkmns;
     std::map<Pkmn::PkmnPtr, size_t> expGained;
 
-    bool                shouldBreakToEvolution  = false;
-    bool                shouldBreakToLevelUp    = false;
-    bool                shouldBreakToNewMove    = false;
-    bool                shouldGoToNewMovesScene = false;
-    Pkmn::PkmnPtr       expPkmn                 = nullptr;
-    size_t              expFromBattle           = 0;
-    PkmnDef::PkmnDefPtr evolutionDef            = nullptr;
+    bool                     shouldBreakToEvolution  = false;
+    bool                     shouldBreakToLevelUp    = false;
+    bool                     shouldBreakToNewMove    = false;
+    bool                     shouldGoToNewMovesScene = false;
+    Pkmn::PkmnPtr            expPkmn                 = nullptr;
+    size_t                   expFromBattle           = 0;
+    PkmnDef::PkmnDefPtr      evolutionDef            = nullptr;
+    std::vector<std::string> pendingMoveIds;
+    std::string              moveToLearnId;
+    std::set<std::string>    offeredMoveIds;
 
     virtual void chooseOpponentAction() = 0;
     void         chooseOpponentMove();

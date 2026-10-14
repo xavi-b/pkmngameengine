@@ -27,7 +27,9 @@
 #include <SDL_image.h>
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
+#include <vector>
 
 class MapScene : public Scene
 {
@@ -176,6 +178,12 @@ protected:
     Pkmn::PkmnPtr                                                       selectedBagTargetPkmn = nullptr;
     Pkmn::PkmnPtr                                                       evolutionPkmn;
     PkmnDef::PkmnDefPtr                                                 evolutionDef;
+    Pkmn::PkmnPtr                                                       moveLearnPkmn;
+    MoveDef::MoveDefPtr                                                 moveToLearn;
+    std::vector<std::string>                                            pendingMoveIds;
+    std::set<std::string>                                               offeredMoveIds;
+    bool                                                                awaitingMoveScene = false;
+    bool                                                                awaitingEvolution = false;
     Pkmn::PkmnPtr                                                       encounteredPkmn;
     Trainer::TrainerPtr                                                 opponentTrainer;
     std::unique_ptr<BattleIntroAnimation>                               battleIntro;
@@ -203,14 +211,15 @@ protected:
 
     bool                  openMenu = false;
     std::unique_ptr<Menu> menu;
-    bool                  openPkmns     = false;
-    bool                  openBag       = false;
-    bool                  flash         = true;
-    bool                  diving        = false;
+    bool                  openPkmns = false;
+    bool                  openBag   = false;
+    bool                  flash     = true;
+    bool                  diving    = false;
 
     std::string goToScene = "";
 
 private:
+    void   takeLevelMoves(Pkmn::PkmnPtr const& pkmn, std::vector<std::string>& lines, bool resetQueue);
     size_t getPlayerOffsetX(Fps const* fps, RenderSizes rs) const;
     size_t getPlayerOffsetY(Fps const* fps, RenderSizes rs) const;
     void   drawGrass(Fps const* fps, RenderSizes rs, size_t x, size_t y, size_t l);

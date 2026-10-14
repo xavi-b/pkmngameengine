@@ -3,6 +3,7 @@
 #include "game.h"
 #include "scenes/bagscene.h"
 #include "scenes/evolutionscene.h"
+#include "scenes/newmovesscene.h"
 #include "scenes/pkmnsscene.h"
 #include "utils.h"
 
@@ -402,15 +403,31 @@ void SingleBattleScene::resolveOpponentFaint()
 
 bool SingleBattleScene::pushScene() const
 {
-    return data->shouldBreakToEvolution || data->state == BAG || data->state == PKMNS;
+    return data->shouldBreakToEvolution || data->shouldGoToNewMovesScene || data->state == BAG || data->state == PKMNS;
 }
 
 void SingleBattleScene::popReset()
 {
+    if (data->shouldGoToNewMovesScene)
+    {
+        data->shouldGoToNewMovesScene = false;
+        data->moveToLearnId.clear();
+        if (!data->pendingMoveIds.empty())
+            data->shouldBreakToNewMove = true;
+        else if (data->evolutionDef)
+            data->shouldBreakToEvolution = true;
+        if (data->expPkmn == data->playerPkmn)
+            singleBattleUi->setPlayerPkmn(data->playerPkmn);
+        return;
+    }
+
     if (data->shouldBreakToEvolution)
     {
         data->shouldBreakToEvolution = false;
         data->evolutionDef.reset();
+        if (data->expPkmn)
+            MoveLearn::queueMoveIds(data->expPkmn, data->pendingMoveIds, data->offeredMoveIds);
+        data->shouldBreakToNewMove = !data->pendingMoveIds.empty();
         if (data->expPkmn == data->playerPkmn)
             singleBattleUi->setPlayerPkmn(data->playerPkmn);
         return;
@@ -452,6 +469,20 @@ void SingleBattleScene::popReset()
 
 std::unique_ptr<Scene> SingleBattleScene::nextScene()
 {
+    if (data->shouldGoToNewMovesScene)
+    {
+        auto move = Game::instance()->data.moveDefFor(data->moveToLearnId);
+        if (data->expPkmn && move)
+            return std::make_unique<NewMovesScene>(renderer, data->expPkmn, move);
+
+        data->shouldGoToNewMovesScene = false;
+        data->moveToLearnId.clear();
+        if (!data->pendingMoveIds.empty())
+            data->shouldBreakToNewMove = true;
+        else if (data->evolutionDef)
+            data->shouldBreakToEvolution = true;
+    }
+
     if (data->shouldBreakToEvolution)
         return std::make_unique<EvolutionScene>(renderer, data->expPkmn, data->evolutionDef);
 

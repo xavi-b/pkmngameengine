@@ -15,9 +15,10 @@
 #include "itemutils.h"
 #include "pkmnsscene.h"
 #include "scenes/battle/encounterscene.h"
-#include "scenes/evolutionscene.h"
 #include "scenes/battle/statuscondition.h"
 #include "scenes/battle/trainerscene.h"
+#include "scenes/evolutionscene.h"
+#include "scenes/newmovesscene.h"
 #include "sprites/bikesprite.h"
 #include "sprites/erasablesprite.h"
 #include "sprites/squaresprite.h"
@@ -1976,7 +1977,7 @@ std::unique_ptr<BattleIntroAnimation> MapScene::manageBattleIntro()
 
 bool MapScene::pushScene() const
 {
-    if (evolutionDef && evolutionPkmn)
+    if ((moveToLearn && moveLearnPkmn) || (evolutionDef && evolutionPkmn))
         return true;
 
     if (openPkmns && fadeOutAnimation->isFinished())
@@ -1999,11 +2000,61 @@ bool MapScene::pushScene() const
     return false;
 }
 
+void MapScene::takeLevelMoves(Pkmn::PkmnPtr const& pkmn, std::vector<std::string>& lines, bool resetQueue)
+{
+    if (!pkmn)
+        return;
+
+    if (resetQueue)
+    {
+        pendingMoveIds.clear();
+        moveToLearn.reset();
+        moveLearnPkmn.reset();
+        awaitingMoveScene = false;
+        MoveLearn::queueMoveIds(pkmn, pendingMoveIds, offeredMoveIds);
+    }
+
+    while (!pendingMoveIds.empty())
+    {
+        std::string id = pendingMoveIds.front();
+        pendingMoveIds.erase(pendingMoveIds.begin());
+        offeredMoveIds.insert(id);
+        auto def = Game::instance()->data.moveDefFor(id);
+        if (!def || MoveLearn::knowsMove(pkmn, id))
+            continue;
+
+        int slot = MoveLearn::firstEmptySlot(pkmn);
+        if (slot >= 0)
+        {
+            MoveLearn::teachMove(pkmn, def, slot);
+            boost::format learned =
+                boost::format(lc::translate("%1% learned %2% !")) % pkmn->getDisplayName() % def->getName();
+            lines.push_back(learned.str());
+            continue;
+        }
+
+        moveToLearn       = def;
+        moveLearnPkmn     = pkmn;
+        awaitingMoveScene = true;
+        return;
+    }
+}
+
 void MapScene::popReset()
 {
     bool keepEvolution = false;
-    if (selectedBagItem && selectedBagTargetPkmn)
+    bool bagUse        = selectedBagItem && selectedBagTargetPkmn;
+    if (bagUse)
     {
+        awaitingMoveScene = false;
+        awaitingEvolution = false;
+        evolutionPkmn.reset();
+        evolutionDef.reset();
+        moveToLearn.reset();
+        moveLearnPkmn.reset();
+        pendingMoveIds.clear();
+        offeredMoveIds.clear();
+
         auto        target = selectedBagTargetPkmn;
         auto        item   = selectedBagItem;
         std::string itemId = item->getDefinition() ? item->getDefinition()->getId() : "";
@@ -2012,11 +2063,14 @@ void MapScene::popReset()
             Game::instance()->data.player.removeOneItem(item->getDefinition());
             if (itemId == "RARECANDY" && target)
             {
+                std::vector<std::string> lines;
+                boost::format            levelText = boost::format(lc::translate("%1% reached level %2% !"))
+                                                   % target->getDisplayName() % target->getLevel();
+                lines.push_back(levelText.str());
+                takeLevelMoves(target, lines, true);
                 if (itemSpeech)
                 {
-                    boost::format levelText = boost::format(lc::translate("%1% reached level %2% !"))
-                                            % target->getDisplayName() % target->getLevel();
-                    itemSpeech->setTexts({levelText.str()});
+                    itemSpeech->setTexts(lines);
                     itemSpeech->reset();
                     itemSpeech->start();
                 }
@@ -2027,9 +2081,10 @@ void MapScene::popReset()
                     auto def = Game::instance()->data.pkmnDefFor(evolutionId);
                     if (def)
                     {
-                        evolutionPkmn = target;
-                        evolutionDef  = def;
-                        keepEvolution = true;
+                        evolutionPkmn     = target;
+                        evolutionDef      = def;
+                        keepEvolution     = true;
+                        awaitingEvolution = true;
                     }
                 }
             }
@@ -2041,11 +2096,45 @@ void MapScene::popReset()
         // TODO: message information (Item overlay ?)
         // TODO: action
     }
+    else if (awaitingMoveScene)
+    {
+        auto pkmn         = moveLearnPkmn;
+        awaitingMoveScene = false;
+        moveToLearn.reset();
+        moveLearnPkmn.reset();
+        std::vector<std::string> lines;
+        takeLevelMoves(pkmn, lines, false);
+        if (!lines.empty() && itemSpeech)
+        {
+            itemSpeech->setTexts(lines);
+            itemSpeech->reset();
+            itemSpeech->start();
+        }
+    }
+    else if (awaitingEvolution && evolutionDef && evolutionPkmn)
+    {
+        auto pkmn         = evolutionPkmn;
+        awaitingEvolution = false;
+        evolutionPkmn.reset();
+        evolutionDef.reset();
+        std::vector<std::string> lines;
+        takeLevelMoves(pkmn, lines, true);
+        if (!lines.empty() && itemSpeech)
+        {
+            itemSpeech->setTexts(lines);
+            itemSpeech->reset();
+            itemSpeech->start();
+        }
+    }
 
-    if (!keepEvolution)
+    if (!keepEvolution && !awaitingEvolution && !awaitingMoveScene)
     {
         evolutionPkmn.reset();
         evolutionDef.reset();
+        moveToLearn.reset();
+        moveLearnPkmn.reset();
+        pendingMoveIds.clear();
+        offeredMoveIds.clear();
     }
 
     fadeInAnimation->reset();
@@ -2061,9 +2150,17 @@ void MapScene::popReset()
 
 std::unique_ptr<Scene> MapScene::nextScene()
 {
+    bool speechOpen = itemSpeech && itemSpeech->isStarted() && !itemSpeech->shouldClose();
+    if (moveToLearn && moveLearnPkmn)
+    {
+        if (speechOpen)
+            return nullptr;
+        return std::make_unique<NewMovesScene>(renderer, moveLearnPkmn, moveToLearn);
+    }
+
     if (evolutionDef && evolutionPkmn)
     {
-        if (itemSpeech && itemSpeech->isStarted() && !itemSpeech->shouldClose())
+        if (speechOpen)
             return nullptr;
         return std::make_unique<EvolutionScene>(renderer, evolutionPkmn, evolutionDef);
     }

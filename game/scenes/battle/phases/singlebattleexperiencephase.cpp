@@ -2,6 +2,7 @@
 
 #include "../singlebattlescene.h"
 #include "game.h"
+#include "scenes/newmovesscene.h"
 #include "textspeech.h"
 #include "utils.h"
 
@@ -28,6 +29,53 @@ void SingleBattleExperiencePhase::showEndSpeech(std::string const& text)
     endSpeech->start();
 }
 
+void SingleBattleExperiencePhase::resumeAfterLevelMessage()
+{
+    if (!data->pendingMoveIds.empty())
+        data->shouldBreakToNewMove = true;
+    else if (data->evolutionDef)
+        data->shouldBreakToEvolution = true;
+}
+
+void SingleBattleExperiencePhase::presentNextMove()
+{
+    data->shouldBreakToNewMove = false;
+    if (!data->expPkmn)
+    {
+        resumeAfterLevelMessage();
+        return;
+    }
+
+    while (!data->pendingMoveIds.empty())
+    {
+        std::string id = data->pendingMoveIds.front();
+        data->pendingMoveIds.erase(data->pendingMoveIds.begin());
+        data->offeredMoveIds.insert(id);
+
+        MoveDef::MoveDefPtr def = Game::instance()->data.moveDefFor(id);
+        if (!def || MoveLearn::knowsMove(data->expPkmn, id))
+            continue;
+
+        int slot = MoveLearn::firstEmptySlot(data->expPkmn);
+        if (slot >= 0)
+        {
+            MoveLearn::teachMove(data->expPkmn, def, slot);
+            moveToLearnSpeech = std::make_unique<TextSpeech>(renderer);
+            boost::format learned =
+                boost::format(lc::translate("%1% learned %2% !")) % data->expPkmn->getDisplayName() % def->getName();
+            moveToLearnSpeech->setTexts({learned.str()});
+            moveToLearnSpeech->start();
+            return;
+        }
+
+        data->moveToLearnId           = id;
+        data->shouldGoToNewMovesScene = true;
+        return;
+    }
+
+    resumeAfterLevelMessage();
+}
+
 void SingleBattleExperiencePhase::update(Inputs const* inputs)
 {
     // TODO: Split experience animation for each level
@@ -43,9 +91,8 @@ void SingleBattleExperiencePhase::update(Inputs const* inputs)
         if (experienceSpeech->shouldClose())
         {
             experienceSpeech.release();
-            // Level-up line is read first. The evolution scene starts on the next push.
-            if (data->evolutionDef)
-                data->shouldBreakToEvolution = true;
+            // Level-up line is read first. Moves are offered before evolution.
+            resumeAfterLevelMessage();
         }
         return;
     }
@@ -55,10 +102,10 @@ void SingleBattleExperiencePhase::update(Inputs const* inputs)
         inputs->setHandler(moveToLearnSpeech->inputId());
         moveToLearnSpeech->update(inputs);
         if (moveToLearnSpeech->shouldClose())
+        {
             moveToLearnSpeech.release();
-        // TODO: Ask for new move
-        // TODO: Go to NewMovesScene if ok
-        data->shouldGoToNewMovesScene = true;
+            resumeAfterLevelMessage();
+        }
         return;
     }
 
@@ -96,14 +143,9 @@ void SingleBattleExperiencePhase::update(Inputs const* inputs)
                 else
                     data->evolutionDef.reset();
 
-                for (auto const& moveToLearn : pkmn->getDefinition()->getMovesToLearn())
-                {
-                    if (moveToLearn.level == pkmn->getLevel())
-                    {
-                        data->shouldBreakToNewMove = true;
-                        break;
-                    }
-                }
+                data->offeredMoveIds.clear();
+                data->pendingMoveIds.clear();
+                MoveLearn::queueMoveIds(pkmn, data->pendingMoveIds, data->offeredMoveIds);
 
                 expFromBattle -= expLeftToNextLevel;
 
@@ -139,6 +181,15 @@ void SingleBattleExperiencePhase::update(Inputs const* inputs)
         return;
     }
 
+    if (data->shouldBreakToEvolution)
+        return;
+
+    if (data->shouldBreakToNewMove)
+    {
+        presentNextMove();
+        return;
+    }
+
     grantExperience(data->expPkmn, remainingExpFromBattle);
 
     if (data->shouldBreakToLevelUp)
@@ -147,33 +198,6 @@ void SingleBattleExperiencePhase::update(Inputs const* inputs)
                                      % data->expPkmn->getDisplayName() % data->expPkmn->getLevel();
         showSpeech({experienceText.str()});
         data->shouldBreakToLevelUp = false;
-        return;
-    }
-
-    if (data->shouldBreakToEvolution)
-    {
-        return;
-    }
-
-    if (data->shouldBreakToNewMove)
-    {
-        for (auto const& moveToLearn : data->expPkmn->getDefinition()->getMovesToLearn())
-        {
-            if (moveToLearn.level == data->expPkmn->getLevel())
-            {
-                moveToLearnSpeech           = std::make_unique<TextSpeech>(renderer);
-                MoveDef::MoveDefPtr moveDef = Game::instance()->data.moveDefFor(moveToLearn.id);
-                if (moveDef)
-                {
-                    boost::format moveToLearnText =
-                        boost::format(lc::translate("New move learned: %1%")) % moveDef->getName();
-                    moveToLearnSpeech->setTexts({moveToLearnText.str()});
-                    moveToLearnSpeech->start();
-                    break;
-                }
-            }
-        }
-        data->shouldBreakToNewMove = false;
         return;
     }
 }

@@ -21,6 +21,9 @@ public:
     virtual bool onExperienceResolvedNextPkmn() = 0;
 
 private:
+    void resumeAfterLevelMessage();
+    void presentNextMove();
+
     std::unique_ptr<TextSpeech> experienceSpeech;
     std::unique_ptr<TextSpeech> moveToLearnSpeech;
     std::unique_ptr<TextSpeech> endSpeech;
