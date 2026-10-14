@@ -36,6 +36,7 @@ public:
     bool isFinished() const;
     bool isSelected() const;
     void reset();
+    void close();
 
     Selection selection() const;
 
@@ -55,7 +56,7 @@ private:
 
     bool      finished         = false;
     bool      selected         = false;
-    Selection currentSelection = SAVE;
+    Selection currentSelection = PKMNS;
 };
 
 #endif // MENU_H

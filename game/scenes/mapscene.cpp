@@ -472,9 +472,11 @@ bool MapScene::updateOverlays(Inputs const* inputs)
             else
             {
                 openMenu = false;
+                menu->close();
             }
 
-            menu->reset();
+            if (openMenu)
+                menu->reset();
         }
 
         return true;

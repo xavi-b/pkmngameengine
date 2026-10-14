@@ -43,7 +43,7 @@ Menu::~Menu()
 
 void Menu::init()
 {
-    reset();
+    close();
 }
 
 void Menu::update(Inputs const* inputs)
@@ -156,9 +156,14 @@ bool Menu::isSelected() const
 
 void Menu::reset()
 {
-    currentSelection = static_cast<Selection>(0);
-    selected         = false;
-    finished         = false;
+    selected = false;
+    finished = false;
+}
+
+void Menu::close()
+{
+    currentSelection = PKMNS;
+    reset();
 }
 
 Menu::Selection Menu::selection() const
