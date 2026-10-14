@@ -22,6 +22,7 @@ void SingleBattlePlayerPkmnsPhase::update(Inputs const* inputs)
 {
     if (pkmnEnterSpeech)
     {
+        inputs->setHandler(pkmnEnterSpeech->inputId());
         pkmnEnterSpeech->update(inputs);
         if (pkmnEnterSpeech->shouldClose())
             pkmnEnterSpeech.release();

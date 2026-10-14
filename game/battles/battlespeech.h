@@ -22,7 +22,14 @@ public:
 
     void setTexts(std::vector<std::string> const& texts);
 
+    size_t inputId() const
+    {
+        return inputToken;
+    }
+
 private:
+    size_t inputToken = Inputs::newToken();
+
     SDL_Renderer* renderer;
     SDL_Surface*  bgSurface;
     SDL_Texture*  bgTexture;

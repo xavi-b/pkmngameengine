@@ -25,6 +25,7 @@ void SingleBattlePlayerRunPhase::update(Inputs const* inputs)
             failedRunSpeech->start();
         }
 
+        inputs->setHandler(failedRunSpeech->inputId());
         failedRunSpeech->update(inputs);
         if (failedRunSpeech->shouldClose())
         {
@@ -36,6 +37,7 @@ void SingleBattlePlayerRunPhase::update(Inputs const* inputs)
 
     if (runSpeech)
     {
+        inputs->setHandler(runSpeech->inputId());
         runSpeech->update(inputs);
         if (runSpeech->shouldClose())
         {
@@ -47,6 +49,7 @@ void SingleBattlePlayerRunPhase::update(Inputs const* inputs)
 
     if (failedRunSpeech)
     {
+        inputs->setHandler(failedRunSpeech->inputId());
         failedRunSpeech->update(inputs);
         if (failedRunSpeech->shouldClose())
         {

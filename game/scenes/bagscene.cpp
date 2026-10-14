@@ -70,6 +70,8 @@ BagScene::~BagScene()
 
 void BagScene::update(Inputs const* inputs)
 {
+    inputs->setHandler(inputId());
+
     auto const& player = Game::instance()->data.player;
 
     if (inputs->A)

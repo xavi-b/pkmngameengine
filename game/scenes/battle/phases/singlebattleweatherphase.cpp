@@ -331,6 +331,7 @@ void SingleBattleWeatherPhase::update(Inputs const* inputs)
 {
     if (residualSpeech)
     {
+        inputs->setHandler(residualSpeech->inputId());
         residualSpeech->update(inputs);
         if (!residualSpeech->shouldClose())
             return;
@@ -354,7 +355,10 @@ void SingleBattleWeatherPhase::update(Inputs const* inputs)
                 weatherAnimation->incrementTicks();
 
             if (weatherSpeech)
+            {
+                inputs->setHandler(weatherSpeech->inputId());
                 weatherSpeech->update(inputs);
+            }
 
             if (weatherSpeech && weatherSpeech->shouldClose())
                 step = Step::Residuals;

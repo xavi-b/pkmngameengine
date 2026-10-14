@@ -30,6 +30,11 @@ public:
 
     virtual void debug();
 
+    size_t inputId() const
+    {
+        return inputToken;
+    }
+
 protected:
     static constexpr int CryChannel   = 0;
     static constexpr int SoundChannel = 1;
@@ -49,7 +54,8 @@ protected:
     SDL_Renderer* renderer;
 
 private:
-    Mix_Chunk* cryChunk = nullptr;
+    size_t     inputToken = Inputs::newToken();
+    Mix_Chunk* cryChunk   = nullptr;
 };
 
 #endif // SCENE_H

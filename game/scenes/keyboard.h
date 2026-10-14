@@ -17,7 +17,14 @@ public:
     virtual void draw(Fps const* fps, RenderSizes rs);
     virtual bool isFinished() const;
 
+    size_t inputId() const
+    {
+        return inputToken;
+    }
+
 private:
+    size_t inputToken = Inputs::newToken();
+
     static constexpr int NbRowBoxes = 11;
     static constexpr int MaxPos     = 'z' - 'a';
 

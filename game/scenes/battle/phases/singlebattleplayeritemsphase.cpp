@@ -20,6 +20,7 @@ void SingleBattlePlayerItemsPhase::update(Inputs const* inputs)
 {
     if (itemUseSpeech)
     {
+        inputs->setHandler(itemUseSpeech->inputId());
         itemUseSpeech->update(inputs);
         if (!itemUseSpeech->shouldClose())
             return;

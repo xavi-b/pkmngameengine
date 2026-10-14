@@ -119,6 +119,8 @@ PkmnsScene::~PkmnsScene()
 
 void PkmnsScene::update(Inputs const* inputs)
 {
+    inputs->setHandler(inputId());
+
     ++ticks;
 
     if (inputs->A)

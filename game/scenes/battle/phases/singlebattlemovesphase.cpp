@@ -32,6 +32,7 @@ void SingleBattleMovesPhase::update(Inputs const* inputs)
 {
     if (noPpLeftSpeech)
     {
+        inputs->setHandler(noPpLeftSpeech->inputId());
         noPpLeftSpeech->update(inputs);
         if (noPpLeftSpeech->shouldClose())
             noPpLeftSpeech.release();
@@ -112,6 +113,7 @@ void SingleBattleMovesPhase::update(Inputs const* inputs)
     }
     else
     {
+        inputs->setHandler(moveSelection->inputId());
         moveSelection->update(inputs);
     }
 }

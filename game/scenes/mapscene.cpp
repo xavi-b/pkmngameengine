@@ -435,6 +435,7 @@ bool MapScene::updateOverlays(Inputs const* inputs)
 
     if (openMenu)
     {
+        inputs->setHandler(menu->inputId());
         menu->update(inputs);
 
         if (menu->isFinished())
@@ -706,6 +707,8 @@ bool MapScene::handleActionButton(Inputs const* inputs)
 
 void MapScene::updatePlayerInput(Inputs const* inputs)
 {
+    inputs->setHandler(inputId());
+
     auto& player = Game::instance()->data.player;
 
     if (inputs->select && !player.surfing && !player.sliding && allowBike())
@@ -718,7 +721,7 @@ void MapScene::updatePlayerInput(Inputs const* inputs)
 
     if (player.speed != Entity::Speed::BIKE || player.surfing || player.sliding || !allowBike())
     {
-        if (inputs->B && !player.surfing && !player.sliding)
+        if (inputs->bHeld && !player.surfing && !player.sliding)
             player.speed = Entity::Speed::RUN;
         else
             player.speed = Entity::Speed::WALK;
@@ -744,13 +747,13 @@ void MapScene::updatePlayerInput(Inputs const* inputs)
             onPlayerTileStepped();
     };
 
-    if (inputs->up)
+    if (inputs->upHeld)
         tryPlayerMove(Entity::Direction::UP);
-    else if (inputs->down)
+    else if (inputs->downHeld)
         tryPlayerMove(Entity::Direction::DOWN);
-    else if (inputs->left)
+    else if (inputs->leftHeld)
         tryPlayerMove(Entity::Direction::LEFT);
-    else if (inputs->right)
+    else if (inputs->rightHeld)
         tryPlayerMove(Entity::Direction::RIGHT);
     else
         stop(player);
@@ -790,6 +793,7 @@ bool MapScene::updatePoisonSpeech(Inputs const* inputs)
 
     if (poisonSpeech->isStarted() && !poisonSpeech->shouldClose())
     {
+        inputs->setHandler(poisonSpeech->inputId());
         poisonSpeech->update(inputs);
         return true;
     }
@@ -807,6 +811,7 @@ bool MapScene::updateItemSpeech(Inputs const* inputs)
 
     if (itemSpeech->isStarted() && !itemSpeech->shouldClose())
     {
+        inputs->setHandler(itemSpeech->inputId());
         itemSpeech->update(inputs);
         return true;
     }

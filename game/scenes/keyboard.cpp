@@ -28,6 +28,8 @@ void Keyboard::init()
 
 void Keyboard::update(Inputs const* inputs)
 {
+    inputs->setHandler(inputId());
+
     int col = currentPos % NbRowBoxes;
     int row = currentPos / NbRowBoxes;
 

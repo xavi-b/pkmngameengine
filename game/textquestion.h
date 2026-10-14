@@ -28,12 +28,19 @@ public:
     void draw(Fps const* fps, RenderSizes rs, Position pos = RIGHT);
 
     bool isFinished() const;
+
+    size_t inputId() const
+    {
+        return inputToken;
+    }
     void reset();
 
     void setTexts(std::vector<std::string> const& texts);
     int  selectedIndex() const;
 
 private:
+    size_t inputToken = Inputs::newToken();
+
     SDL_Renderer* renderer;
     SDL_Surface*  bgSurface;
     SDL_Texture*  bgTexture;

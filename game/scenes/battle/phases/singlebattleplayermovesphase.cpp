@@ -203,6 +203,7 @@ void SingleBattlePlayerMovesPhase::update(Inputs const* inputs)
 {
     if (speech)
     {
+        inputs->setHandler(speech->inputId());
         speech->update(inputs);
         if (!speech->shouldClose())
             return;

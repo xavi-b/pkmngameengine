@@ -39,7 +39,14 @@ public:
 
     Selection selection() const;
 
+    size_t inputId() const
+    {
+        return inputToken;
+    }
+
 private:
+    size_t inputToken = Inputs::newToken();
+
     SDL_Renderer* renderer;
     SDL_Surface*  bgSurface;
     SDL_Texture*  bgTexture;

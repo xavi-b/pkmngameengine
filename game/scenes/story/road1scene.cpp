@@ -77,18 +77,21 @@ bool Road1Scene::updateAmbient(Inputs const* inputs)
 
     if (text1Speech->isStarted() && !text1Speech->shouldClose())
     {
+        inputs->setHandler(text1Speech->inputId());
         text1Speech->update(inputs);
         return true;
     }
 
     if (childSpeech->isStarted() && !childSpeech->shouldClose())
     {
+        inputs->setHandler(childSpeech->inputId());
         childSpeech->update(inputs);
         return true;
     }
 
     if (trainerSpeech->isStarted() && !trainerSpeech->shouldClose())
     {
+        inputs->setHandler(trainerSpeech->inputId());
         trainerSpeech->update(inputs);
         return true;
     }

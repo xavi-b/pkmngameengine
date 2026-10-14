@@ -531,15 +531,9 @@ void EvolutionScene::update(Inputs const* inputs)
     if (msAccum > 100)
         msAccum = 100;
 
-    if (phase == Phase::CycleSprites && inputs->B)
-    {
-        sparkles.clear();
-        flashAlpha = 255;
-        enter(Phase::CancelFlash);
-    }
-
     if (phase == Phase::IntroMsg || phase == Phase::CongratsMsg || phase == Phase::CancelMsg)
     {
+        inputs->setHandler(speech->inputId());
         speech->update(inputs);
         bool introReady = phase == Phase::IntroMsg && speech->mayClose() && (inputs->A || ++phaseFrame >= 6);
         if (speech->shouldClose() || introReady)
@@ -556,6 +550,15 @@ void EvolutionScene::update(Inputs const* inputs)
             }
         }
         return;
+    }
+
+    inputs->setHandler(inputId());
+
+    if (phase == Phase::CycleSprites && inputs->B)
+    {
+        sparkles.clear();
+        flashAlpha = 255;
+        enter(Phase::CancelFlash);
     }
 
     while (msAccum >= 16)

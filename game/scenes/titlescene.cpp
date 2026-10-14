@@ -28,6 +28,8 @@ void TitleScene::init()
 
 void TitleScene::update(Inputs const* inputs)
 {
+    inputs->setHandler(inputId());
+
     if (inputs->A || inputs->start)
         goToNextScene = true;
     if (inputs->B)

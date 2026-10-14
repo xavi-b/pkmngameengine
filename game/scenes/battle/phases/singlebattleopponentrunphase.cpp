@@ -20,6 +20,7 @@ void SingleBattleOpponentRunPhase::update(Inputs const* inputs)
         runSpeech->start();
     }
 
+    inputs->setHandler(runSpeech->inputId());
     runSpeech->update(inputs);
     if (runSpeech->shouldClose())
     {

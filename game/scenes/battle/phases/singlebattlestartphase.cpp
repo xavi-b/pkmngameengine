@@ -40,6 +40,7 @@ void SingleBattleStartPhase::update(Inputs const* inputs)
 
     if (pkmnEncounterSpeech)
     {
+        inputs->setHandler(pkmnEncounterSpeech->inputId());
         pkmnEncounterSpeech->update(inputs);
         if (pkmnEncounterSpeech->shouldClose())
         {
@@ -53,6 +54,7 @@ void SingleBattleStartPhase::update(Inputs const* inputs)
 
     else if (firstPkmnSpeech)
     {
+        inputs->setHandler(firstPkmnSpeech->inputId());
         firstPkmnSpeech->update(inputs);
         if (firstPkmnSpeech->shouldClose())
         {

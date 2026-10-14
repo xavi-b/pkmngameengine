@@ -27,10 +27,12 @@ void LeaveScene::update(Inputs const* inputs)
 {
     if (quitSpeech->mayClose())
     {
+        inputs->setHandler(quitQuestion->inputId());
         quitQuestion->update(inputs);
     }
     else
     {
+        inputs->setHandler(quitSpeech->inputId());
         quitSpeech->update(inputs);
     }
 

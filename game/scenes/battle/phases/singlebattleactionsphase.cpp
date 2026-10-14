@@ -31,6 +31,11 @@ void SingleBattleActionsPhase::preupdate()
 
 void SingleBattleActionsPhase::update(Inputs const* inputs)
 {
+    if (battleSpeech->mayClose() && !battleActions->isFinished())
+        inputs->setHandler(battleActions->inputId());
+    else
+        inputs->setHandler(battleSpeech->inputId());
+
     battleSpeech->update(inputs);
     if (battleSpeech->mayClose())
     {

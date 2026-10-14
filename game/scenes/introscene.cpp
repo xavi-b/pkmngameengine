@@ -44,6 +44,7 @@ void IntroScene::update(Inputs const* inputs)
     case IntroSpeech:
         if (!introAnimation->isStarted())
             introAnimation->start();
+        inputs->setHandler(introSpeech->inputId());
         introSpeech->update(inputs);
         if (introSpeech->shouldClose())
         {
@@ -60,6 +61,7 @@ void IntroScene::update(Inputs const* inputs)
             texts.push_back(lc::translate("Are you a boy or a girl ?"));
             genderSpeech->setTexts(texts);
             genderSpeech->start();
+            inputs->setHandler(genderSpeech->inputId());
             genderSpeech->update(inputs);
             state = GenderSpeech;
         }
@@ -72,10 +74,12 @@ void IntroScene::update(Inputs const* inputs)
         }
         else
         {
+            inputs->setHandler(genderSpeech->inputId());
             genderSpeech->update(inputs);
         }
         break;
     case GenderQuestion: {
+        inputs->setHandler(genderQuestion->inputId());
         genderQuestion->update(inputs);
         Player::Gender gender = static_cast<Player::Gender>(genderQuestion->selectedIndex());
         if (genderQuestion->isFinished())
@@ -90,6 +94,7 @@ void IntroScene::update(Inputs const* inputs)
                             + ".");
             outroSpeech->setTexts(texts);
             outroSpeech->start();
+            inputs->setHandler(outroSpeech->inputId());
             outroSpeech->update(inputs);
             // TODO temp
             PkmnDef::PkmnDefPtr definition = Game::instance()->data.pkmns.front();
@@ -101,6 +106,7 @@ void IntroScene::update(Inputs const* inputs)
         break;
     }
     case OutroSpeech:
+        inputs->setHandler(outroSpeech->inputId());
         outroSpeech->update(inputs);
         if (outroSpeech->shouldClose())
         {

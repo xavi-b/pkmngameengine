@@ -52,12 +52,14 @@ bool Town1Scene::updateAmbient(Inputs const* inputs)
 {
     if (hiddenItemFoundSpeech->isStarted() && !hiddenItemFoundSpeech->shouldClose())
     {
+        inputs->setHandler(hiddenItemFoundSpeech->inputId());
         hiddenItemFoundSpeech->update(inputs);
         return true;
     }
 
     if (itemFoundSpeech->isStarted() && !itemFoundSpeech->shouldClose())
     {
+        inputs->setHandler(itemFoundSpeech->inputId());
         itemFoundSpeech->update(inputs);
         return true;
     }

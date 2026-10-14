@@ -38,6 +38,7 @@ void SingleBattleExperiencePhase::update(Inputs const* inputs)
 
     if (experienceSpeech)
     {
+        inputs->setHandler(experienceSpeech->inputId());
         experienceSpeech->update(inputs);
         if (experienceSpeech->shouldClose())
         {
@@ -51,6 +52,7 @@ void SingleBattleExperiencePhase::update(Inputs const* inputs)
 
     if (moveToLearnSpeech)
     {
+        inputs->setHandler(moveToLearnSpeech->inputId());
         moveToLearnSpeech->update(inputs);
         if (moveToLearnSpeech->shouldClose())
             moveToLearnSpeech.release();
@@ -62,6 +64,7 @@ void SingleBattleExperiencePhase::update(Inputs const* inputs)
 
     if (endSpeech)
     {
+        inputs->setHandler(endSpeech->inputId());
         endSpeech->update(inputs);
         if (endSpeech->shouldClose())
         {
