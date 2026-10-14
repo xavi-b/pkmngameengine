@@ -1,12 +1,11 @@
 #include "titlescene.h"
 
 #include "game.h"
-#include "settings.h"
 #include "titlemenu.h"
 
 TitleScene::TitleScene(SDL_Renderer* renderer) : Scene(renderer)
 {
-    music        = Mix_LoadMUS("resources/Audio/BGM/Title.ogg.wav");
+    music        = loadMusic("resources/Audio/BGM/Title.ogg.wav");
     bgSurface    = IMG_Load("resources/Graphics/Titles/title.png");
     bgTexture    = SDL_CreateTextureFromSurface(renderer, bgSurface);
     startSurface = IMG_Load("resources/Graphics/Titles/start.png");
@@ -24,8 +23,7 @@ TitleScene::~TitleScene()
 
 void TitleScene::init()
 {
-    if (Settings::instance()->musicOn())
-        Mix_PlayMusic(music, -1);
+    playMusic(music, -1);
 }
 
 void TitleScene::update(Inputs const* inputs)

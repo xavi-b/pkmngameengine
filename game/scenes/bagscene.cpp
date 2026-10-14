@@ -4,8 +4,8 @@
 #include "itemutils.h"
 #include "pkmnsscene.h"
 
-BagScene::BagScene(SDL_Renderer* renderer, Item::ItemPtr& selectedItem, Pkmn::PkmnPtr& selectedPkmn)
-    : Scene(renderer), selectedItem(selectedItem), selectedPkmn(selectedPkmn)
+BagScene::BagScene(SDL_Renderer* renderer, Item::ItemPtr& selectedItem, Pkmn::PkmnPtr& selectedPkmn, bool inBattle)
+    : Scene(renderer), selectedItem(selectedItem), selectedPkmn(selectedPkmn), inBattle(inBattle)
 {
     selectedItem.reset();
     selectedPkmn.reset();
@@ -78,16 +78,27 @@ void BagScene::update(Inputs const* inputs)
         if (!items.empty() && indices[currentPocketIndex] < items.size())
         {
             auto const& item = items[indices[currentPocketIndex]];
-            if (item && item->getDefinition()
-                && (item->getDefinition()->getBattleUse() == ItemDef::BattleUse::OnPkmn
-                    || item->getDefinition()->getBattleUse() == ItemDef::BattleUse::OnMove
-                    || item->getDefinition()->getFieldUse() == ItemDef::FieldUse::OnPkmn))
-            {
-                pendingItem = item;
-                selectedPkmn.reset();
-                allowFaintedTarget = ItemUtils::allowFaintedTarget(item);
-                openPkmnScene      = true;
+            auto        def  = item ? item->getDefinition() : nullptr;
+
+            if (!def)
                 return;
+
+            if (inBattle) {
+                if (def->getBattleUse() == ItemDef::BattleUse::OnMove || def->getBattleUse() == ItemDef::BattleUse::OnPkmn) {
+                    pendingItem = item;
+                    selectedPkmn.reset();
+                    allowFaintedTarget = ItemUtils::allowFaintedTarget(item);
+                    openPkmnScene      = def->getBattleUse() == ItemDef::BattleUse::OnPkmn;
+                    return;
+                }
+            } else {
+                if (def->getFieldUse() == ItemDef::FieldUse::OnPkmn) {
+                    pendingItem = item;
+                    selectedPkmn.reset();
+                    allowFaintedTarget = ItemUtils::allowFaintedTarget(item);
+                    openPkmnScene      = true;
+                    return;
+                }
             }
 
             selectedItem = item;

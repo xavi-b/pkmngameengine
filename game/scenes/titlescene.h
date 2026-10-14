@@ -5,7 +5,6 @@
 #include "scene.h"
 
 #include <SDL_image.h>
-#include <SDL_mixer.h>
 
 class TitleScene : public Scene
 {

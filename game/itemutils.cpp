@@ -226,6 +226,29 @@ bool ItemUtils::useItemOnPkmn(Item::ItemPtr const& item, Pkmn::PkmnPtr const& ta
     std::string itemId = item->getDefinition()->getId();
     bool        used   = false;
 
+    if (itemId == "RARECANDY")
+    {
+        if (inBattle)
+            return false;
+
+        constexpr size_t MaxLevel = 100;
+        if (target->getLevel() >= MaxLevel)
+            return false;
+
+        size_t oldMax = target->getTotalHP();
+        size_t oldHp  = target->getHP();
+        target->incrementLevel();
+        size_t newMax = target->getTotalHP();
+        if (oldHp > 0)
+        {
+            if (newMax >= oldMax)
+                target->setHP(std::min(newMax, oldHp + (newMax - oldMax)));
+            else
+                target->setHP(std::min(oldHp, newMax));
+        }
+        return true;
+    }
+
     size_t healing = healingAmountForItem(itemId);
     if (healing > 0 && !target->isKO())
     {

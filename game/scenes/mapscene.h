@@ -152,7 +152,9 @@ protected:
     void updatePlayerInput(Inputs const* inputs);
     void onPlayerTileStepped();
     bool updatePoisonSpeech(Inputs const* inputs);
+    bool updateItemSpeech(Inputs const* inputs);
     void drawPoisonEffects(Fps const* fps, RenderSizes rs);
+    void drawItemTexts(Fps const* fps, RenderSizes rs);
 
     std::map<std::string, std::pair<SDL_Surface*, SDL_Texture*>> sprites;
     std::map<std::string, std::pair<SDL_Surface*, SDL_Texture*>> lightsSprites;
@@ -172,6 +174,8 @@ protected:
     Pkmn::PkmnPtr                                                       emptyPkmnPtr          = nullptr;
     Item::ItemPtr                                                       selectedBagItem       = nullptr;
     Pkmn::PkmnPtr                                                       selectedBagTargetPkmn = nullptr;
+    Pkmn::PkmnPtr                                                       evolutionPkmn;
+    PkmnDef::PkmnDefPtr                                                 evolutionDef;
     Pkmn::PkmnPtr                                                       encounteredPkmn;
     Trainer::TrainerPtr                                                 opponentTrainer;
     std::unique_ptr<BattleIntroAnimation>                               battleIntro;
@@ -194,6 +198,7 @@ protected:
     std::unique_ptr<FallEntranceAnimation>                              fallEntranceAnimation;
     std::unique_ptr<ShakeAnimation>                                     shakeAnimation;
     std::unique_ptr<TextSpeech>                                         poisonSpeech;
+    std::unique_ptr<TextSpeech>                                         itemSpeech;
     size_t                                                              poisonFlashTicks = 0;
 
     bool                  openMenu = false;

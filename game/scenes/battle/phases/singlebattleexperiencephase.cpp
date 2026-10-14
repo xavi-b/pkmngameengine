@@ -40,7 +40,12 @@ void SingleBattleExperiencePhase::update(Inputs const* inputs)
     {
         experienceSpeech->update(inputs);
         if (experienceSpeech->shouldClose())
+        {
             experienceSpeech.release();
+            // Level-up line is read first. The evolution scene starts on the next push.
+            if (data->evolutionDef)
+                data->shouldBreakToEvolution = true;
+        }
         return;
     }
 
@@ -84,11 +89,9 @@ void SingleBattleExperiencePhase::update(Inputs const* inputs)
                 pkmn->incrementLevel();
                 std::string evolutionId = SingleBattleScene::canEvolve(pkmn);
                 if (!evolutionId.empty())
-                {
                     data->evolutionDef = Game::instance()->data.pkmnDefFor(evolutionId);
-                    if (data->evolutionDef)
-                        data->shouldBreakToEvolution = true;
-                }
+                else
+                    data->evolutionDef.reset();
 
                 for (auto const& moveToLearn : pkmn->getDefinition()->getMovesToLearn())
                 {

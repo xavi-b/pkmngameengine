@@ -15,6 +15,7 @@
 #include "itemutils.h"
 #include "pkmnsscene.h"
 #include "scenes/battle/encounterscene.h"
+#include "scenes/evolutionscene.h"
 #include "scenes/battle/statuscondition.h"
 #include "scenes/battle/trainerscene.h"
 #include "sprites/bikesprite.h"
@@ -25,6 +26,7 @@
 #include "utils.h"
 
 #include <boost/format.hpp>
+#include <boost/locale.hpp>
 #include <cctype>
 #include <cmath>
 #include <fstream>
@@ -33,6 +35,8 @@
 #include <random>
 #include <sstream>
 #include <vector>
+
+namespace lc = boost::locale;
 
 MapScene::MapScene(SDL_Renderer* renderer, std::string const& mapPath) : Scene(renderer)
 {
@@ -145,6 +149,7 @@ void MapScene::init()
     flashAnimation = std::make_unique<FlashAnimation>(renderer);
 
     poisonSpeech = std::make_unique<TextSpeech>(renderer);
+    itemSpeech   = std::make_unique<TextSpeech>(renderer);
 }
 
 void MapScene::update(Inputs const* inputs)
@@ -152,6 +157,7 @@ void MapScene::update(Inputs const* inputs)
     bool preventInputs = false;
 
     preventInputs |= updatePoisonSpeech(inputs);
+    preventInputs |= updateItemSpeech(inputs);
 
     if (!preventInputs)
         preventInputs |= updateAmbient(inputs);
@@ -160,7 +166,8 @@ void MapScene::update(Inputs const* inputs)
 
     preventInputs |= updateTransitions(inputs);
 
-    preventInputs |= updateOverlays(inputs);
+    if (!preventInputs)
+        preventInputs |= updateOverlays(inputs);
 
     preventInputs |= updateBeforeMovement(inputs);
 
@@ -793,6 +800,23 @@ bool MapScene::updatePoisonSpeech(Inputs const* inputs)
     return false;
 }
 
+bool MapScene::updateItemSpeech(Inputs const* inputs)
+{
+    if (!itemSpeech)
+        return false;
+
+    if (itemSpeech->isStarted() && !itemSpeech->shouldClose())
+    {
+        itemSpeech->update(inputs);
+        return true;
+    }
+
+    if (itemSpeech->shouldClose())
+        itemSpeech->reset();
+
+    return false;
+}
+
 void MapScene::drawPoisonEffects(Fps const* fps, RenderSizes rs)
 {
     if (poisonFlashTicks > 0)
@@ -809,6 +833,12 @@ void MapScene::drawPoisonEffects(Fps const* fps, RenderSizes rs)
 
     if (poisonSpeech && poisonSpeech->isStarted() && !poisonSpeech->shouldClose())
         poisonSpeech->draw(fps, rs);
+}
+
+void MapScene::drawItemTexts(Fps const* fps, RenderSizes rs)
+{
+    if (itemSpeech && itemSpeech->isStarted() && !itemSpeech->shouldClose())
+        itemSpeech->draw(fps, rs);
 }
 
 void MapScene::draw(Fps const* fps, RenderSizes rs)
@@ -1070,6 +1100,8 @@ void MapScene::draw(Fps const* fps, RenderSizes rs)
     drawCurrentLocationOverlay(fps, rs);
 
     drawPoisonEffects(fps, rs);
+
+    drawItemTexts(fps, rs);
 }
 
 void MapScene::drawPlayer(Fps const* fps, RenderSizes rs, SDL_Rect dstPlayerRect)
@@ -1939,6 +1971,9 @@ std::unique_ptr<BattleIntroAnimation> MapScene::manageBattleIntro()
 
 bool MapScene::pushScene() const
 {
+    if (evolutionDef && evolutionPkmn)
+        return true;
+
     if (openPkmns && fadeOutAnimation->isFinished())
     {
         return true;
@@ -1961,17 +1996,51 @@ bool MapScene::pushScene() const
 
 void MapScene::popReset()
 {
+    bool keepEvolution = false;
     if (selectedBagItem && selectedBagTargetPkmn)
     {
-        if (ItemUtils::useItemOnPkmn(selectedBagItem, selectedBagTargetPkmn, false))
-            Game::instance()->data.player.removeOneItem(selectedBagItem->getDefinition());
-        // TODO: message information (Item overlay ?)
+        auto        target = selectedBagTargetPkmn;
+        auto        item   = selectedBagItem;
+        std::string itemId = item->getDefinition() ? item->getDefinition()->getId() : "";
+        if (ItemUtils::useItemOnPkmn(item, target, false))
+        {
+            Game::instance()->data.player.removeOneItem(item->getDefinition());
+            if (itemId == "RARECANDY" && target)
+            {
+                if (itemSpeech)
+                {
+                    boost::format levelText = boost::format(lc::translate("%1% reached level %2% !"))
+                                            % target->getDisplayName() % target->getLevel();
+                    itemSpeech->setTexts({levelText.str()});
+                    itemSpeech->reset();
+                    itemSpeech->start();
+                }
+
+                std::string evolutionId = SingleBattleScene::canEvolve(target);
+                if (!evolutionId.empty())
+                {
+                    auto def = Game::instance()->data.pkmnDefFor(evolutionId);
+                    if (def)
+                    {
+                        evolutionPkmn = target;
+                        evolutionDef  = def;
+                        keepEvolution = true;
+                    }
+                }
+            }
+        }
     }
     else if (selectedBagItem)
     {
         ItemUtils::useItemInField(Game::instance()->data.player, selectedBagItem);
         // TODO: message information (Item overlay ?)
         // TODO: action
+    }
+
+    if (!keepEvolution)
+    {
+        evolutionPkmn.reset();
+        evolutionDef.reset();
     }
 
     fadeInAnimation->reset();
@@ -1987,6 +2056,13 @@ void MapScene::popReset()
 
 std::unique_ptr<Scene> MapScene::nextScene()
 {
+    if (evolutionDef && evolutionPkmn)
+    {
+        if (itemSpeech && itemSpeech->isStarted() && !itemSpeech->shouldClose())
+            return nullptr;
+        return std::make_unique<EvolutionScene>(renderer, evolutionPkmn, evolutionDef);
+    }
+
     if (openPkmns && fadeOutAnimation->isFinished())
     {
         return std::make_unique<PkmnsScene>(renderer, emptyPkmnPtr);

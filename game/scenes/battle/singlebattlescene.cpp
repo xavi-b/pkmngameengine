@@ -79,22 +79,22 @@ void SingleBattleScene::init()
     data->opponentConfusion.clear();
     data->playerBattler.clear();
     data->opponentBattler.clear();
-    data->playerSpikes         = 0;
-    data->opponentSpikes       = 0;
-    data->playerToxicSpikes    = 0;
-    data->opponentToxicSpikes  = 0;
-    data->playerStealthRock    = false;
-    data->opponentStealthRock  = false;
-    data->playerStickyWeb      = false;
-    data->opponentStickyWeb    = false;
-    data->trickRoom            = false;
-    data->trickRoomTurns       = 0;
-    data->gravity              = false;
-    data->gravityTurns         = 0;
-    data->wonderRoom           = false;
-    data->magicRoom            = false;
-    data->terrain              = SingleBattleSceneData::Terrain::None;
-    data->terrainTurns         = 0;
+    data->playerSpikes        = 0;
+    data->opponentSpikes      = 0;
+    data->playerToxicSpikes   = 0;
+    data->opponentToxicSpikes = 0;
+    data->playerStealthRock   = false;
+    data->opponentStealthRock = false;
+    data->playerStickyWeb     = false;
+    data->opponentStickyWeb   = false;
+    data->trickRoom           = false;
+    data->trickRoomTurns      = 0;
+    data->gravity             = false;
+    data->gravityTurns        = 0;
+    data->wonderRoom          = false;
+    data->magicRoom           = false;
+    data->terrain             = SingleBattleSceneData::Terrain::None;
+    data->terrainTurns        = 0;
     if (data->playerPkmn)
         data->participatingPlayerPkmns.insert(data->playerPkmn);
 
@@ -173,9 +173,9 @@ size_t SingleBattleScene::computeDamage(Pkmn::PkmnPtr const& attacker,
 
     if (attackerBattler)
     {
-        auto atkStat = category == MoveDef::PHYSICAL ? BattleBattler::StageStat::Attack
-                                                     : BattleBattler::StageStat::SpecialAttack;
-        a            = attackerBattler->effectiveStat(a, atkStat, criticalRoll, true);
+        auto atkStat =
+            category == MoveDef::PHYSICAL ? BattleBattler::StageStat::Attack : BattleBattler::StageStat::SpecialAttack;
+        a = attackerBattler->effectiveStat(a, atkStat, criticalRoll, true);
     }
     if (defenderBattler)
     {
@@ -207,11 +207,11 @@ size_t SingleBattleScene::computeDamage(Pkmn::PkmnPtr const& attacker,
     }
     float  ff     = 1.0;
     float  damage = (((2 * level / 5 + 2) * power * a / d) / 50 + 2) * burn * screen * targets * weatherMultiplier * ff;
-    size_t stockpile = 1;
-    float  critical  = criticalRoll ? 2.0 : 1.0;
-    size_t doubledmg = 1;
-    size_t charge    = 1;
-    size_t hh        = 1;
+    size_t stockpile      = 1;
+    float  critical       = criticalRoll ? 2.0 : 1.0;
+    size_t doubledmg      = 1;
+    size_t charge         = 1;
+    size_t hh             = 1;
     auto const& pkmnTypes = attacker->getDefinition()->getTypes();
     float       stab =
         std::find(pkmnTypes.begin(), pkmnTypes.end(), move->getDefinition()->getType()) != pkmnTypes.end() ? 1.5 : 1.0;
@@ -410,6 +410,7 @@ void SingleBattleScene::popReset()
     if (data->shouldBreakToEvolution)
     {
         data->shouldBreakToEvolution = false;
+        data->evolutionDef.reset();
         if (data->expPkmn == data->playerPkmn)
             singleBattleUi->setPlayerPkmn(data->playerPkmn);
         return;
@@ -457,7 +458,7 @@ std::unique_ptr<Scene> SingleBattleScene::nextScene()
     switch (data->state)
     {
     case BAG:
-        return std::make_unique<BagScene>(renderer, data->selectedItem, data->itemTargetPkmn);
+        return std::make_unique<BagScene>(renderer, data->selectedItem, data->itemTargetPkmn, true);
     case PKMNS:
         data->newSelectedPkmn = data->playerPkmn;
         return std::make_unique<PkmnsScene>(renderer, data->newSelectedPkmn, data->playerPkmn == nullptr);

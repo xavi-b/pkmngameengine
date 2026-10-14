@@ -6,7 +6,9 @@
 #include "renderutils.h"
 
 #include <SDL.h>
+#include <SDL_mixer.h>
 #include <memory>
+#include <string>
 
 class Scene
 {
@@ -29,7 +31,25 @@ public:
     virtual void debug();
 
 protected:
+    static constexpr int CryChannel   = 0;
+    static constexpr int SoundChannel = 1;
+
+    Mix_Chunk* loadChunk(std::string const& path) const;
+    Mix_Music* loadMusic(std::string const& path) const;
+
+    void playCry(std::string const& speciesId);
+    void playSound(Mix_Chunk* chunk);
+    void playMusic(Mix_Music* music, int loops);
+    void stopSounds();
+    void stopMusic();
+
+    bool isCryPlaying() const;
+    bool isMusicPlaying() const;
+
     SDL_Renderer* renderer;
+
+private:
+    Mix_Chunk* cryChunk = nullptr;
 };
 
 #endif // SCENE_H
