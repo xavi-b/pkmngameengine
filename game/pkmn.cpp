@@ -435,7 +435,8 @@ void tag_invoke(js::value_from_tag, js::value& jv, Pkmn::PkmnPtr const& o)
             {"gender", static_cast<int>(o->gender)},
             {"nature", static_cast<int>(o->nature)},
             {"firstTrainerId", o->firstTrainerId},
-            {"heldItem", js::value_from<Item::ItemPtr const&>(o->heldItem)}
+            {"heldItem", js::value_from<Item::ItemPtr const&>(o->heldItem)},
+            {"shiny", o->shiny}
         };
     }
     else
@@ -483,5 +484,9 @@ Pkmn::PkmnPtr tag_invoke(js::value_to_tag<Pkmn::PkmnPtr>, js::value const& jv)
         js::object const& obj                                                  = value.as_object();
         pkmn->EVs[static_cast<PkmnDef::Stat>(js::value_to<int>(obj.at("id")))] = js::value_to<size_t>(obj.at("value"));
     }
+    if (obj.contains("shiny"))
+        pkmn->shiny = js::value_to<bool>(obj.at("shiny"));
+    else
+        pkmn->shiny = false;
     return pkmn;
 }
