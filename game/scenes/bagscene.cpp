@@ -7,13 +7,8 @@
 
 #include <boost/format.hpp>
 
-BagScene::BagScene(SDL_Renderer*  renderer,
-                   Item::ItemPtr& selectedItem,
-                   Pkmn::PkmnPtr& selectedPkmn,
-                   bool           inBattle,
-                   bool           giveHoldItem)
-    : Scene(renderer), selectedItem(selectedItem), selectedPkmn(selectedPkmn), inBattle(inBattle),
-      giveHoldItem(giveHoldItem)
+BagScene::BagScene(SDL_Renderer* renderer, Item::ItemPtr& selectedItem, Pkmn::PkmnPtr& selectedPkmn, Mode mode)
+    : Scene(renderer), selectedItem(selectedItem), selectedPkmn(selectedPkmn), mode(mode)
 {
     selectedItem.reset();
     selectedPkmn.reset();
@@ -49,7 +44,8 @@ BagScene::BagScene(SDL_Renderer*  renderer,
         itemTexture = SDL_CreateTextureFromSurface(renderer, itemSurface);
     }
 
-    cantHoldSpeech = std::make_unique<TextSpeech>(renderer);
+    if (mode == Mode::Give)
+        cantHoldSpeech = std::make_unique<TextSpeech>(renderer);
 }
 
 BagScene::~BagScene()
@@ -107,8 +103,9 @@ void BagScene::update(Inputs const* inputs)
             if (!def)
                 return;
 
-            if (giveHoldItem)
+            switch (mode)
             {
+            case Mode::Give:
                 if (def->hasFlag(ItemDef::Flag::KeyItem))
                 {
                     cantHoldSpeech->setTexts(
@@ -117,14 +114,8 @@ void BagScene::update(Inputs const* inputs)
                     cantHoldSpeech->start();
                     return;
                 }
-
-                selectedItem = item;
-                leave        = true;
-                return;
-            }
-
-            if (inBattle)
-            {
+                break;
+            case Mode::Battle:
                 if (def->getBattleUse() == ItemDef::BattleUse::OnMove
                     || def->getBattleUse() == ItemDef::BattleUse::OnPkmn)
                 {
@@ -134,9 +125,8 @@ void BagScene::update(Inputs const* inputs)
                     openPkmnScene      = def->getBattleUse() == ItemDef::BattleUse::OnPkmn;
                     return;
                 }
-            }
-            else
-            {
+                break;
+            case Mode::Field:
                 if (def->getFieldUse() == ItemDef::FieldUse::OnPkmn)
                 {
                     pendingItem = item;
@@ -145,6 +135,7 @@ void BagScene::update(Inputs const* inputs)
                     openPkmnScene      = true;
                     return;
                 }
+                break;
             }
 
             selectedItem = item;

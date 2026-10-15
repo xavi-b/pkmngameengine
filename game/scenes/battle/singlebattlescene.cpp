@@ -489,7 +489,7 @@ std::unique_ptr<Scene> SingleBattleScene::nextScene()
     switch (data->state)
     {
     case BAG:
-        return std::make_unique<BagScene>(renderer, data->selectedItem, data->itemTargetPkmn, true);
+        return std::make_unique<BagScene>(renderer, data->selectedItem, data->itemTargetPkmn, BagScene::Mode::Battle);
     case PKMNS:
         data->newSelectedPkmn = data->playerPkmn;
         return std::make_unique<PkmnsScene>(renderer, data->newSelectedPkmn, data->playerPkmn == nullptr);

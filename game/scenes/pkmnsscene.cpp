@@ -648,7 +648,7 @@ std::unique_ptr<Scene> PkmnsScene::nextScene()
     }
 
     if (openBag)
-        return std::make_unique<BagScene>(renderer, giveItem, bagTarget, false, true);
+        return std::make_unique<BagScene>(renderer, giveItem, bagTarget, BagScene::Mode::Give);
 
     return nullptr;
 }

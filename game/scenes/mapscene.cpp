@@ -2173,7 +2173,8 @@ std::unique_ptr<Scene> MapScene::nextScene()
     }
     else if (openBag && fadeOutAnimation->isFinished())
     {
-        auto scene = std::make_unique<BagScene>(renderer, selectedBagItem, selectedBagTargetPkmn);
+        auto scene =
+            std::make_unique<BagScene>(renderer, selectedBagItem, selectedBagTargetPkmn, BagScene::Mode::Field);
         return scene;
     }
     else if (encounteredPkmn && battleIntro && battleIntro->isFinished())

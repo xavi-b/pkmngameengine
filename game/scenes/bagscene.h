@@ -14,11 +14,14 @@
 class BagScene : public Scene
 {
 public:
-    BagScene(SDL_Renderer*  renderer,
-             Item::ItemPtr& selectedItem,
-             Pkmn::PkmnPtr& selectedPkmn,
-             bool           inBattle     = false,
-             bool           giveHoldItem = false);
+    enum class Mode
+    {
+        Field,
+        Battle,
+        Give
+    };
+
+    BagScene(SDL_Renderer* renderer, Item::ItemPtr& selectedItem, Pkmn::PkmnPtr& selectedPkmn, Mode mode = Mode::Field);
     virtual ~BagScene();
 
     virtual void update(Inputs const* inputs) override;
@@ -48,8 +51,7 @@ private:
     Item::ItemPtr  pendingItem        = nullptr;
     bool           openPkmnScene      = false;
     bool           allowFaintedTarget = false;
-    bool           inBattle           = false;
-    bool           giveHoldItem       = false;
+    Mode           mode               = Mode::Field;
 
     std::unique_ptr<TextSpeech> cantHoldSpeech;
 
