@@ -5,6 +5,7 @@
 #include "itemdef.h"
 #include "pkmn.h"
 #include "scene.h"
+#include "textspeech.h"
 
 #include <SDL_image.h>
 #include <array>
@@ -13,7 +14,11 @@
 class BagScene : public Scene
 {
 public:
-    BagScene(SDL_Renderer* renderer, Item::ItemPtr& selectedItem, Pkmn::PkmnPtr& selectedPkmn, bool inBattle = false);
+    BagScene(SDL_Renderer*  renderer,
+             Item::ItemPtr& selectedItem,
+             Pkmn::PkmnPtr& selectedPkmn,
+             bool           inBattle     = false,
+             bool           giveHoldItem = false);
     virtual ~BagScene();
 
     virtual void update(Inputs const* inputs) override;
@@ -44,6 +49,9 @@ private:
     bool           openPkmnScene      = false;
     bool           allowFaintedTarget = false;
     bool           inBattle           = false;
+    bool           giveHoldItem       = false;
+
+    std::unique_ptr<TextSpeech> cantHoldSpeech;
 
     size_t currentPocketIndex = 0;
 

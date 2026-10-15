@@ -3,9 +3,17 @@
 #include "game.h"
 #include "itemutils.h"
 #include "pkmnsscene.h"
+#include "utils.h"
 
-BagScene::BagScene(SDL_Renderer* renderer, Item::ItemPtr& selectedItem, Pkmn::PkmnPtr& selectedPkmn, bool inBattle)
-    : Scene(renderer), selectedItem(selectedItem), selectedPkmn(selectedPkmn), inBattle(inBattle)
+#include <boost/format.hpp>
+
+BagScene::BagScene(SDL_Renderer*  renderer,
+                   Item::ItemPtr& selectedItem,
+                   Pkmn::PkmnPtr& selectedPkmn,
+                   bool           inBattle,
+                   bool           giveHoldItem)
+    : Scene(renderer), selectedItem(selectedItem), selectedPkmn(selectedPkmn), inBattle(inBattle),
+      giveHoldItem(giveHoldItem)
 {
     selectedItem.reset();
     selectedPkmn.reset();
@@ -40,6 +48,8 @@ BagScene::BagScene(SDL_Renderer* renderer, Item::ItemPtr& selectedItem, Pkmn::Pk
         itemSurface = IMG_Load(("resources/Graphics/Items/" + item->getDefinition()->getId() + ".png").c_str());
         itemTexture = SDL_CreateTextureFromSurface(renderer, itemSurface);
     }
+
+    cantHoldSpeech = std::make_unique<TextSpeech>(renderer);
 }
 
 BagScene::~BagScene()
@@ -70,6 +80,18 @@ BagScene::~BagScene()
 
 void BagScene::update(Inputs const* inputs)
 {
+    if (cantHoldSpeech && cantHoldSpeech->isStarted() && !cantHoldSpeech->shouldClose())
+    {
+        inputs->setHandler(cantHoldSpeech->inputId());
+        cantHoldSpeech->update(inputs);
+        return;
+    }
+    if (cantHoldSpeech && cantHoldSpeech->shouldClose())
+    {
+        cantHoldSpeech->reset();
+        return;
+    }
+
     inputs->setHandler(inputId());
 
     auto const& player = Game::instance()->data.player;
@@ -85,16 +107,38 @@ void BagScene::update(Inputs const* inputs)
             if (!def)
                 return;
 
-            if (inBattle) {
-                if (def->getBattleUse() == ItemDef::BattleUse::OnMove || def->getBattleUse() == ItemDef::BattleUse::OnPkmn) {
+            if (giveHoldItem)
+            {
+                if (def->hasFlag(ItemDef::Flag::KeyItem))
+                {
+                    cantHoldSpeech->setTexts(
+                        {(boost::format(lc::translate("The %1% can't be held.")) % def->getName()).str()});
+                    cantHoldSpeech->reset();
+                    cantHoldSpeech->start();
+                    return;
+                }
+
+                selectedItem = item;
+                leave        = true;
+                return;
+            }
+
+            if (inBattle)
+            {
+                if (def->getBattleUse() == ItemDef::BattleUse::OnMove
+                    || def->getBattleUse() == ItemDef::BattleUse::OnPkmn)
+                {
                     pendingItem = item;
                     selectedPkmn.reset();
                     allowFaintedTarget = ItemUtils::allowFaintedTarget(item);
                     openPkmnScene      = def->getBattleUse() == ItemDef::BattleUse::OnPkmn;
                     return;
                 }
-            } else {
-                if (def->getFieldUse() == ItemDef::FieldUse::OnPkmn) {
+            }
+            else
+            {
+                if (def->getFieldUse() == ItemDef::FieldUse::OnPkmn)
+                {
                     pendingItem = item;
                     selectedPkmn.reset();
                     allowFaintedTarget = ItemUtils::allowFaintedTarget(item);
@@ -159,7 +203,7 @@ void BagScene::update(Inputs const* inputs)
     }
 }
 
-void BagScene::draw(Fps const* /*fps*/, RenderSizes rs)
+void BagScene::draw(Fps const* fps, RenderSizes rs)
 {
     auto const& player = Game::instance()->data.player;
 
@@ -273,6 +317,9 @@ void BagScene::draw(Fps const* /*fps*/, RenderSizes rs)
             SDL_RenderCopy(renderer, itemTexture, NULL, &dstRect);
         }
     }
+
+    if (cantHoldSpeech && cantHoldSpeech->isStarted())
+        cantHoldSpeech->draw(fps, rs);
 }
 
 bool BagScene::popScene() const
