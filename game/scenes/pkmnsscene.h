@@ -3,22 +3,28 @@
 
 #include "pkmn.h"
 #include "scene.h"
+#include "textquestion.h"
 
 #include <SDL_image.h>
+#include <memory>
 
 class PkmnsScene : public Scene
 {
 public:
-    PkmnsScene(SDL_Renderer* renderer,
+    PkmnsScene(SDL_Renderer*  renderer,
                Pkmn::PkmnPtr& currentPkmn,
-               bool           forceSelectedPkmn   = false,
-               bool           allowFaintedPkmn    = false);
+               bool           forceSelectedPkmn = false,
+               bool           allowFaintedPkmn  = false);
     virtual ~PkmnsScene();
 
     virtual void update(Inputs const* inputs) override;
     virtual void draw(Fps const* fps, RenderSizes rs) override;
 
     virtual bool popScene() const override;
+    virtual bool pushScene() const override;
+    virtual void popReset() override;
+
+    virtual std::unique_ptr<Scene> nextScene() override;
 
     virtual std::string name() override;
 
@@ -61,13 +67,17 @@ private:
 
     size_t ticks = 0;
 
-    bool           leave         = false;
-    bool           selectingPkmn = false;
+    bool           leave             = false;
+    bool           selectingPkmn     = false;
     bool           forceSelectedPkmn = false;
-    bool           allowFaintedPkmn = false;
+    bool           allowFaintedPkmn  = false;
+    bool           showCommand       = false;
+    bool           openInfo          = false;
     Pkmn::PkmnPtr& selectedPkmn;
     size_t         currentIndex = 0;
     int            swapIndex    = -1;
+
+    std::unique_ptr<TextQuestion> command;
 };
 
 #endif // PKMNSSCENE_H

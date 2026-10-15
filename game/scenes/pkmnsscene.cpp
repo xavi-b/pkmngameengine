@@ -1,10 +1,11 @@
 #include "pkmnsscene.h"
 
 #include "game.h"
+#include "pkmninfoscene.h"
 #include "pkmnutils.h"
 #include "utils.h"
 
-PkmnsScene::PkmnsScene(SDL_Renderer* renderer,
+PkmnsScene::PkmnsScene(SDL_Renderer*  renderer,
                        Pkmn::PkmnPtr& currentPkmn,
                        bool           forceSelectedPkmn,
                        bool           allowFaintedPkmn)
@@ -56,7 +57,7 @@ PkmnsScene::PkmnsScene(SDL_Renderer* renderer,
         file += pkmn->getDefinition()->getId();
         if (pkmn->isFemale())
         {
-            std::string femaleFile = file + ".png";
+            std::string femaleFile = file + "_female.png";
             pkmnSurface            = IMG_Load(femaleFile.c_str());
             if (pkmnSurface)
             {
@@ -72,6 +73,10 @@ PkmnsScene::PkmnsScene(SDL_Renderer* renderer,
         pkmnTexture          = SDL_CreateTextureFromSurface(renderer, pkmnSurface);
         pkmnsRendering[pkmn] = {pkmnSurface, pkmnTexture};
     }
+
+    command = std::make_unique<TextQuestion>(renderer);
+    command->setTexts({lc::translate("SUMMARY"), lc::translate("SWITCH"), lc::translate("CANCEL")});
+    command->init();
 }
 
 PkmnsScene::~PkmnsScene()
@@ -119,9 +124,32 @@ PkmnsScene::~PkmnsScene()
 
 void PkmnsScene::update(Inputs const* inputs)
 {
-    inputs->setHandler(inputId());
-
     ++ticks;
+
+    if (showCommand && command)
+    {
+        if (inputs->B)
+        {
+            showCommand = false;
+            command->reset();
+            return;
+        }
+        inputs->setHandler(command->inputId());
+        command->update(inputs);
+        if (command->isFinished())
+        {
+            int choice = command->selectedIndex();
+            command->reset();
+            showCommand = false;
+            if (choice == 0)
+                openInfo = true;
+            else if (choice == 1)
+                swapIndex = static_cast<int>(currentIndex);
+        }
+        return;
+    }
+
+    inputs->setHandler(inputId());
 
     if (inputs->A)
     {
@@ -138,9 +166,10 @@ void PkmnsScene::update(Inputs const* inputs)
                 Game::instance()->data.player.pkmns[currentIndex].swap(Game::instance()->data.player.pkmns[swapIndex]);
                 swapIndex = -1;
             }
-            else
+            else if (currentIndex < Game::instance()->data.player.getPkmnCount())
             {
-                swapIndex = currentIndex;
+                showCommand = true;
+                command->reset();
             }
         }
     }
@@ -178,7 +207,7 @@ void PkmnsScene::update(Inputs const* inputs)
     }
 }
 
-void PkmnsScene::draw(Fps const* /*fps*/, RenderSizes rs)
+void PkmnsScene::draw(Fps const* fps, RenderSizes rs)
 {
     // https://gamefaqs.gamespot.com/gameboy/367023-pokemon-red-version/faqs/64175/hp-bar-colour
     auto overlayYBasedOnPercentageHP = [](float percentageHP) {
@@ -363,11 +392,35 @@ void PkmnsScene::draw(Fps const* /*fps*/, RenderSizes rs)
                                            dstGenderRect.y);
         }
     }
+
+    if (showCommand && command)
+        command->draw(fps, rs, TextQuestion::RIGHT);
 }
 
 bool PkmnsScene::popScene() const
 {
     return leave;
+}
+
+bool PkmnsScene::pushScene() const
+{
+    return openInfo;
+}
+
+void PkmnsScene::popReset()
+{
+    openInfo = false;
+}
+
+std::unique_ptr<Scene> PkmnsScene::nextScene()
+{
+    if (!openInfo)
+        return nullptr;
+    if (currentIndex >= Game::instance()->data.player.getPkmnCount())
+        return nullptr;
+    if (!Game::instance()->data.player.pkmns[currentIndex])
+        return nullptr;
+    return std::make_unique<PkmnInfoScene>(renderer, currentIndex);
 }
 
 std::string PkmnsScene::name()
