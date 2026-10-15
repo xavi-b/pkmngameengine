@@ -118,7 +118,11 @@ void SingleBattlePlayerItemsPhase::update(Inputs const* inputs)
                 itemMessages.push_back(throwText.str());
                 captureSuccess = ItemUtils::useCaptureBall(data->selectedItem, data->opponentPkmn);
                 if (captureSuccess)
+                {
+                    if (data->opponentPkmn && data->selectedItem && data->selectedItem->getDefinition())
+                        data->opponentPkmn->setCaptureBall(data->selectedItem->getDefinition()->getId());
                     ItemUtils::addPkmnToPlayer(data->opponentPkmn);
+                }
                 if (captureSuccess)
                     itemMessages.push_back(lc::translate("Gotcha ! The Pkmn was caught !"));
                 else
@@ -128,7 +132,9 @@ void SingleBattlePlayerItemsPhase::update(Inputs const* inputs)
             case ItemDef::BattleUse::OnBattler: {
                 if (!data->playerPkmn)
                     break;
-                used = ItemUtils::useItemOnBattler(data->selectedItem, data->playerPkmn, data->playerBattler,
+                used = ItemUtils::useItemOnBattler(data->selectedItem,
+                                                   data->playerPkmn,
+                                                   data->playerBattler,
                                                    &data->playerConfusion);
                 if (used)
                 {
@@ -141,8 +147,11 @@ void SingleBattlePlayerItemsPhase::update(Inputs const* inputs)
             }
             case ItemDef::BattleUse::Direct: {
                 std::string msg;
-                used = ItemUtils::useBattleItemDirect(data->selectedItem, data->playerPkmn, data->playerBattler,
-                                                      endsBattle, msg);
+                used = ItemUtils::useBattleItemDirect(data->selectedItem,
+                                                      data->playerPkmn,
+                                                      data->playerBattler,
+                                                      endsBattle,
+                                                      msg);
                 if (used)
                 {
                     boost::format itemText =

@@ -382,6 +382,16 @@ void Pkmn::setHeldItem(Item::ItemPtr const& newHeldItem)
     heldItem = newHeldItem;
 }
 
+std::string const& Pkmn::getCaptureBall() const
+{
+    return captureBall;
+}
+
+void Pkmn::setCaptureBall(std::string const& newCaptureBall)
+{
+    captureBall = newCaptureBall.empty() ? "POKEBALL" : newCaptureBall;
+}
+
 std::string Pkmn::getDisplayName() const
 {
     if (nickName.empty())
@@ -436,6 +446,7 @@ void tag_invoke(js::value_from_tag, js::value& jv, Pkmn::PkmnPtr const& o)
             {"nature", static_cast<int>(o->nature)},
             {"firstTrainerId", o->firstTrainerId},
             {"heldItem", js::value_from<Item::ItemPtr const&>(o->heldItem)},
+            {"captureBall", o->captureBall},
             {"shiny", o->shiny}
         };
     }
@@ -461,8 +472,8 @@ Pkmn::PkmnPtr tag_invoke(js::value_to_tag<Pkmn::PkmnPtr>, js::value const& jv)
     pkmn->statusCondition = static_cast<Pkmn::StatusCondition>(js::value_to<int>(obj.at("statusCondition")));
     if (auto const* turns = obj.if_contains("statusTurns"))
         pkmn->statusTurns = js::value_to<size_t>(*turns);
-    pkmn->happiness       = js::value_to<unsigned char>(obj.at("happiness"));
-    pkmn->gender          = static_cast<Pkmn::Gender>(js::value_to<int>(obj.at("gender")));
+    pkmn->happiness = js::value_to<unsigned char>(obj.at("happiness"));
+    pkmn->gender    = static_cast<Pkmn::Gender>(js::value_to<int>(obj.at("gender")));
     if (obj.contains("nature"))
         pkmn->nature = static_cast<Pkmn::Nature>(js::value_to<int>(obj.at("nature")));
     else
@@ -474,6 +485,8 @@ Pkmn::PkmnPtr tag_invoke(js::value_to_tag<Pkmn::PkmnPtr>, js::value const& jv)
         pkmn->firstTrainerId = Game::instance()->data.player.id;
     if (obj.contains("heldItem"))
         pkmn->heldItem = js::value_to<Item::ItemPtr>(obj.at("heldItem"));
+    if (obj.contains("captureBall"))
+        pkmn->setCaptureBall(js::value_to<std::string>(obj.at("captureBall")));
     for (auto& value : obj.at("IVs").as_array())
     {
         js::object const& obj                                                  = value.as_object();

@@ -39,6 +39,7 @@ private:
     void          reloadSprite();
     void          reloadIcon();
     void          reloadItem();
+    void          reloadBall();
     void          shiftParty(int delta);
     void          drawPage(RenderSizes rs);
 

@@ -123,6 +123,9 @@ public:
     Item::ItemPtr getHeldItem() const;
     void          setHeldItem(Item::ItemPtr const& newHeldItem);
 
+    std::string const& getCaptureBall() const;
+    void               setCaptureBall(std::string const& newCaptureBall);
+
     std::string getDisplayName() const;
 
     bool isShiny() const;
@@ -145,6 +148,7 @@ private:
     Gender                          gender          = Gender::MALE;
     Nature                          nature          = Nature::HARDY;
     Item::ItemPtr                   heldItem        = nullptr;
+    std::string                     captureBall     = "POKEBALL";
     bool                            shiny           = false;
     uint64_t                        firstTrainerId  = 0;
 };

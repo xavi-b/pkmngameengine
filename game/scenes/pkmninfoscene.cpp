@@ -218,12 +218,6 @@ PkmnInfoScene::PkmnInfoScene(SDL_Renderer* renderer, size_t partyIndex) : Scene(
     expTexture              = SDL_CreateTextureFromSurface(renderer, expSurface);
     SDL_FreeSurface(expSurface);
 
-    SDL_Surface* ballSurface = IMG_Load("resources/Graphics/UI/Summary/icon_ball_POKEBALL.png");
-    ballTexture              = SDL_CreateTextureFromSurface(renderer, ballSurface);
-    SDL_FreeSurface(ballSurface);
-    if (ballTexture)
-        SDL_SetTextureBlendMode(ballTexture, SDL_BLENDMODE_BLEND);
-
     SDL_Surface* shinySurface = IMG_Load("resources/Graphics/UI/shiny.png");
     shinyTexture              = SDL_CreateTextureFromSurface(renderer, shinySurface);
     SDL_FreeSurface(shinySurface);
@@ -240,6 +234,7 @@ PkmnInfoScene::PkmnInfoScene(SDL_Renderer* renderer, size_t partyIndex) : Scene(
     reloadSprite();
     reloadIcon();
     reloadItem();
+    reloadBall();
     playCry(currentPkmn()->getDefinition()->getId());
 }
 
@@ -344,6 +339,34 @@ void PkmnInfoScene::reloadIcon()
         SDL_SetTextureBlendMode(iconTexture, SDL_BLENDMODE_BLEND);
 }
 
+void PkmnInfoScene::reloadBall()
+{
+    if (ballTexture)
+    {
+        SDL_DestroyTexture(ballTexture);
+        ballTexture = nullptr;
+    }
+
+    auto        pkmn   = currentPkmn();
+    std::string ballId = pkmn ? pkmn->getCaptureBall() : "POKEBALL";
+    if (ballId.empty())
+        ballId = "POKEBALL";
+
+    std::string path = "resources/Graphics/UI/Summary/icon_ball_" + ballId + ".png";
+    if (!std::filesystem::exists(path))
+        path = "resources/Graphics/UI/Summary/icon_ball_POKEBALL.png";
+    if (!std::filesystem::exists(path))
+        return;
+
+    SDL_Surface* surface = IMG_Load(path.c_str());
+    if (!surface)
+        return;
+    ballTexture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_FreeSurface(surface);
+    if (ballTexture)
+        SDL_SetTextureBlendMode(ballTexture, SDL_BLENDMODE_BLEND);
+}
+
 void PkmnInfoScene::reloadItem()
 {
     if (itemTexture)
@@ -392,6 +415,7 @@ void PkmnInfoScene::shiftParty(int delta)
     reloadSprite();
     reloadIcon();
     reloadItem();
+    reloadBall();
     if (currentPkmn() && currentPkmn()->getDefinition())
         playCry(currentPkmn()->getDefinition()->getId());
 }
