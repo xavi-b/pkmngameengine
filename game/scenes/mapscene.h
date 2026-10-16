@@ -144,19 +144,26 @@ protected:
     virtual void updateAfterMovement(Inputs const* inputs);
     virtual bool handleActionButton(Inputs const* inputs);
 
-    void updateAnimations();
-    bool updateTransitions(Inputs const* inputs);
-    bool updateOverlays(Inputs const* inputs);
-    void updateTileAnimations();
-    bool isPlayerMovementFrame() const;
-    bool updateMapPassiveInteractions(Inputs const* inputs);
-    bool updateSpecialTiles(Inputs const* inputs);
-    void updatePlayerInput(Inputs const* inputs);
-    void onPlayerTileStepped();
-    bool updatePoisonSpeech(Inputs const* inputs);
-    bool updateItemSpeech(Inputs const* inputs);
-    void drawPoisonEffects(Fps const* fps, RenderSizes rs);
-    void drawItemTexts(Fps const* fps, RenderSizes rs);
+    void          updateAnimations();
+    bool          updateTransitions(Inputs const* inputs);
+    bool          updateOverlays(Inputs const* inputs);
+    void          updateTileAnimations();
+    bool          isPlayerMovementFrame() const;
+    bool          updateMapPassiveInteractions(Inputs const* inputs);
+    bool          updateSpecialTiles(Inputs const* inputs);
+    void          updatePlayerInput(Inputs const* inputs);
+    void          onPlayerTileStepped();
+    bool          updatePoisonSpeech(Inputs const* inputs);
+    bool          updateItemSpeech(Inputs const* inputs);
+    bool          updateFishing(Inputs const* inputs);
+    bool          canFish() const;
+    void          startFishing(std::string const& rodId);
+    void          showFishingDots(std::string const& dots);
+    void          drawFishing(Fps const* fps, RenderSizes rs, SDL_Rect dstPlayerRect);
+    void          finishFishing();
+    Pkmn::PkmnPtr rollEncounter(EncounterMethod const& method) const;
+    void          drawPoisonEffects(Fps const* fps, RenderSizes rs);
+    void          drawItemTexts(Fps const* fps, RenderSizes rs);
 
     std::map<std::string, std::pair<SDL_Surface*, SDL_Texture*>> sprites;
     std::map<std::string, std::pair<SDL_Surface*, SDL_Texture*>> lightsSprites;
@@ -217,6 +224,24 @@ protected:
     bool                  diving    = false;
 
     std::string goToScene = "";
+
+    enum class FishingPhase
+    {
+        None,
+        Cast,
+        Dots,
+        Result
+    };
+
+    FishingPhase fishingPhase      = FishingPhase::None;
+    int          fishingTicks      = 0;
+    int          fishingDots       = 0;
+    int          fishingDotsTarget = 0;
+    int          fishingStep       = 0;
+    bool         fishingHooked     = false;
+    std::string  fishingRod;
+    SDL_Surface* fishSurface = nullptr;
+    SDL_Texture* fishTexture = nullptr;
 
 private:
     void   takeLevelMoves(Pkmn::PkmnPtr const& pkmn, std::vector<std::string>& lines, bool resetQueue);

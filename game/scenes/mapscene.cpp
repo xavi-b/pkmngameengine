@@ -14,6 +14,7 @@
 #include "game.h"
 #include "itemutils.h"
 #include "pkmnsscene.h"
+#include "renderutils.h"
 #include "scenes/battle/encounterscene.h"
 #include "scenes/battle/statuscondition.h"
 #include "scenes/battle/trainerscene.h"
@@ -26,6 +27,7 @@
 #include "textspeech.h"
 #include "utils.h"
 
+#include <algorithm>
 #include <boost/format.hpp>
 #include <boost/locale.hpp>
 #include <cctype>
@@ -60,6 +62,9 @@ MapScene::~MapScene()
         SDL_DestroyTexture(texture);
         SDL_FreeSurface(surface);
     }
+
+    SDL_DestroyTexture(fishTexture);
+    SDL_FreeSurface(fishSurface);
 }
 
 void MapScene::init()
@@ -85,6 +90,23 @@ void MapScene::init()
         playerBikeSprite->load("resources/Graphics/Characters/girl_bike.png", shouldShowNightTextures());
     }
     surfSprite->load("resources/Graphics/Characters/base_surf.png", shouldShowNightTextures());
+    std::string fishPath = Game::instance()->data.player.getGender() == Player::Gender::BOY
+                             ? "resources/Graphics/Characters/boy_fish_offset.png"
+                             : "resources/Graphics/Characters/girl_fish_offset.png";
+    SDL_DestroyTexture(fishTexture);
+    SDL_FreeSurface(fishSurface);
+    fishSurface = IMG_Load(fishPath.c_str());
+    if (fishSurface)
+    {
+        SDL_Texture* loaded = SDL_CreateTextureFromSurface(renderer, fishSurface);
+        fishTexture         = loaded ? RenderUtils::texture(renderer, loaded, shouldShowNightTextures()) : nullptr;
+    }
+    else
+    {
+        fishTexture = nullptr;
+    }
+    if (fishTexture)
+        SDL_SetTextureBlendMode(fishTexture, SDL_BLENDMODE_BLEND);
     divingSprite->load("resources/Graphics/Characters/base_dive.png", diving || shouldShowNightTextures());
     playerSprite->forceSpriteDirection(playerSpriteInitialDirection);
     playerRunSprite->forceSpriteDirection(playerSpriteInitialDirection);
@@ -159,6 +181,7 @@ void MapScene::update(Inputs const* inputs)
 
     preventInputs |= updatePoisonSpeech(inputs);
     preventInputs |= updateItemSpeech(inputs);
+    preventInputs |= updateFishing(inputs);
 
     if (!preventInputs)
         preventInputs |= updateAmbient(inputs);
@@ -812,6 +835,10 @@ bool MapScene::updateItemSpeech(Inputs const* inputs)
     if (!itemSpeech)
         return false;
 
+    // Waiting dots stay up until the cast finishes. A must not dismiss them.
+    if (fishingPhase == FishingPhase::Dots)
+        return false;
+
     if (itemSpeech->isStarted() && !itemSpeech->shouldClose())
     {
         inputs->setHandler(itemSpeech->inputId());
@@ -1125,6 +1152,19 @@ void MapScene::drawPlayer(Fps const* fps, RenderSizes rs, SDL_Rect dstPlayerRect
                  * (int(fps->accumulatedTicks) % waterSpeed - (waterSpeed - 1) / 2 + fps->tickPercentage() - 0.5)
                  / (waterSpeed / 2))
         * dstTilePixelHeight / 8;
+
+    if (fishingPhase != FishingPhase::None)
+    {
+        if (player.surfing || diving)
+            dstPlayerRect.y += waterMovementOffset;
+        if (player.surfing)
+        {
+            surfSprite->updateSpriteRow(player);
+            surfSprite->draw(player, fps, rs, dstPlayerRect);
+        }
+        drawFishing(fps, rs, dstPlayerRect);
+        return;
+    }
 
     divingSprite->updateSpriteRow(player);
     surfSprite->updateSpriteRow(player);
@@ -1898,6 +1938,40 @@ bool MapScene::manageEvents()
     return false;
 }
 
+Pkmn::PkmnPtr MapScene::rollEncounter(EncounterMethod const& method) const
+{
+    auto const& encounters = method.getEncounters();
+    if (encounters.empty())
+        return nullptr;
+
+    double accumulated = 0;
+    for (auto const& encounter : encounters)
+        accumulated += encounter.getPercentage();
+    if (accumulated <= 0)
+        return nullptr;
+
+    std::random_device  rd;
+    std::mt19937        gen(rd());
+    std::vector<double> weights;
+    for (auto const& encounter : encounters)
+        weights.push_back(encounter.getPercentage() / accumulated);
+    std::discrete_distribution<> distribution(weights.begin(), weights.end());
+    Encounter                    encounter = encounters[distribution(gen)];
+
+    if (Game::instance()->isDebug())
+        std::cout << "PkmnDef: " << encounter.getPkmnId() << std::endl;
+
+    PkmnDef::PkmnDefPtr pkmnDef = Game::instance()->data.pkmnDefFor(encounter.getPkmnId());
+    if (!pkmnDef)
+        return nullptr;
+
+    size_t levelMin = encounter.getLevelMin();
+    size_t levelMax = std::max(levelMin, encounter.getLevelMax());
+    auto   pkmn     = std::make_shared<Pkmn>(pkmnDef, Utils::randuint(levelMin, levelMax));
+    pkmn->generateFromPkmnDef();
+    return pkmn;
+}
+
 bool MapScene::manageEncounters()
 {
     auto const& player = Game::instance()->data.player;
@@ -1914,48 +1988,206 @@ bool MapScene::manageEncounters()
         });
         if (it != encounterMethods.end())
         {
-            auto const& encounterMethod = *it;
-            size_t      pkmnEncounter   = Utils::randuint(0, 99);
+            size_t pkmnEncounter = Utils::randuint(0, 99);
 
             if (Game::instance()->isDebug())
-                std::cout << "PkmnEncounter: " << pkmnEncounter << "/" << encounterMethod.getDensity() << std::endl;
+                std::cout << "PkmnEncounter: " << pkmnEncounter << "/" << it->getDensity() << std::endl;
 
-            if (pkmnEncounter < encounterMethod.getDensity())
+            if (pkmnEncounter < it->getDensity())
             {
-                std::random_device  rd;
-                std::mt19937        gen(rd());
-                auto const&         encounters = encounterMethod.getEncounters();
-                std::vector<double> weights;
-                double              accumulated = 0;
-                for (auto const& e : encounters)
-                {
-                    accumulated += e.getPercentage();
-                    weights.push_back(e.getPercentage());
-                }
-                for (auto& w : weights)
-                {
-                    w /= accumulated;
-                }
-                std::discrete_distribution<> d(weights.begin(), weights.end());
-                int                          eIndex = d(gen);
-                Encounter                    e      = encounters[eIndex];
-
-                if (Game::instance()->isDebug())
-                    std::cout << "PkmnDef: " << e.getPkmnId() << std::endl;
-
-                PkmnDef::PkmnDefPtr pkmnDef = Game::instance()->data.pkmnDefFor(e.getPkmnId());
-                if (pkmnDef)
-                {
-                    size_t level    = Utils::randuint(e.getLevelMin(), e.getLevelMax());
-                    encounteredPkmn = std::make_shared<Pkmn>(pkmnDef, level);
-                    encounteredPkmn->generateFromPkmnDef();
-                }
-                return true;
+                encounteredPkmn = rollEncounter(*it);
+                return encounteredPkmn != nullptr;
             }
         }
     }
 
     return false;
+}
+
+bool MapScene::canFish() const
+{
+    auto const& player = Game::instance()->data.player;
+    if (diving)
+        return false;
+    if (isEntityFacingWaterfallTile(player))
+        return false;
+    return isEntityFacingWaterTile(player);
+}
+
+void MapScene::startFishing(std::string const& rodId)
+{
+    auto& player = Game::instance()->data.player;
+    if (!canFish())
+    {
+        if (itemSpeech)
+        {
+            auto text = boost::format(lc::translate("OAK: %1%!\nThis isn't the time to use that!")) % player.name;
+            itemSpeech->setTexts({text.str()});
+            itemSpeech->reset();
+            itemSpeech->start();
+        }
+        return;
+    }
+
+    stop(player);
+    fishingRod        = rodId;
+    fishingPhase      = FishingPhase::Cast;
+    fishingTicks      = 0;
+    fishingDots       = 0;
+    fishingDotsTarget = 4 + static_cast<int>(Utils::randuint(0, 6));
+    fishingStep       = 3;
+    fishingHooked     = false;
+}
+
+void MapScene::showFishingDots(std::string const& dots)
+{
+    if (!itemSpeech)
+        return;
+
+    Inputs idle{};
+    itemSpeech->setTexts({dots});
+    itemSpeech->reset();
+    itemSpeech->start();
+    for (int i = 0; i < 8 && itemSpeech->isStarted() && !itemSpeech->mayClose(); ++i)
+        itemSpeech->update(&idle);
+}
+
+void MapScene::finishFishing()
+{
+    if (fishingHooked)
+    {
+        EncounterMethod::Type type = EncounterMethod::OLD_ROD;
+        if (fishingRod == "GOODROD")
+            type = EncounterMethod::GOOD_ROD;
+        else if (fishingRod == "SUPERROD")
+            type = EncounterMethod::SUPER_ROD;
+
+        auto const& methods = map->getEncounterMethods();
+        auto        it      = std::find_if(methods.begin(), methods.end(), [=](EncounterMethod const& method) {
+            return method.getType() == type;
+        });
+        if (it != methods.end())
+            encounteredPkmn = rollEncounter(*it);
+        if (encounteredPkmn)
+        {
+            stop(Game::instance()->data.player);
+            battleIntro = manageBattleIntro();
+            if (battleIntro)
+                battleIntro->start();
+        }
+    }
+
+    fishingPhase  = FishingPhase::None;
+    fishingHooked = false;
+    fishingRod.clear();
+    if (itemSpeech)
+        itemSpeech->reset();
+}
+
+bool MapScene::updateFishing(Inputs const* /*inputs*/)
+{
+    if (fishingPhase == FishingPhase::None)
+        return false;
+
+    bool speechOpen = itemSpeech && itemSpeech->isStarted() && !itemSpeech->shouldClose();
+    if (fishingPhase == FishingPhase::Result)
+    {
+        if (speechOpen)
+            return true;
+        finishFishing();
+        return false;
+    }
+
+    ++fishingTicks;
+    if (fishingPhase == FishingPhase::Cast)
+    {
+        constexpr int CastStepTicks = 3;
+        if (fishingTicks >= CastStepTicks)
+        {
+            fishingTicks = 0;
+            if (fishingStep > 0)
+                --fishingStep;
+            else
+                fishingPhase = FishingPhase::Dots;
+        }
+        return true;
+    }
+
+    fishingStep = 0;
+    if (fishingTicks < 3)
+        return true;
+
+    fishingTicks = 0;
+    ++fishingDots;
+    std::string dots;
+    for (int i = 0; i < fishingDots; ++i)
+        dots += "\u00B7";
+    showFishingDots(dots);
+    if (fishingDots < fishingDotsTarget)
+        return true;
+
+    EncounterMethod::Type type = EncounterMethod::OLD_ROD;
+    if (fishingRod == "GOODROD")
+        type = EncounterMethod::GOOD_ROD;
+    else if (fishingRod == "SUPERROD")
+        type = EncounterMethod::SUPER_ROD;
+
+    auto const& methods = map->getEncounterMethods();
+    auto        it      = std::find_if(methods.begin(), methods.end(), [=](EncounterMethod const& method) {
+        return method.getType() == type;
+    });
+    bool        hasFish = it != methods.end() && !it->getEncounters().empty();
+    fishingHooked       = hasFish && Utils::randuint(0, 1) == 0;
+    fishingPhase        = FishingPhase::Result;
+    if (itemSpeech)
+    {
+        std::string text = fishingHooked ? std::string(lc::translate("A Pokémon's on the hook!"))
+                                         : std::string(lc::translate("Not even a nibble…"));
+        itemSpeech->setTexts({text});
+        itemSpeech->reset();
+        itemSpeech->start();
+    }
+    else
+    {
+        finishFishing();
+    }
+    return true;
+}
+
+void MapScene::drawFishing(Fps const* /*fps*/, RenderSizes /*rs*/, SDL_Rect dstPlayerRect)
+{
+    if (!fishTexture)
+        return;
+
+    auto facing = Game::instance()->data.player.previousDirection;
+    int  row    = 0;
+    switch (facing)
+    {
+    case Entity::Direction::LEFT:
+        row = 1;
+        break;
+    case Entity::Direction::UP:
+        row = 2;
+        break;
+    case Entity::Direction::RIGHT:
+        row = 3;
+        break;
+    case Entity::Direction::DOWN:
+    default:
+        row = 0;
+        break;
+    }
+
+    constexpr int CellW = 96;
+    constexpr int CellH = 80;
+    int const     step  = std::clamp(fishingStep, 0, 3);
+    SDL_Rect      src{step * CellW, row * CellH, CellW, CellH};
+    SDL_Rect      dst;
+    dst.w = CellW * dstPlayerRect.w / MapScene::TilePixelSize;
+    dst.h = CellH * dstPlayerRect.h / MapScene::EntityPixelHeight;
+    dst.x = dstPlayerRect.x + dstPlayerRect.w / 2 - dst.w / 2;
+    dst.y = dstPlayerRect.y + dstPlayerRect.h / 2 - dst.h / 2;
+    SDL_RenderCopy(renderer, fishTexture, &src, &dst);
 }
 
 bool MapScene::manageTrainers()
@@ -2044,8 +2276,9 @@ void MapScene::takeLevelMoves(Pkmn::PkmnPtr const& pkmn, std::vector<std::string
 
 void MapScene::popReset()
 {
-    bool keepEvolution = false;
-    bool bagUse        = selectedBagItem && selectedBagTargetPkmn;
+    bool keepEvolution  = false;
+    bool closeStartMenu = false;
+    bool bagUse         = selectedBagItem && selectedBagTargetPkmn;
     if (bagUse)
     {
         awaitingMoveScene = false;
@@ -2059,9 +2292,11 @@ void MapScene::popReset()
 
         auto        target = selectedBagTargetPkmn;
         auto        item   = selectedBagItem;
-        std::string itemId = item->getDefinition() ? item->getDefinition()->getId() : "";
+        auto        def    = item->getDefinition();
+        std::string itemId = def ? def->getId() : "";
         if (ItemUtils::useItemOnPkmn(item, target, false))
         {
+            closeStartMenu = def && def->hasFlag(ItemDef::Flag::KeyItem);
             Game::instance()->data.player.removeOneItem(item->getDefinition());
             if (itemId == "RARECANDY" && target)
             {
@@ -2094,9 +2329,18 @@ void MapScene::popReset()
     }
     else if (selectedBagItem)
     {
-        ItemUtils::useItemInField(Game::instance()->data.player, selectedBagItem);
-        // TODO: message information (Item overlay ?)
-        // TODO: action
+        auto        def     = selectedBagItem->getDefinition();
+        std::string itemId  = def ? def->getId() : "";
+        bool        keyItem = def && def->hasFlag(ItemDef::Flag::KeyItem);
+        if (itemId == "OLDROD" || itemId == "GOODROD" || itemId == "SUPERROD")
+        {
+            startFishing(itemId);
+            closeStartMenu = keyItem;
+        }
+        else if (ItemUtils::useItemInField(Game::instance()->data.player, selectedBagItem))
+        {
+            closeStartMenu = keyItem;
+        }
     }
     else if (awaitingMoveScene)
     {
@@ -2139,8 +2383,17 @@ void MapScene::popReset()
         offeredMoveIds.clear();
     }
 
-    fadeInAnimation->reset();
-    fadeInAnimation->start();
+    if (fadeInAnimation)
+    {
+        fadeInAnimation->reset();
+        fadeInAnimation->start();
+    }
+
+    if (closeStartMenu && openMenu)
+    {
+        openMenu = false;
+        menu->close();
+    }
 
     openPkmns = false;
     openBag   = false;
