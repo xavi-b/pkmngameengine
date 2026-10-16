@@ -12,8 +12,15 @@ struct Inputs
         return next++;
     }
 
-    // Same handler: a hold repeats after RepeatGapTicks. A new handler ignores keys until release.
-    void setHandler(size_t token) const;
+    // Same handler: a hold repeats after RepeatGapTicks.
+    // A new handler ignores keys until release, except when both handlers are map scenes.
+    enum class Handler
+    {
+        Exclusive,
+        MapScene
+    };
+
+    void setHandler(size_t token, Handler handler = Handler::Exclusive) const;
 
     void update();
     void clear();
@@ -47,20 +54,21 @@ private:
         bool physical  = false;
     };
 
-    void adoptHandler(size_t token);
+    void adoptHandler(size_t token, Handler handler);
     bool consume(bool down, Key& key);
     void latch(bool& pulsed, Key& key);
 
-    size_t activeToken = 0;
-    Key    keyA;
-    Key    keyB;
-    Key    keyUp;
-    Key    keyDown;
-    Key    keyLeft;
-    Key    keyRight;
-    Key    keyStart;
-    Key    keySelect;
-    Key    keyDebug;
+    size_t  activeToken   = 0;
+    Handler activeHandler = Handler::Exclusive;
+    Key     keyA;
+    Key     keyB;
+    Key     keyUp;
+    Key     keyDown;
+    Key     keyLeft;
+    Key     keyRight;
+    Key     keyStart;
+    Key     keySelect;
+    Key     keyDebug;
 };
 
 #endif // ITEM_H

@@ -710,7 +710,7 @@ bool MapScene::handleActionButton(Inputs const* inputs)
 
 void MapScene::updatePlayerInput(Inputs const* inputs)
 {
-    inputs->setHandler(inputId());
+    inputs->setHandler(inputId(), Inputs::Handler::MapScene);
 
     auto& player = Game::instance()->data.player;
 

@@ -2,9 +2,9 @@
 
 #include <iostream>
 
-void Inputs::setHandler(size_t token) const
+void Inputs::setHandler(size_t token, Handler handler) const
 {
-    const_cast<Inputs*>(this)->adoptHandler(token);
+    const_cast<Inputs*>(this)->adoptHandler(token, handler);
 }
 
 void Inputs::latch(bool& pulsed, Key& key)
@@ -12,18 +12,22 @@ void Inputs::latch(bool& pulsed, Key& key)
     if (!key.physical)
         return;
 
-    pulsed         = false;
-    key.blocked    = true;
-    key.wasDown    = false;
-    key.ticksHeld  = 0;
+    pulsed        = false;
+    key.blocked   = true;
+    key.wasDown   = false;
+    key.ticksHeld = 0;
 }
 
-void Inputs::adoptHandler(size_t token)
+void Inputs::adoptHandler(size_t token, Handler handler)
 {
     if (token == 0 || token == activeToken)
         return;
 
-    activeToken = token;
+    bool bothMapScenes = handler == Handler::MapScene && activeHandler == Handler::MapScene;
+    activeToken        = token;
+    activeHandler      = handler;
+    if (bothMapScenes)
+        return;
 
     latch(A, keyA);
     latch(B, keyB);
