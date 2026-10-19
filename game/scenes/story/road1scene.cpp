@@ -49,6 +49,7 @@ void Road1Scene::init()
         entity->setGender(Trainer::Gender::BOY);
         entity->name    = "Trainer from Road 1";
         entity->graphic = "YOUNGSTER";
+        entity->money   = 96;
         trainerNpc        = entity;
         entity->x         = 5;
         entity->y         = 10;

@@ -10,6 +10,9 @@ public:
                            std::shared_ptr<SingleBattleSceneData> data,
                            SDL_Renderer*                          renderer);
     bool onExperienceResolvedNextPkmn() override;
+
+protected:
+    std::vector<std::string> victoryTexts() override;
 };
 
 #endif // TRAINEREXPERIENCEPHASE_H

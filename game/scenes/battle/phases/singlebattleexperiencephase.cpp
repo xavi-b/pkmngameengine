@@ -26,9 +26,19 @@ void SingleBattleExperiencePhase::showSpeech(std::vector<std::string> const& tex
 
 void SingleBattleExperiencePhase::showEndSpeech(std::string const& text)
 {
+    showEndSpeech(std::vector<std::string>{text});
+}
+
+void SingleBattleExperiencePhase::showEndSpeech(std::vector<std::string> const& texts)
+{
     endSpeech = std::make_unique<TextSpeech>(renderer);
-    endSpeech->setTexts({text});
+    endSpeech->setTexts(texts);
     endSpeech->start();
+}
+
+std::vector<std::string> SingleBattleExperiencePhase::victoryTexts()
+{
+    return {lc::translate("The battle is over ! You won !")};
 }
 
 void SingleBattleExperiencePhase::resumeAfterLevelMessage()
@@ -276,7 +286,7 @@ void SingleBattleExperiencePhase::update(Inputs const* inputs)
         if (onExperienceResolvedNextPkmn())
             return;
 
-        showEndSpeech(lc::translate("The battle is over ! You won !"));
+        showEndSpeech(victoryTexts());
         return;
     }
 

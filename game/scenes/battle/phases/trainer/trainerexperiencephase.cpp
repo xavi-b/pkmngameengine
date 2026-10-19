@@ -2,6 +2,7 @@
 
 #include "../../singlebattlescene.h"
 #include "../../trainerscenedata.h"
+#include "game.h"
 #include "utils.h"
 
 #include <boost/format.hpp>
@@ -12,6 +13,22 @@ TrainerExperiencePhase::TrainerExperiencePhase(SingleBattleScene&               
                                                SDL_Renderer*                          renderer)
     : SingleBattleExperiencePhase(scene, data, renderer)
 {
+}
+
+std::vector<std::string> TrainerExperiencePhase::victoryTexts()
+{
+    std::vector<std::string> texts = {lc::translate("The battle is over ! You won !")};
+
+    auto trainerData = std::static_pointer_cast<TrainerSceneData>(data);
+    if (trainerData->opponentTrainer && trainerData->opponentTrainer->money > 0)
+    {
+        Game::instance()->data.player.money += trainerData->opponentTrainer->money;
+        boost::format prizeText =
+            boost::format(lc::translate("You got $%1% for winning !")) % trainerData->opponentTrainer->money;
+        texts.push_back(prizeText.str());
+    }
+
+    return texts;
 }
 
 bool TrainerExperiencePhase::onExperienceResolvedNextPkmn()

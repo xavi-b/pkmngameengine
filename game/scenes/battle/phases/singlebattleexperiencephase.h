@@ -15,10 +15,14 @@ public:
 
     void showSpeech(std::vector<std::string> const& texts);
     void showEndSpeech(std::string const& text);
+    void showEndSpeech(std::vector<std::string> const& texts);
     void update(Inputs const* inputs) override;
     void draw(Fps const* fps, RenderSizes rs) override;
 
     virtual bool onExperienceResolvedNextPkmn() = 0;
+
+protected:
+    virtual std::vector<std::string> victoryTexts();
 
 private:
     void resumeAfterLevelMessage();

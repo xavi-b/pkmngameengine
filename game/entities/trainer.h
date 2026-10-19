@@ -32,6 +32,9 @@ public:
     // Filename stem in resources/Graphics/Trainers/, such as "YOUNGSTER".
     std::string graphic;
 
+    // Prize paid to the player when this trainer is defeated.
+    uint64_t money = 0;
+
     std::array<Pkmn::PkmnPtr, 6> pkmns;
 
 private:

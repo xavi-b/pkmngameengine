@@ -29,6 +29,7 @@ void tag_invoke(js::value_from_tag, js::value& jv, Trainer const& o)
         {"name", o.name},
         {"gender", static_cast<int>(o.getGender())},
         {"graphic", o.graphic},
+        {"money", o.money},
         {"pkmns", js::value_from<std::array<Pkmn::PkmnPtr, 6> const&>(o.pkmns)}
     };
 }
@@ -41,6 +42,8 @@ Trainer tag_invoke(js::value_to_tag<Trainer>, js::value const& jv)
     t.gender = static_cast<Trainer::Gender>(js::value_to<int>(obj.at("gender")));
     if (auto const* graphic = obj.if_contains("graphic"))
         t.graphic = js::value_to<std::string>(*graphic);
+    if (auto const* money = obj.if_contains("money"))
+        t.money = js::value_to<uint64_t>(*money);
     t.pkmns = js::value_to<std::array<Pkmn::PkmnPtr, 6>>(obj.at("pkmns"));
     return t;
 }
