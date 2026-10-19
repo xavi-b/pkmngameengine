@@ -40,7 +40,6 @@ public:
     void setOpponentPkmn(Pkmn::PkmnPtr const& newOpponentPkmn);
     void resolveOpponentFaint();
 
-    static std::string canEvolve(Pkmn::PkmnPtr const& pkmn);
     static size_t computeDamage(Pkmn::PkmnPtr const&     attacker,
                                 Pkmn::PkmnPtr const&     defender,
                                 Move::MovePtr const&     move,

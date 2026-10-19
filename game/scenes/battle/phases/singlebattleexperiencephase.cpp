@@ -2,6 +2,7 @@
 
 #include "../singlebattlescene.h"
 #include "game.h"
+#include "pkmnutils.h"
 #include "scenes/newmovesscene.h"
 #include "textspeech.h"
 #include "utils.h"
@@ -137,7 +138,7 @@ void SingleBattleExperiencePhase::update(Inputs const* inputs)
             if (expFromBattle > expLeftToNextLevel)
             {
                 pkmn->incrementLevel();
-                std::string evolutionId = SingleBattleScene::canEvolve(pkmn);
+                std::string evolutionId = PkmnUtils::canEvolve(pkmn);
                 if (!evolutionId.empty())
                     data->evolutionDef = Game::instance()->data.pkmnDefFor(evolutionId);
                 else

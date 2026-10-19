@@ -13,6 +13,7 @@
 #include "entities/erasableentity.h"
 #include "game.h"
 #include "itemutils.h"
+#include "pkmnutils.h"
 #include "pkmnsscene.h"
 #include "renderutils.h"
 #include "scenes/battle/encounterscene.h"
@@ -2312,7 +2313,7 @@ void MapScene::popReset()
                     itemSpeech->start();
                 }
 
-                std::string evolutionId = SingleBattleScene::canEvolve(target);
+                std::string evolutionId = PkmnUtils::canEvolve(target);
                 if (!evolutionId.empty())
                 {
                     auto def = Game::instance()->data.pkmnDefFor(evolutionId);

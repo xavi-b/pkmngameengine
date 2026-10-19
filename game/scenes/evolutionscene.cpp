@@ -1,6 +1,7 @@
 #include "evolutionscene.h"
 
 #include "game.h"
+#include "pkmnutils.h"
 #include "renderutils.h"
 #include "utils.h"
 
@@ -203,6 +204,10 @@ void EvolutionScene::commitEvolution()
 {
     if (evolved || !pkmn || !evolutionDef)
         return;
+
+    // The companion (an empty party slot) is created only once the evolution
+    // commits. Cancelling the scene never reaches here.
+    PkmnUtils::grantEmptySlotEvolution(pkmn);
 
     size_t oldMax = pkmn->getTotalHP();
     size_t oldHp  = pkmn->getHP();
