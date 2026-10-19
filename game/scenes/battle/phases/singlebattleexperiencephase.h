@@ -23,10 +23,24 @@ public:
 private:
     void resumeAfterLevelMessage();
     void presentNextMove();
+    void showLevelUpSpeech();
+    void beginExpFill();
+    bool advanceExpFill();
+    void commitExpFill();
+    void showExpOnBar();
 
     std::unique_ptr<TextSpeech> experienceSpeech;
     std::unique_ptr<TextSpeech> moveToLearnSpeech;
     std::unique_ptr<TextSpeech> endSpeech;
+
+    bool   expBarRunning   = false;
+    bool   expBarCommitted = false;
+    bool   expBarLevels    = false;
+    int    expBarHold      = 0;
+    size_t expBarShown     = 0;
+    size_t expBarTarget    = 0;
+    size_t expBarSpan      = 1;
+    size_t expBarConsumed  = 0;
 };
 
 #endif // SINGLEBATTLEEXPERIENCEPHASE_H

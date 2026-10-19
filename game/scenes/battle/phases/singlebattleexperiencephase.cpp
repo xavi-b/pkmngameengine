@@ -7,6 +7,7 @@
 #include "textspeech.h"
 #include "utils.h"
 
+#include <algorithm>
 #include <boost/format.hpp>
 
 SingleBattleExperiencePhase::SingleBattleExperiencePhase(SingleBattleScene&                     scene,
@@ -36,6 +37,149 @@ void SingleBattleExperiencePhase::resumeAfterLevelMessage()
         data->shouldBreakToNewMove = true;
     else if (data->evolutionDef)
         data->shouldBreakToEvolution = true;
+}
+
+void SingleBattleExperiencePhase::showLevelUpSpeech()
+{
+    if (!data->expPkmn)
+        return;
+
+    boost::format experienceText =
+        boost::format(lc::translate("%1% reached level %2% !")) % data->expPkmn->getDisplayName() % data->expPkmn->getLevel();
+    showSpeech({experienceText.str()});
+    data->shouldBreakToLevelUp = false;
+}
+
+void SingleBattleExperiencePhase::showExpOnBar()
+{
+    if (!data->expPkmn || data->expPkmn != data->playerPkmn)
+    {
+        battleUi()->clearDisplayedExp();
+        return;
+    }
+
+    if (expBarCommitted && expBarLevels)
+        battleUi()->setDisplayedExp(expBarSpan, expBarSpan);
+    else
+        battleUi()->setDisplayedExp(expBarShown, expBarSpan);
+}
+
+void SingleBattleExperiencePhase::commitExpFill()
+{
+    if (expBarCommitted || !data->expPkmn || data->expGained.empty())
+        return;
+
+    expBarCommitted = true;
+    auto& remaining = data->expGained.begin()->second;
+    if (remaining >= expBarConsumed)
+        remaining -= expBarConsumed;
+    else
+        remaining = 0;
+
+    if (!expBarLevels)
+    {
+        data->expPkmn->increaseExp(expBarConsumed);
+        return;
+    }
+
+    data->expPkmn->incrementLevel();
+    std::string evolutionId = PkmnUtils::canEvolve(data->expPkmn);
+    if (!evolutionId.empty())
+        data->evolutionDef = Game::instance()->data.pkmnDefFor(evolutionId);
+    else
+        data->evolutionDef.reset();
+
+    data->offeredMoveIds.clear();
+    data->pendingMoveIds.clear();
+    MoveLearn::queueMoveIds(data->expPkmn, data->pendingMoveIds, data->offeredMoveIds);
+    data->shouldBreakToLevelUp = true;
+}
+
+void SingleBattleExperiencePhase::beginExpFill()
+{
+    expBarRunning   = false;
+    expBarCommitted = false;
+    expBarLevels    = false;
+    expBarHold      = 0;
+    expBarConsumed  = 0;
+
+    if (!data->expPkmn || data->expGained.empty())
+        return;
+
+    size_t& remaining = data->expGained.begin()->second;
+    if (remaining == 0)
+        return;
+
+    constexpr size_t MaxLevel = 100;
+    if (data->expPkmn->getLevel() >= MaxLevel)
+    {
+        remaining = 0;
+        return;
+    }
+
+    size_t span    = data->expPkmn->expToNextLevel();
+    size_t current = data->expPkmn->getExp();
+    if (span == 0)
+        span = 1;
+    if (current > span)
+        current = span;
+
+    size_t room = span - current;
+    expBarSpan  = span;
+
+    if (room == 0)
+    {
+        expBarLevels   = true;
+        expBarConsumed = 0;
+        commitExpFill();
+        return;
+    }
+
+    expBarLevels   = remaining >= room;
+    expBarConsumed = expBarLevels ? room : remaining;
+    expBarTarget   = current + expBarConsumed;
+    expBarShown    = current;
+    expBarRunning  = true;
+    showExpOnBar();
+}
+
+bool SingleBattleExperiencePhase::advanceExpFill()
+{
+    if (!expBarRunning || !data->expPkmn)
+    {
+        expBarRunning = false;
+        battleUi()->clearDisplayedExp();
+        return false;
+    }
+
+    if (!expBarCommitted)
+    {
+        size_t span = expBarSpan == 0 ? 1 : expBarSpan;
+        size_t step = std::max<size_t>(1, (span + 15) / 16);
+        if (expBarShown >= expBarTarget)
+            step = 0;
+        else if (expBarShown + step > expBarTarget)
+            step = expBarTarget - expBarShown;
+        expBarShown += step;
+        if (expBarShown >= expBarTarget)
+            commitExpFill();
+        else
+        {
+            showExpOnBar();
+            return true;
+        }
+    }
+
+    if (expBarCommitted && expBarLevels && expBarHold < 4)
+    {
+        ++expBarHold;
+        showExpOnBar();
+        return true;
+    }
+
+    battleUi()->clearDisplayedExp();
+    expBarRunning = false;
+    return false;
 }
 
 void SingleBattleExperiencePhase::presentNextMove()
@@ -79,10 +223,15 @@ void SingleBattleExperiencePhase::presentNextMove()
 
 void SingleBattleExperiencePhase::update(Inputs const* inputs)
 {
-    // TODO: Split experience animation for each level
-    if (false) // Experience animation is running
+    if (expBarRunning)
     {
-        return;
+        if (advanceExpFill())
+            return;
+        if (data->shouldBreakToLevelUp)
+        {
+            showLevelUpSpeech();
+            return;
+        }
     }
 
     if (experienceSpeech)
@@ -131,37 +280,6 @@ void SingleBattleExperiencePhase::update(Inputs const* inputs)
         return;
     }
 
-    auto grantExperience = [this](Pkmn::PkmnPtr& pkmn, size_t& expFromBattle) {
-        while (expFromBattle > 0)
-        {
-            size_t expLeftToNextLevel = pkmn->expToNextLevel() - pkmn->getExp();
-            if (expFromBattle > expLeftToNextLevel)
-            {
-                pkmn->incrementLevel();
-                std::string evolutionId = PkmnUtils::canEvolve(pkmn);
-                if (!evolutionId.empty())
-                    data->evolutionDef = Game::instance()->data.pkmnDefFor(evolutionId);
-                else
-                    data->evolutionDef.reset();
-
-                data->offeredMoveIds.clear();
-                data->pendingMoveIds.clear();
-                MoveLearn::queueMoveIds(pkmn, data->pendingMoveIds, data->offeredMoveIds);
-
-                expFromBattle -= expLeftToNextLevel;
-
-                data->shouldBreakToLevelUp = true;
-
-                return;
-            }
-            else
-            {
-                pkmn->increaseExp(expFromBattle);
-                expFromBattle = 0;
-            }
-        }
-    };
-
     data->expPkmn                  = data->expGained.begin()->first;
     size_t& remainingExpFromBattle = data->expGained.begin()->second;
 
@@ -191,22 +309,16 @@ void SingleBattleExperiencePhase::update(Inputs const* inputs)
         return;
     }
 
-    grantExperience(data->expPkmn, remainingExpFromBattle);
+    beginExpFill();
+    if (expBarRunning && advanceExpFill())
+        return;
 
     if (data->shouldBreakToLevelUp)
-    {
-        boost::format experienceText = boost::format(lc::translate("%1% reached level %2% !"))
-                                     % data->expPkmn->getDisplayName() % data->expPkmn->getLevel();
-        showSpeech({experienceText.str()});
-        data->shouldBreakToLevelUp = false;
-        return;
-    }
+        showLevelUpSpeech();
 }
 
 void SingleBattleExperiencePhase::draw(Fps const* fps, RenderSizes rs)
 {
-    // TODO: Experience animation
-
     if (experienceSpeech)
     {
         experienceSpeech->draw(fps, rs);
