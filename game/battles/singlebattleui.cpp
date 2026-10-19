@@ -627,7 +627,7 @@ void SingleBattleUi::draw(Fps const* fps, RenderSizes rs)
         burstT           = progress;
         burstOnFoe       = true;
         drawLineup        = showOpponentLineup;
-        lineupShift       = progress * (static_cast<float>(rs.aw) / 4.f);
+        lineupShift       = progress * -(static_cast<float>(rs.aw) / 4.f);
         lineupAlpha       = 1.f - progress;
         drawPlayerLineup  = showPlayerLineup;
         break;
@@ -647,7 +647,7 @@ void SingleBattleUi::draw(Fps const* fps, RenderSizes rs)
         drawBurst         = progress < 0.7f;
         burstT            = progress;
         drawPlayerLineup  = showPlayerLineup;
-        playerLineupShift = progress * -(static_cast<float>(rs.aw) / 4.f);
+        playerLineupShift = progress * (static_cast<float>(rs.aw) / 4.f);
         playerLineupAlpha = 1.f - progress;
         break;
     case Stage::SwitchThrow:
