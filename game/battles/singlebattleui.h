@@ -118,8 +118,10 @@ private:
     bool  foeSendOutFinished    = false;
     bool  playerSendOutFinished = false;
     bool  showOpponentLineup    = false;
+    bool  showPlayerLineup      = false;
 
     std::array<LineupBall, 6> opponentLineup{};
+    std::array<LineupBall, 6> playerLineup{};
 
     bool   expOverride  = false;
     size_t expShownPrev = 0;
