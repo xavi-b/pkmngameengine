@@ -17,6 +17,7 @@ public:
 
 protected:
     virtual std::string encounterStartText() const override;
+    virtual bool        opponentSentFromBall() const override;
 
     virtual void initPhases() override;
 

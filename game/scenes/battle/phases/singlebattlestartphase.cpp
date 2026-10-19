@@ -18,48 +18,55 @@ void SingleBattleStartPhase::init(std::string const& encounterText, std::string 
 
     pkmnEncounterSpeech = std::make_unique<TextSpeech>(renderer);
     pkmnEncounterSpeech->setTexts({encounterText});
-    pkmnEncounterSpeech->start();
 
     firstPkmnSpeech = std::make_unique<TextSpeech>(renderer);
     firstPkmnSpeech->setTexts({firstPkmnText});
-    firstPkmnSpeech->start();
+
+    battleUi()->startIntro(foeSentFromBall());
 }
 
 void SingleBattleStartPhase::update(Inputs const* inputs)
 {
     if (!eyeAnimation->isFinished())
-    {
         eyeAnimation->incrementTicks();
+
+    if (!battleUi()->isFoeEntranceDone())
+    {
+        battleUi()->incrementTicks();
+        return;
     }
-
-    // TODO: separate singlebattleui ? foe + player
-
-    // TODO: Open animation
-    // Pkmn + player entrance -> singlebattleui
-    // Show pkmn databox -> singlebattleui
 
     if (pkmnEncounterSpeech)
     {
+        if (!pkmnEncounterSpeech->isStarted())
+            pkmnEncounterSpeech->start();
+
         inputs->setHandler(pkmnEncounterSpeech->inputId());
         pkmnEncounterSpeech->update(inputs);
         if (pkmnEncounterSpeech->shouldClose())
-        {
-            pkmnEncounterSpeech.release();
-        }
+            pkmnEncounterSpeech.reset();
+        return;
     }
 
-    // TODO: Pkmn animation
-    // Throw player pkmn -> singlebattleui
-    // Show player databox -> singlebattleui
-
-    else if (firstPkmnSpeech)
+    if (!battleUi()->isPlayerSendOutDone())
     {
+        if (!battleUi()->isPlayerSendOutStarted())
+            battleUi()->startPlayerSendOut();
+        else
+            battleUi()->incrementTicks();
+        return;
+    }
+
+    if (firstPkmnSpeech)
+    {
+        if (!firstPkmnSpeech->isStarted())
+            firstPkmnSpeech->start();
+
         inputs->setHandler(firstPkmnSpeech->inputId());
         firstPkmnSpeech->update(inputs);
         if (firstPkmnSpeech->shouldClose())
         {
-            firstPkmnSpeech.release();
-
+            firstPkmnSpeech.reset();
             data->state = WEATHER;
         }
     }
@@ -67,22 +74,11 @@ void SingleBattleStartPhase::update(Inputs const* inputs)
 
 void SingleBattleStartPhase::draw(Fps const* fps, RenderSizes rs)
 {
-    // TODO: Open animation
-
-    if (pkmnEncounterSpeech)
-    {
+    if (pkmnEncounterSpeech && pkmnEncounterSpeech->isStarted() && battleUi()->isFoeEntranceDone())
         pkmnEncounterSpeech->draw(fps, rs);
-    }
-
-    // TODO: Pkmn animation
-
-    else if (firstPkmnSpeech)
-    {
+    else if (firstPkmnSpeech && firstPkmnSpeech->isStarted() && battleUi()->isPlayerSendOutDone())
         firstPkmnSpeech->draw(fps, rs);
-    }
 
     if (eyeAnimation->isRunning())
-    {
         eyeAnimation->draw(fps, rs);
-    }
 }

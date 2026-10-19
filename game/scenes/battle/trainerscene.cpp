@@ -44,6 +44,11 @@ void TrainerScene::init()
     }
 }
 
+bool TrainerScene::opponentSentFromBall() const
+{
+    return true;
+}
+
 std::string TrainerScene::encounterStartText() const
 {
     auto trainerData = std::static_pointer_cast<TrainerSceneData>(data);

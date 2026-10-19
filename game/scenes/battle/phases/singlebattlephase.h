@@ -32,6 +32,9 @@ public:
     virtual void draw(Fps const* fps, RenderSizes rs) = 0;
 
 protected:
+    class SingleBattleUi* battleUi();
+    bool                  foeSentFromBall() const;
+
     SingleBattleScene&                     scene;
     std::shared_ptr<SingleBattleSceneData> data;
     SDL_Renderer*                          renderer;

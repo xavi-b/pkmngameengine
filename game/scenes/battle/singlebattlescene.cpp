@@ -242,6 +242,11 @@ size_t SingleBattleScene::computeDamage(Pkmn::PkmnPtr const& attacker,
     return static_cast<size_t>(damage);
 }
 
+bool SingleBattleScene::opponentSentFromBall() const
+{
+    return false;
+}
+
 void SingleBattleScene::changeWeather(Map::Weather weather)
 {
     weatherPhase->setWeather(weather);

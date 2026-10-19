@@ -13,6 +13,7 @@ SingleBattlePlayerPkmnsPhase::SingleBattlePlayerPkmnsPhase(SingleBattleScene&   
 
 void SingleBattlePlayerPkmnsPhase::showEnterSpeech(std::string const& text)
 {
+    sendOutStarted  = false;
     pkmnEnterSpeech = std::make_unique<TextSpeech>(renderer);
     pkmnEnterSpeech->setTexts({text});
     pkmnEnterSpeech->start();
@@ -25,14 +26,24 @@ void SingleBattlePlayerPkmnsPhase::update(Inputs const* inputs)
         inputs->setHandler(pkmnEnterSpeech->inputId());
         pkmnEnterSpeech->update(inputs);
         if (pkmnEnterSpeech->shouldClose())
-            pkmnEnterSpeech.release();
+            pkmnEnterSpeech.reset();
         return;
     }
 
-    scene.setPlayerPkmn(data->newSelectedPkmn);
-    data->newSelectedPkmn.reset();
+    if (!sendOutStarted)
+    {
+        scene.setPlayerPkmn(data->newSelectedPkmn);
+        data->newSelectedPkmn.reset();
+        battleUi()->startSwitchSendOut();
+        sendOutStarted = true;
+        return;
+    }
 
-    // TODO: Pkmn animation
+    if (!battleUi()->isSwitchSendOutDone())
+    {
+        battleUi()->incrementTicks();
+        return;
+    }
 
     data->chooseOpponentAction();
 

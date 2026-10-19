@@ -18,6 +18,7 @@ public:
 
 private:
     std::unique_ptr<TextSpeech> pkmnEnterSpeech;
+    bool                        sendOutStarted = false;
 };
 
 #endif // SINGLEBATTLEPLAYERPKMNSPHASE_H

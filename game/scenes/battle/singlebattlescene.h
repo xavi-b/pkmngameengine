@@ -51,6 +51,7 @@ public:
 
 protected:
     virtual std::string encounterStartText() const = 0;
+    virtual bool        opponentSentFromBall() const;
 
     std::shared_ptr<SingleBattleSceneData> data;
 

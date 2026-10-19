@@ -1,6 +1,7 @@
 #include "singlebattlephase.h"
 
 #include "../singlebattlescene.h"
+#include "battles/singlebattleui.h"
 #include "utils.h"
 
 SingleBattlePhase::SingleBattlePhase(SingleBattleScene&                     scene,
@@ -12,4 +13,14 @@ SingleBattlePhase::SingleBattlePhase(SingleBattleScene&                     scen
 
 void SingleBattlePhase::preupdate()
 {
+}
+
+SingleBattleUi* SingleBattlePhase::battleUi()
+{
+    return scene.singleBattleUi.get();
+}
+
+bool SingleBattlePhase::foeSentFromBall() const
+{
+    return scene.opponentSentFromBall();
 }
