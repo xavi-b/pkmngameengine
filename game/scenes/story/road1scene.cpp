@@ -47,9 +47,9 @@ void Road1Scene::init()
     {
         auto entity = std::make_shared<Trainer>();
         entity->setGender(Trainer::Gender::BOY);
-        entity->name    = "Trainer from Road 1";
-        entity->graphic = "YOUNGSTER";
-        entity->money   = 96;
+        entity->name      = "Trainer from Road 1";
+        entity->graphic   = "YOUNGSTER";
+        entity->money     = 96;
         trainerNpc        = entity;
         entity->x         = 5;
         entity->y         = 10;
@@ -70,7 +70,8 @@ void Road1Scene::init()
     childSpeech->setTexts({lc::translate("First NPC chat of the game !"), lc::translate("Are we cool ?")});
 
     trainerSpeech = std::make_unique<TextSpeech>(renderer);
-    trainerSpeech->setTexts({lc::translate("Let's battle !")});
+    trainerSpeech->setTexts(
+        {lc::translate("Let's battle ! I'll take you on ! You'll see how good I am !"), lc::translate("I'm ready !")});
 }
 
 bool Road1Scene::updateAmbient(Inputs const* inputs)

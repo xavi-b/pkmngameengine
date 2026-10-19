@@ -202,11 +202,26 @@ void RenderUtils::drawTextWrapped(SDL_Renderer*      renderer,
 
     TTF_SetFontSize(RenderUtils::instance()->font, fontSize);
 
+    TTF_Font* font          = RenderUtils::instance()->font;
+    int       previousSkip  = TTF_FontLineSkip(font);
+    int       singleHeight  = TTF_FontHeight(font);
+    SDL_Surface* probe      = TTF_RenderUTF8_Solid(font, "A", color);
+    if (probe)
+    {
+        singleHeight = probe->h;
+        SDL_FreeSurface(probe);
+    }
+    // A wrapped block of N lines should be as tall as N separate single-line renders.
+    TTF_SetFontLineSkip(font, singleHeight);
+
     SDL_Rect rect;
 
-    SDL_Surface* bgSurface1 = TTF_RenderUTF8_Solid_Wrapped(RenderUtils::instance()->font, text.c_str(), bgColor, width);
+    SDL_Surface* bgSurface1 = TTF_RenderUTF8_Solid_Wrapped(font, text.c_str(), bgColor, width);
     if (!bgSurface1)
+    {
+        TTF_SetFontLineSkip(font, previousSkip);
         return;
+    }
     SDL_Texture* bgTexture1 = SDL_CreateTextureFromSurface(renderer, bgSurface1);
     rect.x                  = x + 2 * rs.ww / rs.aw;
     rect.y                  = y;
@@ -216,9 +231,12 @@ void RenderUtils::drawTextWrapped(SDL_Renderer*      renderer,
     SDL_DestroyTexture(bgTexture1);
     SDL_FreeSurface(bgSurface1);
 
-    SDL_Surface* bgSurface2 = TTF_RenderUTF8_Solid_Wrapped(RenderUtils::instance()->font, text.c_str(), bgColor, width);
+    SDL_Surface* bgSurface2 = TTF_RenderUTF8_Solid_Wrapped(font, text.c_str(), bgColor, width);
     if (!bgSurface2)
+    {
+        TTF_SetFontLineSkip(font, previousSkip);
         return;
+    }
     SDL_Texture* bgTexture2 = SDL_CreateTextureFromSurface(renderer, bgSurface2);
     rect.x                  = x;
     rect.y                  = y + 2 * rs.wh / rs.ah;
@@ -228,9 +246,12 @@ void RenderUtils::drawTextWrapped(SDL_Renderer*      renderer,
     SDL_DestroyTexture(bgTexture2);
     SDL_FreeSurface(bgSurface2);
 
-    SDL_Surface* surface = TTF_RenderUTF8_Solid_Wrapped(RenderUtils::instance()->font, text.c_str(), color, width);
+    SDL_Surface* surface = TTF_RenderUTF8_Solid_Wrapped(font, text.c_str(), color, width);
     if (!surface)
+    {
+        TTF_SetFontLineSkip(font, previousSkip);
         return;
+    }
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
     rect.x               = x;
     rect.y               = y;
@@ -239,6 +260,7 @@ void RenderUtils::drawTextWrapped(SDL_Renderer*      renderer,
     SDL_RenderCopy(renderer, texture, NULL, &rect);
     SDL_DestroyTexture(texture);
     SDL_FreeSurface(surface);
+    TTF_SetFontLineSkip(font, previousSkip);
 }
 
 void RenderUtils::drawWhiteTextWrapped(SDL_Renderer*      renderer,
