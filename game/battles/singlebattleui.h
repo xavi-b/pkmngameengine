@@ -46,6 +46,12 @@ public:
 
     void incrementTicks();
 
+    // The sprite sinks off its platform. hasFainted stays set until that side is replaced.
+    void startFaint(bool playerSide);
+    void incrementFaint();
+    bool isFaintRunning() const;
+    bool hasFainted(bool playerSide) const;
+
     // While set, the experience bar shows this amount instead of the Pokémon's stored exp.
     void setDisplayedExp(size_t shown, size_t span);
     void clearDisplayedExp();
@@ -71,9 +77,11 @@ private:
     void loadTrainerBack();
     void loadOpponentTrainer(std::string const& path);
     void playThrowSound();
+    void playFaintSound();
     void playCry(Pkmn::PkmnPtr const& pkmn);
     int  stageDuration() const;
     float stageProgress(Fps const* fps) const;
+    float faintProgress(Fps const* fps) const;
 
     SDL_Renderer* renderer;
     SDL_Surface*  playerUiSurface;
@@ -107,6 +115,7 @@ private:
     std::array<SDL_Texture*, 4> lineupBallTextures{};
 
     Mix_Chunk* throwChunk = nullptr;
+    Mix_Chunk* faintChunk = nullptr;
     Mix_Chunk* cryChunk   = nullptr;
 
     Pkmn::PkmnPtr foePkmn;
@@ -119,6 +128,11 @@ private:
     bool  playerSendOutFinished = false;
     bool  showOpponentLineup    = false;
     bool  showPlayerLineup      = false;
+    bool  foeFainted            = false;
+    bool  playerFainted         = false;
+    bool  faintRunning          = false;
+    bool  faintPlayer           = false;
+    int   faintTicks            = 0;
 
     std::array<LineupBall, 6> opponentLineup{};
     std::array<LineupBall, 6> playerLineup{};

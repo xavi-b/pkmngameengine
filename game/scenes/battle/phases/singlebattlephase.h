@@ -40,6 +40,9 @@ protected:
     std::string                               opponentTrainerGraphic() const;
     std::array<SingleBattleUi::LineupBall, 6> opponentLineup() const;
 
+    // Plays the faint drop for one side. Returns true once that sprite has sunk away.
+    bool playFaint(bool playerSide);
+
     SingleBattleScene&                     scene;
     std::shared_ptr<SingleBattleSceneData> data;
     SDL_Renderer*                          renderer;

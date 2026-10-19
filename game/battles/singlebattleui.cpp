@@ -44,6 +44,7 @@ constexpr int LineupBarY            = 114;
 constexpr int LineupBallSize        = 30;
 constexpr int LineupBallStep        = 32;
 constexpr int LineupBallCount       = 6;
+constexpr int FaintTicks            = 8;
 constexpr int PlayerLineupBarInset  = 142;
 
 SingleBattleUi::LineupBall lineupBallFor(Pkmn::PkmnPtr const& pkmn)
@@ -112,6 +113,7 @@ SingleBattleUi::SingleBattleUi(SDL_Renderer* renderer) : renderer(renderer)
     }
 
     throwChunk = Mix_LoadWAV("resources/Audio/SE/Battle throw.ogg.wav");
+    faintChunk = Mix_LoadWAV("resources/Audio/SE/Pkmn faint.ogg.wav");
 }
 
 SingleBattleUi::~SingleBattleUi()
@@ -171,6 +173,8 @@ SingleBattleUi::~SingleBattleUi()
 
     if (throwChunk)
         Mix_FreeChunk(throwChunk);
+    if (faintChunk)
+        Mix_FreeChunk(faintChunk);
     if (cryChunk)
     {
         Mix_HaltChannel(0);
@@ -224,6 +228,13 @@ void SingleBattleUi::playThrowSound()
     Mix_PlayChannel(1, throwChunk, 0);
 }
 
+void SingleBattleUi::playFaintSound()
+{
+    if (!faintChunk || !Settings::instance()->musicOn())
+        return;
+    Mix_PlayChannel(2, faintChunk, 0);
+}
+
 void SingleBattleUi::playCry(Pkmn::PkmnPtr const& pkmn)
 {
     if (!pkmn || !pkmn->getDefinition() || !Settings::instance()->musicOn())
@@ -265,12 +276,18 @@ void SingleBattleUi::setFoePkmn(Pkmn::PkmnPtr const& newFoePkmn)
         if (foeFrontSurface)
         {
             foeFrontTexture = SDL_CreateTextureFromSurface(renderer, foeFrontSurface);
+            foeFainted      = false;
+            if (foeFrontTexture)
+                SDL_SetTextureBlendMode(foeFrontTexture, SDL_BLENDMODE_BLEND);
             return;
         }
     }
     file += ".png";
     foeFrontSurface = IMG_Load(file.c_str());
     foeFrontTexture = SDL_CreateTextureFromSurface(renderer, foeFrontSurface);
+    foeFainted      = false;
+    if (foeFrontTexture)
+        SDL_SetTextureBlendMode(foeFrontTexture, SDL_BLENDMODE_BLEND);
 }
 
 void SingleBattleUi::setPlayerPkmn(Pkmn::PkmnPtr const& newPlayerPkmn)
@@ -293,12 +310,18 @@ void SingleBattleUi::setPlayerPkmn(Pkmn::PkmnPtr const& newPlayerPkmn)
         if (playerBackSurface)
         {
             playerBackTexture = SDL_CreateTextureFromSurface(renderer, playerBackSurface);
+            playerFainted     = false;
+            if (playerBackTexture)
+                SDL_SetTextureBlendMode(playerBackTexture, SDL_BLENDMODE_BLEND);
             return;
         }
     }
     file += ".png";
     playerBackSurface = IMG_Load(file.c_str());
     playerBackTexture = SDL_CreateTextureFromSurface(renderer, playerBackSurface);
+    playerFainted     = false;
+    if (playerBackTexture)
+        SDL_SetTextureBlendMode(playerBackTexture, SDL_BLENDMODE_BLEND);
 }
 
 void SingleBattleUi::startIntro(bool                             foeFromBall,
@@ -384,6 +407,53 @@ void SingleBattleUi::startSwitchSendOut()
 bool SingleBattleUi::isSwitchSendOutDone() const
 {
     return stage != Stage::SwitchThrow && stage != Stage::SwitchAppear;
+}
+
+void SingleBattleUi::startFaint(bool playerSide)
+{
+    if (playerSide ? playerFainted : foeFainted)
+        return;
+    if (faintRunning)
+        return;
+
+    faintPlayer  = playerSide;
+    faintRunning = true;
+    faintTicks   = 0;
+    playFaintSound();
+}
+
+void SingleBattleUi::incrementFaint()
+{
+    if (!faintRunning)
+        return;
+
+    ++faintTicks;
+    if (faintTicks < FaintTicks)
+        return;
+
+    faintRunning = false;
+    if (faintPlayer)
+        playerFainted = true;
+    else
+        foeFainted = true;
+}
+
+bool SingleBattleUi::isFaintRunning() const
+{
+    return faintRunning;
+}
+
+bool SingleBattleUi::hasFainted(bool playerSide) const
+{
+    return playerSide ? playerFainted : foeFainted;
+}
+
+float SingleBattleUi::faintProgress(Fps const* fps) const
+{
+    if (!faintRunning)
+        return 1.f;
+    float partial = fps ? fps->tickPercentage() : 0.f;
+    return clampf((faintTicks + partial) / static_cast<float>(FaintTicks), 0.f, 1.f);
 }
 
 void SingleBattleUi::incrementTicks()
@@ -667,6 +737,11 @@ void SingleBattleUi::draw(Fps const* fps, RenderSizes rs)
         break;
     }
 
+    if (foeFainted)
+        drawFoeSprite = false;
+    if (playerFainted)
+        drawPlayerSprite = false;
+
     SDL_Rect foeBox;
     foeBox.w = foeUiSurface->w * rs.ww / rs.aw;
     foeBox.h = foeUiSurface->h * rs.wh / rs.ah;
@@ -751,6 +826,138 @@ void SingleBattleUi::draw(Fps const* fps, RenderSizes rs)
             SDL_SetTextureAlphaMod(lineupBallTextures[kind], 255);
         }
     };
+
+    auto drawBurstAt = [&](SDL_Rect const& anchor) {
+        if (!drawBurst || !burstTexture || !burstSurface)
+            return;
+
+        float    grow = 0.35f + 1.15f * clampf(burstT, 0.f, 1.f);
+        SDL_Rect burst;
+        burst.w = static_cast<int>(anchor.w * grow);
+        burst.h = static_cast<int>(anchor.h * grow);
+        burst.x = anchor.x + anchor.w / 2 - burst.w / 2;
+        burst.y = anchor.y + anchor.h / 2 - burst.h / 2;
+        Uint8 alpha = static_cast<Uint8>(255 * (1.f - clampf(burstT, 0.f, 1.f)));
+        SDL_SetTextureAlphaMod(burstTexture, alpha);
+        SDL_RenderCopy(renderer, burstTexture, nullptr, &burst);
+        SDL_SetTextureAlphaMod(burstTexture, 255);
+    };
+
+    if (drawBurst && burstOnFoe)
+        drawBurstAt(foeSprite);
+
+    if (drawFoeSprite && foeFrontTexture)
+    {
+        if (faintRunning && !faintPlayer)
+        {
+            float drop = faintProgress(fps);
+            foeSpriteDrawn.y += static_cast<int>(foeSpriteDrawn.h * drop);
+            SDL_SetTextureAlphaMod(foeFrontTexture, static_cast<Uint8>(255 * (1.f - drop)));
+        }
+        SDL_RenderCopy(renderer, foeFrontTexture, nullptr, &foeSpriteDrawn);
+        SDL_SetTextureAlphaMod(foeFrontTexture, 255);
+    }
+
+    if (drawOpponent && opponentTexture)
+        SDL_RenderCopy(renderer, opponentTexture, nullptr, &opponentRect);
+
+    if (drawTrainer && trainerSurface && trainerTexture)
+    {
+        int frameSize  = trainerSurface->h > 0 ? trainerSurface->h : trainerSurface->w;
+        int frameCount = frameSize > 0 ? trainerSurface->w / frameSize : 1;
+        if (frameCount < 1)
+            frameCount = 1;
+        int frame = trainerFrame;
+        if (frame >= frameCount)
+            frame = frameCount - 1;
+
+        SDL_Rect src;
+        src.x = frame * frameSize;
+        src.y = 0;
+        src.w = frameSize;
+        src.h = trainerSurface->h;
+
+        SDL_Rect dst;
+        dst.w = frameSize * rs.ww / rs.aw;
+        dst.h = trainerSurface->h * rs.wh / rs.ah;
+        dst.x = dst.w / 3 + trainerDx;
+        dst.y = rs.wh - dst.h - dstBottomMargin;
+        SDL_RenderCopy(renderer, trainerTexture, &src, &dst);
+    }
+
+    if (drawBurst && !burstOnFoe)
+        drawBurstAt(playerSprite);
+
+    if (drawPlayerSprite && playerBackTexture)
+    {
+        if (faintRunning && faintPlayer)
+        {
+            float drop = faintProgress(fps);
+            playerSpriteDrawn.y += static_cast<int>(playerSpriteDrawn.h * drop);
+            SDL_SetTextureAlphaMod(playerBackTexture, static_cast<Uint8>(255 * (1.f - drop)));
+        }
+        SDL_RenderCopy(renderer, playerBackTexture, nullptr, &playerSpriteDrawn);
+        SDL_SetTextureAlphaMod(playerBackTexture, 255);
+    }
+
+    if (drawBall && ballTexture && ballSurface)
+    {
+        int ballSize = 40 * rs.ww / rs.aw;
+        if (ballSize < 1)
+            ballSize = 1;
+
+        float startX = 0;
+        float startY = 0;
+        float endX   = 0;
+        float endY   = 0;
+        if (ballFromOpponent && opponentSurface)
+        {
+            startX = static_cast<float>(opponentRect.x + opponentRect.w * 0.35f);
+            startY = static_cast<float>(opponentRect.y + opponentRect.h * 0.35f);
+            endX   = static_cast<float>(foeSprite.x + foeSprite.w / 2 - ballSize / 2);
+            endY   = static_cast<float>(foeSprite.y + foeSprite.h / 2 - ballSize / 2);
+        }
+        else if (ballFromOpponent)
+        {
+            startX = static_cast<float>(rs.ww + ballSize);
+            startY = static_cast<float>(foeSprite.y + foeSprite.h / 4);
+            endX   = static_cast<float>(foeSprite.x + foeSprite.w / 2 - ballSize / 2);
+            endY   = static_cast<float>(foeSprite.y + foeSprite.h / 2 - ballSize / 2);
+        }
+        else if (ballFromCorner)
+        {
+            startX = 0;
+            startY = static_cast<float>(playerSprite.y + playerSprite.h);
+            endX   = static_cast<float>(playerSprite.x + playerSprite.w / 2 - ballSize / 2);
+            endY   = static_cast<float>(playerSprite.y + playerSprite.h / 3 - ballSize / 2);
+        }
+        else
+        {
+            startX = static_cast<float>(playerSprite.x + playerSprite.w * 0.15f);
+            startY = static_cast<float>(playerSprite.y + playerSprite.h * 0.55f);
+            endX   = static_cast<float>(playerSprite.x + playerSprite.w * 0.45f - ballSize / 2);
+            endY   = static_cast<float>(playerSprite.y + playerSprite.h * 0.35f - ballSize / 2);
+        }
+
+        float arc = std::sin(clampf(ballT, 0.f, 1.f) * 3.14159265f) * (56.f * rs.wh / rs.ah);
+        SDL_Rect ball;
+        ball.w = ballSize;
+        ball.h = ballSize;
+        ball.x = static_cast<int>(startX + (endX - startX) * ballT);
+        ball.y = static_cast<int>(startY + (endY - startY) * ballT - arc);
+
+        SDL_Rect src;
+        src.x = 0;
+        src.y = 16;
+        src.w = BallFrame;
+        src.h = BallFrame;
+        if (src.y + src.h > ballSurface->h)
+        {
+            src.y = 0;
+            src.h = ballSurface->h;
+        }
+        SDL_RenderCopy(renderer, ballTexture, &src, &ball);
+    }
 
     if (drawLineup)
         drawPartyLineup(opponentLineup, lineupShift, lineupAlpha, false);
@@ -908,119 +1115,5 @@ void SingleBattleUi::draw(Fps const* fps, RenderSizes rs)
                                               fontSize * 2 / 3,
                                               dstPlayerHpTextRect.x,
                                               dstPlayerHpTextRect.y);
-    }
-
-    auto drawBurstAt = [&](SDL_Rect const& anchor) {
-        if (!drawBurst || !burstTexture || !burstSurface)
-            return;
-
-        float    grow = 0.35f + 1.15f * clampf(burstT, 0.f, 1.f);
-        SDL_Rect burst;
-        burst.w = static_cast<int>(anchor.w * grow);
-        burst.h = static_cast<int>(anchor.h * grow);
-        burst.x = anchor.x + anchor.w / 2 - burst.w / 2;
-        burst.y = anchor.y + anchor.h / 2 - burst.h / 2;
-        Uint8 alpha = static_cast<Uint8>(255 * (1.f - clampf(burstT, 0.f, 1.f)));
-        SDL_SetTextureAlphaMod(burstTexture, alpha);
-        SDL_RenderCopy(renderer, burstTexture, nullptr, &burst);
-        SDL_SetTextureAlphaMod(burstTexture, 255);
-    };
-
-    if (drawBurst && burstOnFoe)
-        drawBurstAt(foeSprite);
-
-    if (drawFoeSprite && foeFrontTexture)
-        SDL_RenderCopy(renderer, foeFrontTexture, nullptr, &foeSpriteDrawn);
-
-    if (drawOpponent && opponentTexture)
-        SDL_RenderCopy(renderer, opponentTexture, nullptr, &opponentRect);
-
-    if (drawTrainer && trainerSurface && trainerTexture)
-    {
-        int frameSize  = trainerSurface->h > 0 ? trainerSurface->h : trainerSurface->w;
-        int frameCount = frameSize > 0 ? trainerSurface->w / frameSize : 1;
-        if (frameCount < 1)
-            frameCount = 1;
-        int frame = trainerFrame;
-        if (frame >= frameCount)
-            frame = frameCount - 1;
-
-        SDL_Rect src;
-        src.x = frame * frameSize;
-        src.y = 0;
-        src.w = frameSize;
-        src.h = trainerSurface->h;
-
-        SDL_Rect dst;
-        dst.w = frameSize * rs.ww / rs.aw;
-        dst.h = trainerSurface->h * rs.wh / rs.ah;
-        dst.x = dst.w / 3 + trainerDx;
-        dst.y = rs.wh - dst.h - dstBottomMargin;
-        SDL_RenderCopy(renderer, trainerTexture, &src, &dst);
-    }
-
-    if (drawBurst && !burstOnFoe)
-        drawBurstAt(playerSprite);
-
-    if (drawPlayerSprite && playerBackTexture)
-        SDL_RenderCopy(renderer, playerBackTexture, nullptr, &playerSpriteDrawn);
-
-    if (drawBall && ballTexture && ballSurface)
-    {
-        int ballSize = 40 * rs.ww / rs.aw;
-        if (ballSize < 1)
-            ballSize = 1;
-
-        float startX = 0;
-        float startY = 0;
-        float endX   = 0;
-        float endY   = 0;
-        if (ballFromOpponent && opponentSurface)
-        {
-            startX = static_cast<float>(opponentRect.x + opponentRect.w * 0.35f);
-            startY = static_cast<float>(opponentRect.y + opponentRect.h * 0.35f);
-            endX   = static_cast<float>(foeSprite.x + foeSprite.w / 2 - ballSize / 2);
-            endY   = static_cast<float>(foeSprite.y + foeSprite.h / 2 - ballSize / 2);
-        }
-        else if (ballFromOpponent)
-        {
-            startX = static_cast<float>(rs.ww + ballSize);
-            startY = static_cast<float>(foeSprite.y + foeSprite.h / 4);
-            endX   = static_cast<float>(foeSprite.x + foeSprite.w / 2 - ballSize / 2);
-            endY   = static_cast<float>(foeSprite.y + foeSprite.h / 2 - ballSize / 2);
-        }
-        else if (ballFromCorner)
-        {
-            startX = 0;
-            startY = static_cast<float>(playerSprite.y + playerSprite.h);
-            endX   = static_cast<float>(playerSprite.x + playerSprite.w / 2 - ballSize / 2);
-            endY   = static_cast<float>(playerSprite.y + playerSprite.h / 3 - ballSize / 2);
-        }
-        else
-        {
-            startX = static_cast<float>(playerSprite.x + playerSprite.w * 0.15f);
-            startY = static_cast<float>(playerSprite.y + playerSprite.h * 0.55f);
-            endX   = static_cast<float>(playerSprite.x + playerSprite.w * 0.45f - ballSize / 2);
-            endY   = static_cast<float>(playerSprite.y + playerSprite.h * 0.35f - ballSize / 2);
-        }
-
-        float arc = std::sin(clampf(ballT, 0.f, 1.f) * 3.14159265f) * (56.f * rs.wh / rs.ah);
-        SDL_Rect ball;
-        ball.w = ballSize;
-        ball.h = ballSize;
-        ball.x = static_cast<int>(startX + (endX - startX) * ballT);
-        ball.y = static_cast<int>(startY + (endY - startY) * ballT - arc);
-
-        SDL_Rect src;
-        src.x = 0;
-        src.y = 16;
-        src.w = BallFrame;
-        src.h = BallFrame;
-        if (src.y + src.h > ballSurface->h)
-        {
-            src.y = 0;
-            src.h = ballSurface->h;
-        }
-        SDL_RenderCopy(renderer, ballTexture, &src, &ball);
     }
 }

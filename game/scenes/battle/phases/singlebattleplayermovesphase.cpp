@@ -156,20 +156,34 @@ void SingleBattlePlayerMovesPhase::handlePlayerFaintFromMove(std::vector<std::st
 
 void SingleBattlePlayerMovesPhase::executePlayerMove()
 {
-    auto result = MoveResolver::resolve(*data, true, data->playerMove);
+    auto result          = MoveResolver::resolve(*data, true, data->playerMove);
+    pendingMessages      = result.messages;
+    pendingPlayerFaint   = result.userFainted && data->playerPkmn && data->playerPkmn->isKO();
+    pendingOpponentFaint = result.targetFainted && data->opponentPkmn && data->opponentPkmn->isKO();
+    pendingSwitchUser    = result.shouldSwitchUser;
+    step                 = Step::AwaitFaint;
+    continueAfterPlayerMove();
+}
 
-    if (result.userFainted && data->playerPkmn && data->playerPkmn->isKO())
+void SingleBattlePlayerMovesPhase::continueAfterPlayerMove()
+{
+    if (pendingOpponentFaint && !playFaint(false))
+        return;
+    if (pendingPlayerFaint && !playFaint(true))
+        return;
+
+    if (pendingPlayerFaint)
     {
-        handlePlayerFaintFromMove(result.messages);
+        handlePlayerFaintFromMove(pendingMessages);
         return;
     }
 
-    if (result.targetFainted && data->opponentPkmn && data->opponentPkmn->isKO())
+    if (pendingOpponentFaint)
     {
         data->opponentConfusion.clear();
-        if (!result.messages.empty())
+        if (!pendingMessages.empty())
         {
-            showSpeech(result.messages);
+            showSpeech(pendingMessages);
             step = Step::GoToExperience;
             return;
         }
@@ -177,11 +191,11 @@ void SingleBattlePlayerMovesPhase::executePlayerMove()
         return;
     }
 
-    if (result.shouldSwitchUser)
+    if (pendingSwitchUser)
     {
-        if (!result.messages.empty())
+        if (!pendingMessages.empty())
         {
-            showSpeech(result.messages);
+            showSpeech(pendingMessages);
             step = Step::GoToPkmns;
             return;
         }
@@ -189,9 +203,9 @@ void SingleBattlePlayerMovesPhase::executePlayerMove()
         return;
     }
 
-    if (!result.messages.empty())
+    if (!pendingMessages.empty())
     {
-        showSpeech(result.messages);
+        showSpeech(pendingMessages);
         step = Step::Advance;
         return;
     }
@@ -290,33 +304,8 @@ void SingleBattlePlayerMovesPhase::update(Inputs const* inputs)
             data->playerPkmn->decreaseHP(computeConfusionDamage(data->playerPkmn));
             if (data->playerPkmn->isKO())
             {
-                data->playerConfusion.clear();
-                bool hasNextPkmn = false;
-                for (auto const& pkmn : Game::instance()->data.player.pkmns)
-                {
-                    if (pkmn && !pkmn->isKO())
-                    {
-                        hasNextPkmn = true;
-                        break;
-                    }
-                }
-
-                boost::format faintText =
-                    boost::format(lc::translate("%1% fainted !")) % data->playerPkmn->getDisplayName();
-                data->playerPkmn = nullptr;
-
-                if (hasNextPkmn)
-                {
-                    texts.push_back(faintText.str());
-                    showSpeech(texts);
-                    step = Step::GoToPkmns;
-                }
-                else
-                {
-                    texts.push_back(lc::translate("The battle is over ! You lost !"));
-                    showSpeech(texts);
-                    step = Step::GoToEnd;
-                }
+                pendingMessages = texts;
+                step            = Step::AwaitPlayerConfusionFaint;
                 return;
             }
 
@@ -353,6 +342,14 @@ void SingleBattlePlayerMovesPhase::update(Inputs const* inputs)
     }
     case Step::ExecuteMove:
         executePlayerMove();
+        return;
+    case Step::AwaitFaint:
+        continueAfterPlayerMove();
+        return;
+    case Step::AwaitPlayerConfusionFaint:
+        if (!playFaint(true))
+            return;
+        handlePlayerFaintFromMove(pendingMessages);
         return;
     case Step::Advance:
         advanceAfterAction();

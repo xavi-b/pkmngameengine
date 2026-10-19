@@ -71,13 +71,26 @@ void SingleBattleOpponentMovesPhase::handlePlayerFaint()
 
 void SingleBattleOpponentMovesPhase::executeOpponentMove()
 {
-    auto result = MoveResolver::resolve(*data, false, data->encounterMove);
+    auto result          = MoveResolver::resolve(*data, false, data->encounterMove);
+    pendingMessages      = result.messages;
+    pendingPlayerFaint   = result.targetFainted && data->playerPkmn && data->playerPkmn->isKO();
+    pendingOpponentFaint = result.userFainted && data->opponentPkmn && data->opponentPkmn->isKO();
+    step                 = Step::AwaitFaint;
+    continueAfterOpponentMove();
+}
 
-    if (result.targetFainted && data->playerPkmn && data->playerPkmn->isKO())
+void SingleBattleOpponentMovesPhase::continueAfterOpponentMove()
+{
+    if (pendingPlayerFaint && !playFaint(true))
+        return;
+    if (pendingOpponentFaint && !playFaint(false))
+        return;
+
+    if (pendingPlayerFaint)
     {
-        if (!result.messages.empty())
+        if (!pendingMessages.empty())
         {
-            showSpeech(result.messages);
+            showSpeech(pendingMessages);
             step = Step::GoToPlayerFaint;
             return;
         }
@@ -85,12 +98,12 @@ void SingleBattleOpponentMovesPhase::executeOpponentMove()
         return;
     }
 
-    if (result.userFainted && data->opponentPkmn && data->opponentPkmn->isKO())
+    if (pendingOpponentFaint)
     {
         data->opponentConfusion.clear();
-        if (!result.messages.empty())
+        if (!pendingMessages.empty())
         {
-            showSpeech(result.messages);
+            showSpeech(pendingMessages);
             step = Step::GoToExperience;
             return;
         }
@@ -98,9 +111,9 @@ void SingleBattleOpponentMovesPhase::executeOpponentMove()
         return;
     }
 
-    if (!result.messages.empty())
+    if (!pendingMessages.empty())
     {
-        showSpeech(result.messages);
+        showSpeech(pendingMessages);
         step = Step::Advance;
         return;
     }
@@ -204,8 +217,8 @@ void SingleBattleOpponentMovesPhase::update(Inputs const* inputs)
             data->opponentPkmn->decreaseHP(computeConfusionDamage(data->opponentPkmn));
             if (data->opponentPkmn->isKO())
             {
-                showSpeech(texts);
-                step = Step::GoToExperience;
+                pendingMessages = texts;
+                step            = Step::AwaitOpponentConfusionFaint;
                 return;
             }
 
@@ -240,6 +253,15 @@ void SingleBattleOpponentMovesPhase::update(Inputs const* inputs)
     }
     case Step::ExecuteMove:
         executeOpponentMove();
+        return;
+    case Step::AwaitFaint:
+        continueAfterOpponentMove();
+        return;
+    case Step::AwaitOpponentConfusionFaint:
+        if (!playFaint(false))
+            return;
+        showSpeech(pendingMessages);
+        step = Step::GoToExperience;
         return;
     case Step::Advance:
         advanceAfterAction();

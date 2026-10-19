@@ -32,16 +32,22 @@ private:
         GoToPkmns,
         GoToEnd,
         GoToExperience,
-        GoToPlayerFaint
+        GoToPlayerFaint,
+        AwaitFaint,
+        AwaitOpponentConfusionFaint
     };
 
     void showSpeech(std::vector<std::string> const& texts);
     void advanceAfterAction();
     void executeOpponentMove();
+    void continueAfterOpponentMove();
     void handlePlayerFaint();
 
     Step                        step = Step::MajorStatus;
     std::unique_ptr<TextSpeech> speech;
+    std::vector<std::string>    pendingMessages;
+    bool                        pendingPlayerFaint   = false;
+    bool                        pendingOpponentFaint = false;
 };
 
 #endif // SINGLEBATTLEOPPONENTMOVESPHASE_H

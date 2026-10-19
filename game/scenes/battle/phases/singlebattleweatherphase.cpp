@@ -373,11 +373,15 @@ void SingleBattleWeatherPhase::update(Inputs const* inputs)
         {
             buildResidualMessages();
             residualsApplied = true;
-            if (!residualMessages.empty())
-            {
-                showSpeech(residualMessages);
-                return;
-            }
+        }
+        if (opponentFaintedFromResidual && data->opponentPkmn && data->opponentPkmn->isKO() && !playFaint(false))
+            return;
+        if (playerFaintedFromResidual && data->playerPkmn && data->playerPkmn->isKO() && !playFaint(true))
+            return;
+        if (!residualMessages.empty())
+        {
+            showSpeech(residualMessages);
+            return;
         }
         finishTurn();
         return;

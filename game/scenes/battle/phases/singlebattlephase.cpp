@@ -34,3 +34,15 @@ std::array<SingleBattleUi::LineupBall, 6> SingleBattlePhase::opponentLineup() co
 {
     return scene.opponentLineup();
 }
+
+bool SingleBattlePhase::playFaint(bool playerSide)
+{
+    auto* ui = battleUi();
+    if (ui->hasFainted(playerSide))
+        return true;
+    if (!ui->isFaintRunning())
+        ui->startFaint(playerSide);
+    else
+        ui->incrementFaint();
+    return ui->hasFainted(playerSide);
+}
