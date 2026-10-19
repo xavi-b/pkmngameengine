@@ -47,7 +47,8 @@ void Road1Scene::init()
     {
         auto entity = std::make_shared<Trainer>();
         entity->setGender(Trainer::Gender::BOY);
-        entity->name      = "Trainer from Road 1";
+        entity->name    = "Trainer from Road 1";
+        entity->graphic = "YOUNGSTER";
         trainerNpc        = entity;
         entity->x         = 5;
         entity->y         = 10;

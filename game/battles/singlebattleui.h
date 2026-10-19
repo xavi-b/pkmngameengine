@@ -7,6 +7,9 @@
 #include <SDL_image.h>
 #include <SDL_mixer.h>
 
+#include <array>
+#include <string>
+
 class SingleBattleUi
 {
 public:
@@ -16,10 +19,23 @@ public:
     void setFoePkmn(Pkmn::PkmnPtr const& newFoePkmn);
     void setPlayerPkmn(Pkmn::PkmnPtr const& newPlayerPkmn);
 
-    // Wild foe slides in. A trainer foe is thrown in a ball. The player's trainer
-    // walks in with them; the player Pokémon is sent out afterwards.
-    void startIntro(bool foeFromBall);
+    enum class LineupBall
+    {
+        Empty,
+        Able,
+        Status,
+        Faint
+    };
+
+    // Wild foe slides in with the player's trainer. A trainer foe walks both
+    // trainers in first; the opponent throws after the encounter line.
+    void startIntro(bool                              foeFromBall,
+                    std::string const&                opponentGraphic = {},
+                    std::array<LineupBall, 6> const&  lineup          = {});
     bool isFoeEntranceDone() const;
+    void startFoeSendOut();
+    bool isFoeSendOutStarted() const;
+    bool isFoeSendOutDone() const;
     void startPlayerSendOut();
     bool isPlayerSendOutStarted() const;
     bool isPlayerSendOutDone() const;
@@ -39,8 +55,12 @@ public:
 private:
     enum class Stage
     {
+        TrainerEntrance,
+        AwaitTrainers,
         FoeEntrance,
         AwaitSendOut,
+        FoeThrow,
+        FoeAppear,
         PlayerThrow,
         PlayerAppear,
         Shown,
@@ -49,6 +69,7 @@ private:
     };
 
     void loadTrainerBack();
+    void loadOpponentTrainer(std::string const& path);
     void playThrowSound();
     void playCry(Pkmn::PkmnPtr const& pkmn);
     int  stageDuration() const;
@@ -73,10 +94,17 @@ private:
 
     SDL_Surface* trainerSurface = nullptr;
     SDL_Texture* trainerTexture = nullptr;
+    SDL_Surface* opponentSurface = nullptr;
+    SDL_Texture* opponentTexture = nullptr;
     SDL_Surface* ballSurface    = nullptr;
     SDL_Texture* ballTexture    = nullptr;
     SDL_Surface* burstSurface   = nullptr;
     SDL_Texture* burstTexture   = nullptr;
+
+    SDL_Surface* lineupBarSurface = nullptr;
+    SDL_Texture* lineupBarTexture = nullptr;
+    std::array<SDL_Surface*, 4> lineupBallSurfaces{};
+    std::array<SDL_Texture*, 4> lineupBallTextures{};
 
     Mix_Chunk* throwChunk = nullptr;
     Mix_Chunk* cryChunk   = nullptr;
@@ -87,9 +115,11 @@ private:
     Stage stage                 = Stage::Shown;
     int   ticks                 = 0;
     bool  introStarted          = false;
-    bool  foeFromBall           = false;
-    bool  foeCryPlayed          = false;
+    bool  foeSendOutFinished    = false;
     bool  playerSendOutFinished = false;
+    bool  showOpponentLineup    = false;
+
+    std::array<LineupBall, 6> opponentLineup{};
 
     bool   expOverride  = false;
     size_t expShownPrev = 0;

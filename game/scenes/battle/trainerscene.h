@@ -17,7 +17,9 @@ public:
 
 protected:
     virtual std::string encounterStartText() const override;
-    virtual bool        opponentSentFromBall() const override;
+    virtual bool                                 opponentSentFromBall() const override;
+    virtual std::string                          opponentTrainerGraphic() const override;
+    virtual std::array<SingleBattleUi::LineupBall, 6> opponentLineup() const override;
 
     virtual void initPhases() override;
 

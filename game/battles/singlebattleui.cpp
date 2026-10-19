@@ -35,6 +35,15 @@ SDL_Rect scaledFromFeet(SDL_Rect rect, float scale)
     scaled.y += rect.h - scaled.h;
     return scaled;
 }
+
+// Trainer sheets are 128px with feet at the bottom. Foe fronts are 160px and
+// the artwork ends higher, so this lift lines the two foot lines up.
+constexpr int OpponentFootOffset    = 26;
+constexpr int LineupBarDisplayWidth = 248;
+constexpr int LineupBarY            = 114;
+constexpr int LineupBallSize        = 30;
+constexpr int LineupBallStep        = 32;
+constexpr int LineupBallCount       = 6;
 } // namespace
 
 SingleBattleUi::SingleBattleUi(SDL_Renderer* renderer) : renderer(renderer)
@@ -49,6 +58,30 @@ SingleBattleUi::SingleBattleUi(SDL_Renderer* renderer) : renderer(renderer)
     overlayHpTexture = SDL_CreateTextureFromSurface(renderer, overlayHpSurface);
     statusSurface    = IMG_Load("resources/Graphics/UI/Battle/icon_statuses.png");
     statusTexture    = SDL_CreateTextureFromSurface(renderer, statusSurface);
+
+    lineupBarSurface = IMG_Load("resources/Graphics/UI/Battle/overlay_lineup.png");
+    if (lineupBarSurface)
+    {
+        lineupBarTexture = SDL_CreateTextureFromSurface(renderer, lineupBarSurface);
+        if (lineupBarTexture)
+            SDL_SetTextureBlendMode(lineupBarTexture, SDL_BLENDMODE_BLEND);
+    }
+
+    char const* ballFiles[] = {
+        "resources/Graphics/UI/Battle/icon_ball_empty.png",
+        "resources/Graphics/UI/Battle/icon_ball.png",
+        "resources/Graphics/UI/Battle/icon_ball_status.png",
+        "resources/Graphics/UI/Battle/icon_ball_faint.png",
+    };
+    for (size_t i = 0; i < lineupBallSurfaces.size(); ++i)
+    {
+        lineupBallSurfaces[i] = IMG_Load(ballFiles[i]);
+        if (!lineupBallSurfaces[i])
+            continue;
+        lineupBallTextures[i] = SDL_CreateTextureFromSurface(renderer, lineupBallSurfaces[i]);
+        if (lineupBallTextures[i])
+            SDL_SetTextureBlendMode(lineupBallTextures[i], SDL_BLENDMODE_BLEND);
+    }
 
     ballSurface = IMG_Load("resources/Graphics/Battle animations/ball_POKEBALL.png");
     if (ballSurface)
@@ -97,6 +130,11 @@ SingleBattleUi::~SingleBattleUi()
     if (trainerSurface)
         SDL_FreeSurface(trainerSurface);
 
+    if (opponentTexture)
+        SDL_DestroyTexture(opponentTexture);
+    if (opponentSurface)
+        SDL_FreeSurface(opponentSurface);
+
     if (ballTexture)
         SDL_DestroyTexture(ballTexture);
     if (ballSurface)
@@ -106,6 +144,18 @@ SingleBattleUi::~SingleBattleUi()
         SDL_DestroyTexture(burstTexture);
     if (burstSurface)
         SDL_FreeSurface(burstSurface);
+
+    if (lineupBarTexture)
+        SDL_DestroyTexture(lineupBarTexture);
+    if (lineupBarSurface)
+        SDL_FreeSurface(lineupBarSurface);
+    for (size_t i = 0; i < lineupBallTextures.size(); ++i)
+    {
+        if (lineupBallTextures[i])
+            SDL_DestroyTexture(lineupBallTextures[i]);
+        if (lineupBallSurfaces[i])
+            SDL_FreeSurface(lineupBallSurfaces[i]);
+    }
 
     if (throwChunk)
         Mix_FreeChunk(throwChunk);
@@ -133,6 +183,26 @@ void SingleBattleUi::loadTrainerBack()
     trainerTexture = SDL_CreateTextureFromSurface(renderer, trainerSurface);
     if (trainerTexture)
         SDL_SetTextureBlendMode(trainerTexture, SDL_BLENDMODE_BLEND);
+}
+
+void SingleBattleUi::loadOpponentTrainer(std::string const& path)
+{
+    if (opponentTexture)
+        SDL_DestroyTexture(opponentTexture);
+    if (opponentSurface)
+        SDL_FreeSurface(opponentSurface);
+    opponentTexture = nullptr;
+    opponentSurface = nullptr;
+
+    if (path.empty())
+        return;
+
+    opponentSurface = IMG_Load(path.c_str());
+    if (!opponentSurface)
+        return;
+    opponentTexture = SDL_CreateTextureFromSurface(renderer, opponentSurface);
+    if (opponentTexture)
+        SDL_SetTextureBlendMode(opponentTexture, SDL_BLENDMODE_BLEND);
 }
 
 void SingleBattleUi::playThrowSound()
@@ -219,25 +289,53 @@ void SingleBattleUi::setPlayerPkmn(Pkmn::PkmnPtr const& newPlayerPkmn)
     playerBackTexture = SDL_CreateTextureFromSurface(renderer, playerBackSurface);
 }
 
-void SingleBattleUi::startIntro(bool foeFromBall)
+void SingleBattleUi::startIntro(bool                             foeFromBall,
+                                std::string const&               opponentGraphic,
+                                std::array<LineupBall, 6> const& lineup)
 {
-    this->foeFromBall     = foeFromBall;
     introStarted          = true;
-    foeCryPlayed          = !foeFromBall;
+    foeSendOutFinished    = !foeFromBall;
     playerSendOutFinished = false;
-    stage                 = Stage::FoeEntrance;
+    showOpponentLineup    = foeFromBall;
+    opponentLineup        = lineup;
     ticks                 = 0;
     loadTrainerBack();
 
     if (foeFromBall)
-        playThrowSound();
+    {
+        loadOpponentTrainer(opponentGraphic);
+        stage = Stage::TrainerEntrance;
+    }
     else
+    {
+        stage = Stage::FoeEntrance;
         playCry(foePkmn);
+    }
 }
 
 bool SingleBattleUi::isFoeEntranceDone() const
 {
-    return !introStarted || stage != Stage::FoeEntrance;
+    return !introStarted || (stage != Stage::FoeEntrance && stage != Stage::TrainerEntrance);
+}
+
+void SingleBattleUi::startFoeSendOut()
+{
+    if (stage != Stage::AwaitTrainers)
+        return;
+
+    stage = Stage::FoeThrow;
+    ticks = 0;
+    playThrowSound();
+}
+
+bool SingleBattleUi::isFoeSendOutStarted() const
+{
+    return stage == Stage::FoeThrow || stage == Stage::FoeAppear || foeSendOutFinished;
+}
+
+bool SingleBattleUi::isFoeSendOutDone() const
+{
+    return foeSendOutFinished;
 }
 
 void SingleBattleUi::startPlayerSendOut()
@@ -275,16 +373,10 @@ bool SingleBattleUi::isSwitchSendOutDone() const
 
 void SingleBattleUi::incrementTicks()
 {
-    if (stage == Stage::Shown || stage == Stage::AwaitSendOut)
+    if (stage == Stage::Shown || stage == Stage::AwaitSendOut || stage == Stage::AwaitTrainers)
         return;
 
     ++ticks;
-
-    if (stage == Stage::FoeEntrance && foeFromBall && !foeCryPlayed && ticks >= FoeEntranceTicks / 2)
-    {
-        playCry(foePkmn);
-        foeCryPlayed = true;
-    }
 
     int duration = stageDuration();
     if (ticks < duration)
@@ -293,8 +385,19 @@ void SingleBattleUi::incrementTicks()
     ticks = 0;
     switch (stage)
     {
+    case Stage::TrainerEntrance:
+        stage = Stage::AwaitTrainers;
+        break;
     case Stage::FoeEntrance:
         stage = Stage::AwaitSendOut;
+        break;
+    case Stage::FoeThrow:
+        stage = Stage::FoeAppear;
+        playCry(foePkmn);
+        break;
+    case Stage::FoeAppear:
+        stage              = Stage::AwaitSendOut;
+        foeSendOutFinished = true;
         break;
     case Stage::PlayerThrow:
         stage = Stage::PlayerAppear;
@@ -320,11 +423,15 @@ int SingleBattleUi::stageDuration() const
 {
     switch (stage)
     {
+    case Stage::TrainerEntrance:
+        return FoeEntranceTicks;
     case Stage::FoeEntrance:
         return FoeEntranceTicks;
+    case Stage::FoeThrow:
     case Stage::PlayerThrow:
     case Stage::SwitchThrow:
         return ThrowTicks;
+    case Stage::FoeAppear:
     case Stage::PlayerAppear:
     case Stage::SwitchAppear:
         return AppearTicks;
@@ -405,7 +512,7 @@ void SingleBattleUi::draw(Fps const* fps, RenderSizes rs)
     };
 
     float progress = 1.f;
-    if (stage != Stage::Shown && stage != Stage::AwaitSendOut)
+    if (stage != Stage::Shown && stage != Stage::AwaitSendOut && stage != Stage::AwaitTrainers)
         progress = stageProgress(fps);
 
     bool drawFoeBox       = true;
@@ -413,60 +520,90 @@ void SingleBattleUi::draw(Fps const* fps, RenderSizes rs)
     bool drawPlayerBox    = true;
     bool drawPlayerSprite = true;
     bool drawTrainer      = false;
+    bool drawOpponent     = false;
     int  trainerFrame     = 0;
     int  foeBoxDx         = 0;
     int  foeSpriteDx      = 0;
     int  playerBoxDx      = 0;
     int  trainerDx        = 0;
+    float opponentSlide   = 0.f;
     float foeScale        = 1.f;
     float playerScale     = 1.f;
-    bool  drawBall        = false;
-    float ballT           = 0.f;
-    bool  ballToFoe       = false;
-    bool  ballFromCorner  = false;
+    bool  drawBall         = false;
+    float ballT            = 0.f;
+    bool  ballFromOpponent = false;
+    bool  ballFromCorner   = false;
     bool  drawBurst       = false;
     float burstT          = 0.f;
     bool  burstOnFoe      = false;
+    bool  drawLineup      = false;
+    float lineupShift     = 0.f;
+    float lineupAlpha     = 1.f;
 
     switch (stage)
     {
+    case Stage::TrainerEntrance:
+        drawFoeSprite    = false;
+        drawFoeBox       = false;
+        drawPlayerSprite = false;
+        drawPlayerBox    = false;
+        drawTrainer      = trainerTexture != nullptr;
+        trainerDx        = static_cast<int>((1.f - progress) * -(160.f * rs.ww / rs.aw));
+        drawOpponent     = opponentTexture != nullptr;
+        opponentSlide    = 1.f - progress;
+        drawLineup       = showOpponentLineup;
+        lineupShift      = (1.f - progress) * -(static_cast<float>(rs.aw) / 2.f);
+        break;
+    case Stage::AwaitTrainers:
+        drawFoeSprite    = false;
+        drawFoeBox       = false;
+        drawPlayerSprite = false;
+        drawPlayerBox    = false;
+        drawTrainer      = trainerTexture != nullptr;
+        drawOpponent     = opponentTexture != nullptr;
+        drawLineup       = showOpponentLineup;
+        break;
     case Stage::FoeEntrance: {
         drawPlayerSprite = false;
         drawPlayerBox    = false;
         drawTrainer      = trainerTexture != nullptr;
         trainerDx        = static_cast<int>((1.f - progress) * -(160.f * rs.ww / rs.aw));
         int foeTravel    = foeFrontSurface->w * rs.ww / rs.aw * 4 / 3;
-        if (foeFromBall)
-        {
-            if (progress < 0.55f)
-            {
-                drawFoeSprite = false;
-                drawFoeBox    = false;
-                drawBall      = true;
-                ballToFoe     = true;
-                ballT         = progress / 0.55f;
-            }
-            else
-            {
-                float appear = (progress - 0.55f) / 0.45f;
-                foeScale     = 0.25f + 0.75f * appear;
-                foeBoxDx     = static_cast<int>((1.f - appear) * -(foeUiSurface->w * rs.ww / rs.aw));
-                drawBurst    = appear < 0.75f;
-                burstT       = appear;
-                burstOnFoe   = true;
-            }
-        }
-        else
-        {
-            foeSpriteDx = static_cast<int>((1.f - progress) * foeTravel);
-            foeBoxDx    = static_cast<int>((1.f - progress) * -(foeUiSurface->w * rs.ww / rs.aw));
-        }
+        foeSpriteDx      = static_cast<int>((1.f - progress) * foeTravel);
+        foeBoxDx         = static_cast<int>((1.f - progress) * -(foeUiSurface->w * rs.ww / rs.aw));
         break;
     }
     case Stage::AwaitSendOut:
         drawPlayerSprite = false;
         drawPlayerBox    = false;
         drawTrainer      = trainerTexture != nullptr;
+        break;
+    case Stage::FoeThrow:
+        drawFoeSprite    = false;
+        drawFoeBox       = false;
+        drawPlayerSprite = false;
+        drawPlayerBox    = false;
+        drawTrainer      = trainerTexture != nullptr;
+        drawOpponent     = opponentTexture != nullptr;
+        drawBall         = true;
+        ballFromOpponent = true;
+        ballT            = progress;
+        drawLineup       = showOpponentLineup;
+        break;
+    case Stage::FoeAppear:
+        drawPlayerSprite = false;
+        drawPlayerBox    = false;
+        drawTrainer      = trainerTexture != nullptr;
+        drawOpponent     = opponentTexture != nullptr && progress < 0.85f;
+        opponentSlide    = progress;
+        foeScale         = 0.25f + 0.75f * progress;
+        foeBoxDx         = static_cast<int>((1.f - progress) * -(foeUiSurface->w * rs.ww / rs.aw));
+        drawBurst        = progress < 0.75f;
+        burstT           = progress;
+        burstOnFoe       = true;
+        drawLineup       = showOpponentLineup;
+        lineupShift      = progress * (static_cast<float>(rs.aw) / 4.f);
+        lineupAlpha      = 1.f - progress;
         break;
     case Stage::PlayerThrow:
         drawPlayerSprite = false;
@@ -526,6 +663,48 @@ void SingleBattleUi::draw(Fps const* fps, RenderSizes rs)
 
     SDL_Rect foeSpriteDrawn    = scaledFromFeet(foeSprite, foeScale);
     SDL_Rect playerSpriteDrawn = scaledFromFeet(playerSprite, playerScale);
+
+    SDL_Rect opponentRect{};
+    if (opponentSurface)
+    {
+        opponentRect.w = opponentSurface->w * rs.ww / rs.aw;
+        opponentRect.h = opponentSurface->h * rs.wh / rs.ah;
+        int settledX   = foeSprite.x + (foeSprite.w - opponentRect.w) / 2;
+        int offX       = rs.ww;
+        opponentRect.x = settledX + static_cast<int>((offX - settledX) * opponentSlide);
+        opponentRect.y = foeSprite.y + foeSprite.h - opponentRect.h - OpponentFootOffset * rs.wh / rs.ah;
+    }
+
+    if (drawLineup && lineupBarTexture && lineupBarSurface)
+    {
+        Uint8 alpha = static_cast<Uint8>(255 * clampf(lineupAlpha, 0.f, 1.f));
+        SDL_SetTextureAlphaMod(lineupBarTexture, alpha);
+
+        SDL_Rect bar;
+        bar.w = lineupBarSurface->w * rs.ww / rs.aw;
+        bar.h = lineupBarSurface->h * rs.wh / rs.ah;
+        bar.x = static_cast<int>((lineupShift + LineupBarDisplayWidth - lineupBarSurface->w) * rs.ww / rs.aw);
+        bar.y = LineupBarY * rs.wh / rs.ah;
+        SDL_RenderCopy(renderer, lineupBarTexture, nullptr, &bar);
+        SDL_SetTextureAlphaMod(lineupBarTexture, 255);
+
+        for (int i = 0; i < LineupBallCount; ++i)
+        {
+            auto kind = static_cast<size_t>(opponentLineup[static_cast<size_t>(i)]);
+            if (kind >= lineupBallTextures.size() || !lineupBallTextures[kind] || !lineupBallSurfaces[kind])
+                continue;
+
+            SDL_SetTextureAlphaMod(lineupBallTextures[kind], alpha);
+            SDL_Rect ballIcon;
+            ballIcon.w = lineupBallSurfaces[kind]->w * rs.ww / rs.aw;
+            ballIcon.h = lineupBallSurfaces[kind]->h * rs.wh / rs.ah;
+            int logicalX = LineupBarDisplayWidth - 44 - LineupBallSize - i * LineupBallStep;
+            ballIcon.x   = static_cast<int>((logicalX + lineupShift) * rs.ww / rs.aw);
+            ballIcon.y   = (LineupBarY - LineupBallSize) * rs.wh / rs.ah;
+            SDL_RenderCopy(renderer, lineupBallTextures[kind], nullptr, &ballIcon);
+            SDL_SetTextureAlphaMod(lineupBallTextures[kind], 255);
+        }
+    }
 
     if (drawFoeBox)
     {
@@ -702,6 +881,9 @@ void SingleBattleUi::draw(Fps const* fps, RenderSizes rs)
     if (drawFoeSprite && foeFrontTexture)
         SDL_RenderCopy(renderer, foeFrontTexture, nullptr, &foeSpriteDrawn);
 
+    if (drawOpponent && opponentTexture)
+        SDL_RenderCopy(renderer, opponentTexture, nullptr, &opponentRect);
+
     if (drawTrainer && trainerSurface && trainerTexture)
     {
         int frameSize  = trainerSurface->h > 0 ? trainerSurface->h : trainerSurface->w;
@@ -742,7 +924,14 @@ void SingleBattleUi::draw(Fps const* fps, RenderSizes rs)
         float startY = 0;
         float endX   = 0;
         float endY   = 0;
-        if (ballToFoe)
+        if (ballFromOpponent && opponentSurface)
+        {
+            startX = static_cast<float>(opponentRect.x + opponentRect.w * 0.35f);
+            startY = static_cast<float>(opponentRect.y + opponentRect.h * 0.35f);
+            endX   = static_cast<float>(foeSprite.x + foeSprite.w / 2 - ballSize / 2);
+            endY   = static_cast<float>(foeSprite.y + foeSprite.h / 2 - ballSize / 2);
+        }
+        else if (ballFromOpponent)
         {
             startX = static_cast<float>(rs.ww + ballSize);
             startY = static_cast<float>(foeSprite.y + foeSprite.h / 4);

@@ -247,6 +247,16 @@ bool SingleBattleScene::opponentSentFromBall() const
     return false;
 }
 
+std::string SingleBattleScene::opponentTrainerGraphic() const
+{
+    return {};
+}
+
+std::array<SingleBattleUi::LineupBall, 6> SingleBattleScene::opponentLineup() const
+{
+    return {};
+}
+
 void SingleBattleScene::changeWeather(Map::Weather weather)
 {
     weatherPhase->setWeather(weather);

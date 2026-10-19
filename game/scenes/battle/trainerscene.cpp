@@ -49,6 +49,42 @@ bool TrainerScene::opponentSentFromBall() const
     return true;
 }
 
+std::string TrainerScene::opponentTrainerGraphic() const
+{
+    auto        trainerData = std::static_pointer_cast<TrainerSceneData>(data);
+    std::string stem        = "POKEMONTRAINER_Red";
+    if (trainerData->opponentTrainer)
+    {
+        if (!trainerData->opponentTrainer->graphic.empty())
+            stem = trainerData->opponentTrainer->graphic;
+        else if (trainerData->opponentTrainer->getGender() == Trainer::Gender::GIRL)
+            stem = "POKEMONTRAINER_Leaf";
+    }
+    return "resources/Graphics/Trainers/" + stem + ".png";
+}
+
+std::array<SingleBattleUi::LineupBall, 6> TrainerScene::opponentLineup() const
+{
+    std::array<SingleBattleUi::LineupBall, 6> balls{};
+    auto trainerData = std::static_pointer_cast<TrainerSceneData>(data);
+    if (!trainerData->opponentTrainer)
+        return balls;
+
+    for (size_t i = 0; i < trainerData->opponentTrainer->pkmns.size(); ++i)
+    {
+        auto const& pkmn = trainerData->opponentTrainer->pkmns[i];
+        if (!pkmn)
+            continue;
+        if (pkmn->isKO())
+            balls[i] = SingleBattleUi::LineupBall::Faint;
+        else if (pkmn->getStatusCondition() != Pkmn::StatusCondition::NONE)
+            balls[i] = SingleBattleUi::LineupBall::Status;
+        else
+            balls[i] = SingleBattleUi::LineupBall::Able;
+    }
+    return balls;
+}
+
 std::string TrainerScene::encounterStartText() const
 {
     auto trainerData = std::static_pointer_cast<TrainerSceneData>(data);

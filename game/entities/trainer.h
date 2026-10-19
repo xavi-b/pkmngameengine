@@ -29,6 +29,9 @@ public:
 
     std::string name;
 
+    // Filename stem in resources/Graphics/Trainers/, such as "YOUNGSTER".
+    std::string graphic;
+
     std::array<Pkmn::PkmnPtr, 6> pkmns;
 
 private:

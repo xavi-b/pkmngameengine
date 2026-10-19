@@ -2,9 +2,12 @@
 #define SINGLEBATTLEPHASE_H
 
 #include "../singlebattlescenedata.h"
+#include "battles/singlebattleui.h"
 #include "fps.h"
 #include "inputs.h"
 #include "renderutils.h"
+
+#include <array>
 
 #include <memory>
 
@@ -32,8 +35,10 @@ public:
     virtual void draw(Fps const* fps, RenderSizes rs) = 0;
 
 protected:
-    class SingleBattleUi* battleUi();
-    bool                  foeSentFromBall() const;
+    class SingleBattleUi*                     battleUi();
+    bool                                      foeSentFromBall() const;
+    std::string                               opponentTrainerGraphic() const;
+    std::array<SingleBattleUi::LineupBall, 6> opponentLineup() const;
 
     SingleBattleScene&                     scene;
     std::shared_ptr<SingleBattleSceneData> data;

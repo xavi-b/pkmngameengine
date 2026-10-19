@@ -50,8 +50,10 @@ public:
                                 bool                     forceNoCrit     = false);
 
 protected:
-    virtual std::string encounterStartText() const = 0;
-    virtual bool        opponentSentFromBall() const;
+    virtual std::string encounterStartText() const    = 0;
+    virtual bool                                 opponentSentFromBall() const;
+    virtual std::string                          opponentTrainerGraphic() const;
+    virtual std::array<SingleBattleUi::LineupBall, 6> opponentLineup() const;
 
     std::shared_ptr<SingleBattleSceneData> data;
 

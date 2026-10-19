@@ -24,3 +24,13 @@ bool SingleBattlePhase::foeSentFromBall() const
 {
     return scene.opponentSentFromBall();
 }
+
+std::string SingleBattlePhase::opponentTrainerGraphic() const
+{
+    return scene.opponentTrainerGraphic();
+}
+
+std::array<SingleBattleUi::LineupBall, 6> SingleBattlePhase::opponentLineup() const
+{
+    return scene.opponentLineup();
+}

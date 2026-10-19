@@ -22,7 +22,7 @@ void SingleBattleStartPhase::init(std::string const& encounterText, std::string 
     firstPkmnSpeech = std::make_unique<TextSpeech>(renderer);
     firstPkmnSpeech->setTexts({firstPkmnText});
 
-    battleUi()->startIntro(foeSentFromBall());
+    battleUi()->startIntro(foeSentFromBall(), opponentTrainerGraphic(), opponentLineup());
 }
 
 void SingleBattleStartPhase::update(Inputs const* inputs)
@@ -45,6 +45,15 @@ void SingleBattleStartPhase::update(Inputs const* inputs)
         pkmnEncounterSpeech->update(inputs);
         if (pkmnEncounterSpeech->shouldClose())
             pkmnEncounterSpeech.reset();
+        return;
+    }
+
+    if (!battleUi()->isFoeSendOutDone())
+    {
+        if (!battleUi()->isFoeSendOutStarted())
+            battleUi()->startFoeSendOut();
+        else
+            battleUi()->incrementTicks();
         return;
     }
 
