@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-FlashAnimation::FlashAnimation(SDL_Renderer* renderer) : Animation(renderer)
+FlashAnimation::FlashAnimation(SDL_Renderer* renderer, float duration) : Animation(renderer), ticksDuration(duration)
 {
     fileSurface = IMG_Load("resources/Graphics/Transitions/flash.png");
     fileTexture = SDL_CreateTextureFromSurface(renderer, fileSurface);

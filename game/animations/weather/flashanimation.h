@@ -8,7 +8,7 @@
 class FlashAnimation : public Animation
 {
 public:
-    FlashAnimation(SDL_Renderer* renderer);
+    explicit FlashAnimation(SDL_Renderer* renderer, float duration = 10);
     ~FlashAnimation();
 
     virtual bool isFinished() const;
