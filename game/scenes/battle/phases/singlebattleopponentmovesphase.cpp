@@ -89,8 +89,15 @@ void SingleBattleOpponentMovesPhase::executeOpponentMove()
                                   static_cast<int>(definition->getPower()),
                                   static_cast<int>(result.damageDealt));
     }
-    if (result.statRose)
-        battleUi()->startStatRise(result.statRoseOnTarget);
+    for (auto const& note : result.statNotes)
+        battleUi()->startStatChange(note.onTarget, note.rose, note.palette, note.sharp);
+    if (result.statNotes.empty())
+    {
+        if (result.statRose)
+            battleUi()->startStatChange(result.statRoseOnTarget, true, 7, false);
+        if (result.statFell)
+            battleUi()->startStatChange(result.statFellOnTarget, false, 7, false);
+    }
     if (result.healed)
         battleUi()->startHeal(false);
     pendingMessages      = result.messages;

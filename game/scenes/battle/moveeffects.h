@@ -4,6 +4,7 @@
 #include "battlebattler.h"
 #include "movedef.h"
 #include "move.h"
+#include "moveresolver.h"
 #include "pkmn.h"
 #include "singlebattlescenedata.h"
 
@@ -32,6 +33,9 @@ struct MoveEffectContext
     bool                     sheerForce         = false;
     bool                     statRose           = false;
     bool                     statRoseOnTarget   = false;
+    bool                     statFell           = false;
+    bool                     statFellOnTarget   = false;
+    std::vector<StatAnimNote> statNotes;
     bool                     healed             = false;
     bool                     hitSubstitute      = false;
     bool                     immune             = false;

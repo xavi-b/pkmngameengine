@@ -149,6 +149,29 @@ namespace
 {
 using SS = BattleBattler::StageStat;
 
+int statAnimPalette(SS stat)
+{
+    switch (stat)
+    {
+    case SS::Attack:
+        return 0;
+    case SS::Defense:
+        return 1;
+    case SS::Accuracy:
+        return 2;
+    case SS::Speed:
+        return 3;
+    case SS::Evasion:
+        return 4;
+    case SS::SpecialAttack:
+        return 5;
+    case SS::SpecialDefense:
+        return 6;
+    default:
+        return 7;
+    }
+}
+
 void msg(MoveEffectContext& ctx, std::string const& text)
 {
     ctx.messages.push_back(text);
@@ -369,6 +392,21 @@ bool changeStage(MoveEffectContext& ctx, BattleBattler& battler, Pkmn::PkmnPtr c
         ctx.statRose = true;
         if (&battler == &ctx.targetBattler)
             ctx.statRoseOnTarget = true;
+    }
+    if (outcome.changed && outcome.applied < 0)
+    {
+        ctx.statFell = true;
+        if (&battler == &ctx.targetBattler)
+            ctx.statFellOnTarget = true;
+    }
+    if (outcome.changed && outcome.applied != 0)
+    {
+        StatAnimNote note;
+        note.palette  = statAnimPalette(stat);
+        note.rose     = outcome.applied > 0;
+        note.onTarget = &battler == &ctx.targetBattler;
+        note.sharp    = std::abs(outcome.applied) >= 2;
+        ctx.statNotes.push_back(note);
     }
     if (outcome.ejected)
     {
@@ -3853,7 +3891,15 @@ bool applyMoveFunctionCode(MoveEffectContext& ctx)
         eatHeldBerry(ctx, ctx.user, ctx.userBattler, confusion);
         auto raised = applyStatChange(ctx.data, ctx.userBattler, ctx.user, SS::Defense, 2, ctx.messages, false);
         if (raised.raised)
+        {
             ctx.statRose = true;
+            StatAnimNote note;
+            note.palette  = statAnimPalette(BattleBattler::StageStat::Defense);
+            note.rose     = true;
+            note.onTarget = false;
+            note.sharp    = std::abs(raised.applied) >= 2;
+            ctx.statNotes.push_back(note);
+        }
         if (raised.ejected)
             ctx.shouldSwitchUser = true;
         return true;

@@ -19,6 +19,15 @@ namespace lc = boost::locale;
 
 namespace
 {
+void copyStatAnims(MoveResolveResult& result, MoveEffectContext const& ctx)
+{
+    result.statRose         = result.statRose || ctx.statRose;
+    result.statRoseOnTarget = result.statRoseOnTarget || ctx.statRoseOnTarget;
+    result.statFell         = result.statFell || ctx.statFell;
+    result.statFellOnTarget = result.statFellOnTarget || ctx.statFellOnTarget;
+    result.statNotes.insert(result.statNotes.end(), ctx.statNotes.begin(), ctx.statNotes.end());
+}
+
 bool accuracyCheck(MoveEffectContext const& ctx)
 {
     auto def = ctx.def;
@@ -418,8 +427,7 @@ MoveResolveResult MoveResolver::resolve(SingleBattleSceneData& data, bool player
             moveExecuted = true;
             applyMoveFunctionCode(ctx);
             result.messages = ctx.messages;
-            result.statRose         = ctx.statRose;
-            result.statRoseOnTarget = ctx.statRoseOnTarget;
+            copyStatAnims(result, ctx);
             result.healed = ctx.healed;
             noteMove(false);
             return result;
@@ -612,8 +620,7 @@ MoveResolveResult MoveResolver::resolve(SingleBattleSceneData& data, bool player
     if (moveBlockedBeforeHit(ctx))
     {
         result.messages.insert(result.messages.end(), ctx.messages.begin(), ctx.messages.end());
-        result.statRose         = result.statRose || ctx.statRose;
-        result.statRoseOnTarget = result.statRoseOnTarget || ctx.statRoseOnTarget;
+        copyStatAnims(result, ctx);
         result.healed = result.healed || ctx.healed;
         result.userFainted = user->isKO();
         noteMove(true);
@@ -674,8 +681,7 @@ MoveResolveResult MoveResolver::resolve(SingleBattleSceneData& data, bool player
     {
         bool ok = applyMoveFunctionCode(ctx);
         result.messages.insert(result.messages.end(), ctx.messages.begin(), ctx.messages.end());
-        result.statRose         = result.statRose || ctx.statRose;
-        result.statRoseOnTarget = result.statRoseOnTarget || ctx.statRoseOnTarget;
+        copyStatAnims(result, ctx);
         result.healed = result.healed || ctx.healed;
         result.hit = ok;
         noteMove(!ok);
@@ -717,8 +723,7 @@ MoveResolveResult MoveResolver::resolve(SingleBattleSceneData& data, bool player
         }
         bool ok = applyMoveFunctionCode(ctx);
         result.messages.insert(result.messages.end(), ctx.messages.begin(), ctx.messages.end());
-        result.statRose         = result.statRose || ctx.statRose;
-        result.statRoseOnTarget = result.statRoseOnTarget || ctx.statRoseOnTarget;
+        copyStatAnims(result, ctx);
         result.healed = result.healed || ctx.healed;
         if (directDamage)
             result.hit = ok;
@@ -753,6 +758,7 @@ MoveResolveResult MoveResolver::resolve(SingleBattleSceneData& data, bool player
             swapped.callDepth = callDepth;
             applyMoveFunctionCode(swapped);
             result.messages.insert(result.messages.end(), swapped.messages.begin(), swapped.messages.end());
+            copyStatAnims(result, swapped);
             applyImmediateHeldItems(data, result.messages);
             noteMove(false);
             return result;
@@ -772,8 +778,7 @@ MoveResolveResult MoveResolver::resolve(SingleBattleSceneData& data, bool player
         }
         bool ok = applyMoveFunctionCode(ctx);
         result.messages.insert(result.messages.end(), ctx.messages.begin(), ctx.messages.end());
-        result.statRose         = result.statRose || ctx.statRose;
-        result.statRoseOnTarget = result.statRoseOnTarget || ctx.statRoseOnTarget;
+        copyStatAnims(result, ctx);
         result.healed = result.healed || ctx.healed;
         honorSuctionCups(ctx);
         result.shouldSwitchUser   = ctx.shouldSwitchUser;
@@ -1590,5 +1595,6 @@ MoveResolveResult MoveResolver::resolve(SingleBattleSceneData& data, bool player
     refreshForme(data, true);
     refreshForme(data, false);
     applyImmediateHeldItems(data, result.messages);
+    copyStatAnims(result, ctx);
     return result;
 }

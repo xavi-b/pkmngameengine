@@ -100,7 +100,7 @@ public:
                        int                 power,
                        int                 damage);
     void startHit(bool playerSide, std::string const& moveType, std::string const& moveName = {});
-    void startStatRise(bool playerSide);
+    void startStatChange(bool playerSide, bool rose, int palette, bool sharp);
     void startHeal(bool playerSide);
     bool startBattleAnimationScript(bool attackerIsPlayer, bool targetIsPlayer, std::string const& scriptName);
     void startCapture();
@@ -255,6 +255,28 @@ private:
     bool        fxPlayer  = false;
     int         fxTicks   = 0;
     AnimSheet   fxSheet;
+
+    struct StatCue
+    {
+        bool playerSide = true;
+        bool rose       = true;
+        int  palette    = 7;
+        bool sharp      = false;
+    };
+    std::vector<StatCue> statCues;
+    bool                 statFxRunning = false;
+    bool                 statFxPlayer  = false;
+    bool                 statFxRise    = true;
+    bool                 statFxSharp   = false;
+    int                  statFxPalette = 7;
+    Uint32               statFxStart   = 0;
+    AnimSheet            statSheet;
+    SDL_Surface*         statPattern    = nullptr;
+    SDL_Surface*         statMaskSurface = nullptr;
+    SDL_Texture*         statMaskTexture = nullptr;
+    void                 beginStatFx(bool playerSide, bool rose, int palette, bool sharp);
+    void                 advanceStatFx();
+    void                 drawStatMask(SDL_Surface* sprite, SDL_Rect const& dst);
 
     AnimSheet typeSheet;
     AnimSheet confusionSheet;

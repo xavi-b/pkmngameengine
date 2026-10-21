@@ -202,6 +202,13 @@ SingleBattleUi::~SingleBattleUi()
 
     freeSheet(typeSheet);
     freeSheet(fxSheet);
+    freeSheet(statSheet);
+    if (statPattern)
+        SDL_FreeSurface(statPattern);
+    if (statMaskTexture)
+        SDL_DestroyTexture(statMaskTexture);
+    if (statMaskSurface)
+        SDL_FreeSurface(statMaskSurface);
     freeSheet(confusionSheet);
     freeSheet(burnSheet);
     freeSheet(freezeSheet);
@@ -863,14 +870,170 @@ bool SingleBattleUi::startBattleAnimationScript(bool attackerIsPlayer, bool targ
     return moveAnim->running();
 }
 
-void SingleBattleUi::startStatRise(bool playerSide)
+namespace
 {
-    if (startBattleAnimationScript(playerSide, playerSide, "General_StatsChange"))
+struct StatBlend
+{
+    int  ev   = 0;
+    bool done = false;
+};
+
+// FireRed fades the mask in every other frame, holds it, then fades it out.
+StatBlend statBlendAt(Uint32 elapsedMs, bool sharp)
+{
+    int frames  = static_cast<int>(elapsedMs * 60 / 1000);
+    int steps   = sharp ? 13 : 10;
+    int hold    = sharp ? 30 : 20;
+    int fadeLen = steps * 2;
+    int total   = fadeLen + hold + fadeLen;
+    StatBlend out;
+    out.done = frames >= total;
+    if (frames < fadeLen)
+        out.ev = frames / 2;
+    else if (frames < fadeLen + hold)
+        out.ev = steps;
+    else if (!out.done)
+        out.ev = std::max(0, steps - (frames - fadeLen - hold) / 2);
+    return out;
+}
+
+int wrapMod(int value, int modulo)
+{
+    if (modulo <= 0)
+        return 0;
+    int wrapped = value % modulo;
+    return wrapped < 0 ? wrapped + modulo : wrapped;
+}
+} // namespace
+
+void SingleBattleUi::beginStatFx(bool playerSide, bool rose, int palette, bool sharp)
+{
+    statFxRunning = true;
+    statFxPlayer  = playerSide;
+    statFxRise    = rose;
+    statFxSharp   = sharp;
+    statFxPalette = std::clamp(palette, 0, 7);
+    statFxStart   = SDL_GetTicks();
+    ensureSheet(statSheet, "resources/Graphics/Animations/Stats/stat_mask.png");
+    if (statPattern)
+    {
+        SDL_FreeSurface(statPattern);
+        statPattern = nullptr;
+    }
+    if (statSheet.surface)
+        statPattern = SDL_ConvertSurfaceFormat(statSheet.surface, SDL_PIXELFORMAT_RGBA32, 0);
+}
+
+void SingleBattleUi::advanceStatFx()
+{
+    bool attackPlaying = hitRunning || deferHpDrop || (moveAnim && moveAnim->running());
+    auto startNext     = [&]() {
+        if (statCues.empty() || attackPlaying)
+            return;
+        StatCue cue = statCues.front();
+        statCues.erase(statCues.begin());
+        beginStatFx(cue.playerSide, cue.rose, cue.palette, cue.sharp);
+    };
+    if (!statFxRunning)
+    {
+        startNext();
         return;
-    fxPlayer  = playerSide;
-    fxRunning = true;
-    fxTicks   = 0;
-    ensureSheet(fxSheet, "resources/Graphics/Animations/Growl.png");
+    }
+    if (statBlendAt(SDL_GetTicks() - statFxStart, statFxSharp).done)
+    {
+        statFxRunning = false;
+        startNext();
+    }
+}
+
+void SingleBattleUi::startStatChange(bool playerSide, bool rose, int palette, bool sharp)
+{
+    for (auto& cue : statCues)
+    {
+        if (cue.playerSide != playerSide || cue.rose != rose)
+            continue;
+        if (cue.palette != palette)
+            cue.palette = 7;
+        cue.sharp = cue.sharp || sharp;
+        return;
+    }
+    statCues.push_back(StatCue{playerSide, rose, std::clamp(palette, 0, 7), sharp});
+}
+
+void SingleBattleUi::drawStatMask(SDL_Surface* sprite, SDL_Rect const& dst)
+{
+    if (!statFxRunning || !sprite || !statPattern || dst.w <= 0 || dst.h <= 0)
+        return;
+    StatBlend blend = statBlendAt(SDL_GetTicks() - statFxStart, statFxSharp);
+    if (blend.ev <= 0 || statPattern->w < 256 || statPattern->h < 64)
+        return;
+
+    SDL_Surface* spriteRgba = SDL_ConvertSurfaceFormat(sprite, SDL_PIXELFORMAT_RGBA32, 0);
+    if (!spriteRgba)
+        return;
+
+    int width  = spriteRgba->w;
+    int height = spriteRgba->h;
+    if (!statMaskSurface || statMaskSurface->w != width || statMaskSurface->h != height)
+    {
+        if (statMaskTexture)
+            SDL_DestroyTexture(statMaskTexture);
+        if (statMaskSurface)
+            SDL_FreeSurface(statMaskSurface);
+        statMaskSurface = SDL_CreateRGBSurfaceWithFormat(0, width, height, 32, SDL_PIXELFORMAT_RGBA32);
+        statMaskTexture = statMaskSurface
+                            ? SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, width, height)
+                            : nullptr;
+        if (statMaskTexture)
+            SDL_SetTextureBlendMode(statMaskTexture, SDL_BLENDMODE_BLEND);
+    }
+    if (!statMaskSurface || !statMaskTexture)
+    {
+        SDL_FreeSurface(spriteRgba);
+        return;
+    }
+
+    int cell   = std::max(1, width * 32 / 64);
+    int scroll = static_cast<int>((SDL_GetTicks() - statFxStart) * 60 / 1000 * 3 * width / 64);
+    if (!statFxRise)
+        scroll = -scroll;
+    int originX = statFxPalette * 32;
+    int originY = statFxRise ? 0 : 32;
+
+    if (SDL_MUSTLOCK(statMaskSurface))
+        SDL_LockSurface(statMaskSurface);
+    auto* patternPx = static_cast<Uint8*>(statPattern->pixels);
+    auto* spritePx  = static_cast<Uint8*>(spriteRgba->pixels);
+    auto* maskPx    = static_cast<Uint8*>(statMaskSurface->pixels);
+    for (int y = 0; y < height; ++y)
+    {
+        int sampleY = originY + wrapMod(y + scroll, cell) * 32 / cell;
+        Uint8* patternRow = patternPx + sampleY * statPattern->pitch;
+        Uint8* spriteRow  = spritePx + y * spriteRgba->pitch;
+        Uint8* maskRow    = maskPx + y * statMaskSurface->pitch;
+        for (int x = 0; x < width; ++x)
+        {
+            Uint8 spriteA = spriteRow[x * 4 + 3];
+            Uint8* out    = maskRow + x * 4;
+            if (spriteA == 0)
+            {
+                out[0] = out[1] = out[2] = out[3] = 0;
+                continue;
+            }
+            int sampleX = originX + wrapMod(x, cell) * 32 / cell;
+            Uint8* src  = patternRow + sampleX * 4;
+            out[0]      = src[0];
+            out[1]      = src[1];
+            out[2]      = src[2];
+            out[3]      = static_cast<Uint8>(spriteA * blend.ev / 16);
+        }
+    }
+    if (SDL_MUSTLOCK(statMaskSurface))
+        SDL_UnlockSurface(statMaskSurface);
+
+    SDL_UpdateTexture(statMaskTexture, nullptr, statMaskSurface->pixels, statMaskSurface->pitch);
+    SDL_RenderCopy(renderer, statMaskTexture, nullptr, &dst);
+    SDL_FreeSurface(spriteRgba);
 }
 
 void SingleBattleUi::startHeal(bool playerSide)
@@ -948,6 +1111,8 @@ void SingleBattleUi::incrementPresentation()
         stepBar(foeHpPrev, foeHpCur, foePkmn->getPercentageHP());
     if (playerPkmn)
         stepBar(playerHpPrev, playerHpCur, playerPkmn->getPercentageHP());
+
+    advanceStatFx();
 }
 
 bool SingleBattleUi::isPresentationRunning() const
@@ -957,7 +1122,7 @@ bool SingleBattleUi::isPresentationRunning() const
     };
     bool hpMoving = (foePkmn && unsettled(foeHpCur, foePkmn->getPercentageHP()))
                  || (playerPkmn && unsettled(playerHpCur, playerPkmn->getPercentageHP()));
-    return hitRunning || fxRunning || (moveAnim && moveAnim->running()) || hpMoving;
+    return hitRunning || fxRunning || statFxRunning || !statCues.empty() || (moveAnim && moveAnim->running()) || hpMoving;
 }
 
 void SingleBattleUi::draw(Fps const* fps, RenderSizes rs)
@@ -1347,6 +1512,8 @@ void SingleBattleUi::draw(Fps const* fps, RenderSizes rs)
         SDL_SetTextureAlphaMod(foeFrontTexture, 255);
         SDL_SetTextureColorMod(foeFrontTexture, 255, 255, 255);
         drawBattlerFx(false, foeSpriteDrawn);
+        if (statFxRunning && !statFxPlayer)
+            drawStatMask(foeFrontSurface, foeSpriteDrawn);
     }
 
     if (drawOpponent && opponentTexture)
@@ -1399,6 +1566,8 @@ void SingleBattleUi::draw(Fps const* fps, RenderSizes rs)
         SDL_SetTextureAlphaMod(playerBackTexture, 255);
         SDL_SetTextureColorMod(playerBackTexture, 255, 255, 255);
         drawBattlerFx(true, playerSpriteDrawn);
+        if (statFxRunning && statFxPlayer)
+            drawStatMask(playerBackSurface, playerSpriteDrawn);
     }
 
     if (moveAnim)
