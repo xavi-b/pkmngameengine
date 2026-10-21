@@ -8,9 +8,6 @@
 #include <array>
 #include <string>
 
-// FireRed Pokémon summary (pokemon_summary_screen.c): Info, then the memo,
-// skills, known moves, and ribbons. Left/right changes page. Up/down changes
-// the party member, or the move while the moves page is open.
 class PkmnInfoScene : public Scene
 {
 public:

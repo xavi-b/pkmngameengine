@@ -22,9 +22,6 @@ void queueMoveIds(Pkmn::PkmnPtr const& pkmn, std::vector<std::string>& pending, 
 
 } // namespace MoveLearn
 
-// FireRed learn-a-move flow (PSS_MODE_SELECT_MOVE): confirm, then the Known Moves
-// page with the new move in the fifth slot. B or that slot cancels. An empty
-// slot learns immediately.
 class NewMovesScene : public Scene
 {
 public:

@@ -8,9 +8,6 @@
 #include <string>
 #include <vector>
 
-// FireRed evolution presentation (evolution_scene.c): fade in, cry, intro jingle,
-// scrolling background, sparkle passes, accelerating silhouette cycle, then the
-// evolved cry and congratulations. B during the cycle cancels, as in the ROM.
 class EvolutionScene : public Scene
 {
 public:
