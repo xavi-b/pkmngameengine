@@ -584,6 +584,26 @@ bool ItemUtils::useItemInField(Player& player, Item::ItemPtr const& item, std::s
             used = true;
             break;
         }
+        if (itemId == "SACREDASH")
+        {
+            bool revived = false;
+            for (auto const& mon : player.pkmns)
+            {
+                if (!mon || !mon->isKO())
+                    continue;
+                mon->resetHP();
+                revived = true;
+            }
+            if (!revived)
+            {
+                message = lc::translate("It won't have any effect.");
+                return false;
+            }
+            message = (boost::format(lc::translate("%1% used the %2%.")) % player.name % item->getDefinition()->getName())
+                           .str();
+            used = true;
+            break;
+        }
         if (itemId == "WHITEFLUTE" || itemId == "BLACKFLUTE")
         {
             if (itemId == "WHITEFLUTE")
