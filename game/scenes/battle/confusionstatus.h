@@ -6,6 +6,8 @@
 
 #include <cstddef>
 
+struct BattleBattler;
+
 // https://bulbapedia.bulbagarden.net/wiki/Confusion_(status_condition)
 struct ConfusionStatus
 {
@@ -29,7 +31,7 @@ enum class ConfusionTickResult
 ConfusionTickResult tickConfusion(ConfusionStatus& status);
 
 // Typeless physical power-40 self-hit; no crit/STAB/type; Gen III burn halves.
-size_t computeConfusionDamage(Pkmn::PkmnPtr const& pkmn);
+size_t computeConfusionDamage(Pkmn::PkmnPtr const& pkmn, BattleBattler const* battler = nullptr);
 
 bool moveConfusesTarget(MoveDef::MoveDefPtr const& move);
 

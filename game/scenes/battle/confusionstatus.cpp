@@ -1,6 +1,9 @@
 #include "confusionstatus.h"
 
+#include "battlebattler.h"
 #include "utils.h"
+
+#include <algorithm>
 
 void ConfusionStatus::clear()
 {
@@ -31,14 +34,13 @@ ConfusionTickResult tickConfusion(ConfusionStatus& status)
 
     --status.turnsRemaining;
 
-    // Generations I–VI: 50% chance to hurt itself.
     if (Utils::randuint(0, 1) == 0)
         return ConfusionTickResult::HurtSelf;
 
     return ConfusionTickResult::Continues;
 }
 
-size_t computeConfusionDamage(Pkmn::PkmnPtr const& pkmn)
+size_t computeConfusionDamage(Pkmn::PkmnPtr const& pkmn, BattleBattler const* battler)
 {
     if (!pkmn)
         return 0;
@@ -49,13 +51,18 @@ size_t computeConfusionDamage(Pkmn::PkmnPtr const& pkmn)
     size_t power = 40;
     size_t a     = pkmn->getStats()[PkmnDef::ATTACK];
     size_t d     = pkmn->getStats()[PkmnDef::DEFENSE];
+    if (battler)
+    {
+        a = std::max<size_t>(1, static_cast<size_t>(static_cast<float>(a) * battler->stageMultiplier(BattleBattler::StageStat::Attack)));
+        d = std::max<size_t>(1, static_cast<size_t>(static_cast<float>(d) * battler->stageMultiplier(BattleBattler::StageStat::Defense)));
+    }
     if (d == 0)
         d = 1;
 
-    // Generations I–IV: burn halves confusion damage.
-    float burn =
-        pkmn->getStatusCondition() == Pkmn::StatusCondition::BURN ? 0.5f : 1.0f;
-    float damage = (((2 * level / 5 + 2) * power * a / d) / 50 + 2) * burn;
+    float damage = (((2 * level / 5 + 2) * power * a / d) / 50 + 2);
+    bool guts = battler && !battler->abilitySuppressed && battler->abilityId == "GUTS";
+    if (pkmn->getStatusCondition() == Pkmn::StatusCondition::BURN && !guts)
+        damage *= 0.5f;
     float random = Utils::randuint(85, 100) / 100.0f;
     damage *= random;
     if (damage < 1.0f)
