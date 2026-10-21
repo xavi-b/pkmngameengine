@@ -44,6 +44,15 @@ public:
     // Remaining steps of Repel, Super Repel, or Max Repel. Zero means none is active.
     size_t repelSteps = 0;
 
+    // White Flute raises the encounter rate. Black Flute lowers it. They cancel each other.
+    enum class Flute
+    {
+        None,
+        White,
+        Black
+    };
+    Flute flute = Flute::None;
+
 private:
     Gender gender = Gender::BOY;
 };

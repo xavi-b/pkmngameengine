@@ -58,7 +58,7 @@ bool curesStatus(std::string const& itemId, Pkmn::StatusCondition status)
         || itemId == "BIGMALASADA" || itemId == "HEALPOWDER" || itemId == "PEWTERCRUNCHIES"
         || itemId == "RAGECANDYBAR")
         return true;
-    if ((itemId == "AWAKENING" || itemId == "CHESTOBERRY" || itemId == "POKEFLUTE")
+    if ((itemId == "AWAKENING" || itemId == "CHESTOBERRY" || itemId == "POKEFLUTE" || itemId == "BLUEFLUTE")
         && status == Pkmn::StatusCondition::SLEEP)
         return true;
     if ((itemId == "ANTIDOTE" || itemId == "PECHABERRY")
@@ -584,7 +584,18 @@ bool ItemUtils::useItemInField(Player& player, Item::ItemPtr const& item, std::s
             used = true;
             break;
         }
-        used = true; // Flutes and the other direct items still to come.
+        if (itemId == "WHITEFLUTE" || itemId == "BLACKFLUTE")
+        {
+            if (itemId == "WHITEFLUTE")
+                player.flute = Player::Flute::White;
+            else
+                player.flute = Player::Flute::Black;
+            message = (boost::format(lc::translate("%1% used the %2%.")) % player.name % item->getDefinition()->getName())
+                           .str();
+            used = true;
+            break;
+        }
+        used = true; // The other direct items still to come.
         break;
     }
     case ItemDef::FieldUse::OnPkmn:

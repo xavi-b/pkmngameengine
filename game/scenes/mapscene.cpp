@@ -1996,12 +1996,18 @@ bool MapScene::manageEncounters()
         });
         if (it != encounterMethods.end())
         {
+            size_t density = it->getDensity();
+            if (player.flute == Player::Flute::White)
+                density += density / 2;
+            else if (player.flute == Player::Flute::Black)
+                density /= 2;
+
             size_t pkmnEncounter = Utils::randuint(0, 99);
 
             if (Game::instance()->isDebug())
-                std::cout << "PkmnEncounter: " << pkmnEncounter << "/" << it->getDensity() << std::endl;
+                std::cout << "PkmnEncounter: " << pkmnEncounter << "/" << density << std::endl;
 
-            if (pkmnEncounter < it->getDensity())
+            if (pkmnEncounter < density)
             {
                 encounteredPkmn = rollEncounter(*it);
                 if (encounteredPkmn && player.repelSteps > 0)
