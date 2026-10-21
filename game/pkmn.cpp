@@ -3,7 +3,67 @@
 #include "game.h"
 #include "utils.h"
 
+#include <algorithm>
+
 #include <limits>
+
+namespace {
+
+int natureFactor(Pkmn::Nature nature, PkmnDef::Stat stat)
+{
+    switch (nature)
+    {
+    case Pkmn::Nature::LONELY:
+        return stat == PkmnDef::ATTACK ? 110 : stat == PkmnDef::DEFENSE ? 90 : 100;
+    case Pkmn::Nature::BRAVE:
+        return stat == PkmnDef::ATTACK ? 110 : stat == PkmnDef::SPEED ? 90 : 100;
+    case Pkmn::Nature::ADAMANT:
+        return stat == PkmnDef::ATTACK ? 110 : stat == PkmnDef::SPECIAL_ATTACK ? 90 : 100;
+    case Pkmn::Nature::NAUGHTY:
+        return stat == PkmnDef::ATTACK ? 110 : stat == PkmnDef::SPECIAL_DEFENSE ? 90 : 100;
+    case Pkmn::Nature::BOLD:
+        return stat == PkmnDef::DEFENSE ? 110 : stat == PkmnDef::ATTACK ? 90 : 100;
+    case Pkmn::Nature::RELAXED:
+        return stat == PkmnDef::DEFENSE ? 110 : stat == PkmnDef::SPEED ? 90 : 100;
+    case Pkmn::Nature::IMPISH:
+        return stat == PkmnDef::DEFENSE ? 110 : stat == PkmnDef::SPECIAL_ATTACK ? 90 : 100;
+    case Pkmn::Nature::LAX:
+        return stat == PkmnDef::DEFENSE ? 110 : stat == PkmnDef::SPECIAL_DEFENSE ? 90 : 100;
+    case Pkmn::Nature::TIMID:
+        return stat == PkmnDef::SPEED ? 110 : stat == PkmnDef::ATTACK ? 90 : 100;
+    case Pkmn::Nature::HASTY:
+        return stat == PkmnDef::SPEED ? 110 : stat == PkmnDef::DEFENSE ? 90 : 100;
+    case Pkmn::Nature::JOLLY:
+        return stat == PkmnDef::SPEED ? 110 : stat == PkmnDef::SPECIAL_ATTACK ? 90 : 100;
+    case Pkmn::Nature::NAIVE:
+        return stat == PkmnDef::SPEED ? 110 : stat == PkmnDef::SPECIAL_DEFENSE ? 90 : 100;
+    case Pkmn::Nature::MODEST:
+        return stat == PkmnDef::SPECIAL_ATTACK ? 110 : stat == PkmnDef::ATTACK ? 90 : 100;
+    case Pkmn::Nature::MILD:
+        return stat == PkmnDef::SPECIAL_ATTACK ? 110 : stat == PkmnDef::DEFENSE ? 90 : 100;
+    case Pkmn::Nature::QUIET:
+        return stat == PkmnDef::SPECIAL_ATTACK ? 110 : stat == PkmnDef::SPEED ? 90 : 100;
+    case Pkmn::Nature::RASH:
+        return stat == PkmnDef::SPECIAL_ATTACK ? 110 : stat == PkmnDef::SPECIAL_DEFENSE ? 90 : 100;
+    case Pkmn::Nature::CALM:
+        return stat == PkmnDef::SPECIAL_DEFENSE ? 110 : stat == PkmnDef::ATTACK ? 90 : 100;
+    case Pkmn::Nature::GENTLE:
+        return stat == PkmnDef::SPECIAL_DEFENSE ? 110 : stat == PkmnDef::DEFENSE ? 90 : 100;
+    case Pkmn::Nature::SASSY:
+        return stat == PkmnDef::SPECIAL_DEFENSE ? 110 : stat == PkmnDef::SPEED ? 90 : 100;
+    case Pkmn::Nature::CAREFUL:
+        return stat == PkmnDef::SPECIAL_DEFENSE ? 110 : stat == PkmnDef::SPECIAL_ATTACK ? 90 : 100;
+    case Pkmn::Nature::HARDY:
+    case Pkmn::Nature::DOCILE:
+    case Pkmn::Nature::SERIOUS:
+    case Pkmn::Nature::BASHFUL:
+    case Pkmn::Nature::QUIRKY:
+    default:
+        return 100;
+    }
+}
+
+} // namespace
 
 Pkmn::Pkmn(PkmnDef::PkmnDefPtr definition, size_t level) : definition(definition), level(level)
 {
@@ -17,58 +77,7 @@ std::map<PkmnDef::Stat, size_t> Pkmn::getStats() const
     std::map<PkmnDef::Stat, size_t> EVs       = getEVs();
     std::map<PkmnDef::Stat, size_t> stats;
 
-    auto natureMultiplier = [this](PkmnDef::Stat stat) {
-        switch (nature)
-        {
-        case Nature::LONELY:
-            return stat == PkmnDef::ATTACK ? 110 : stat == PkmnDef::DEFENSE ? 90 : 100;
-        case Nature::BRAVE:
-            return stat == PkmnDef::ATTACK ? 110 : stat == PkmnDef::SPEED ? 90 : 100;
-        case Nature::ADAMANT:
-            return stat == PkmnDef::ATTACK ? 110 : stat == PkmnDef::SPECIAL_ATTACK ? 90 : 100;
-        case Nature::NAUGHTY:
-            return stat == PkmnDef::ATTACK ? 110 : stat == PkmnDef::SPECIAL_DEFENSE ? 90 : 100;
-        case Nature::BOLD:
-            return stat == PkmnDef::DEFENSE ? 110 : stat == PkmnDef::ATTACK ? 90 : 100;
-        case Nature::RELAXED:
-            return stat == PkmnDef::DEFENSE ? 110 : stat == PkmnDef::SPEED ? 90 : 100;
-        case Nature::IMPISH:
-            return stat == PkmnDef::DEFENSE ? 110 : stat == PkmnDef::SPECIAL_ATTACK ? 90 : 100;
-        case Nature::LAX:
-            return stat == PkmnDef::DEFENSE ? 110 : stat == PkmnDef::SPECIAL_DEFENSE ? 90 : 100;
-        case Nature::TIMID:
-            return stat == PkmnDef::SPEED ? 110 : stat == PkmnDef::ATTACK ? 90 : 100;
-        case Nature::HASTY:
-            return stat == PkmnDef::SPEED ? 110 : stat == PkmnDef::DEFENSE ? 90 : 100;
-        case Nature::JOLLY:
-            return stat == PkmnDef::SPEED ? 110 : stat == PkmnDef::SPECIAL_ATTACK ? 90 : 100;
-        case Nature::NAIVE:
-            return stat == PkmnDef::SPEED ? 110 : stat == PkmnDef::SPECIAL_DEFENSE ? 90 : 100;
-        case Nature::MODEST:
-            return stat == PkmnDef::SPECIAL_ATTACK ? 110 : stat == PkmnDef::ATTACK ? 90 : 100;
-        case Nature::MILD:
-            return stat == PkmnDef::SPECIAL_ATTACK ? 110 : stat == PkmnDef::DEFENSE ? 90 : 100;
-        case Nature::QUIET:
-            return stat == PkmnDef::SPECIAL_ATTACK ? 110 : stat == PkmnDef::SPEED ? 90 : 100;
-        case Nature::RASH:
-            return stat == PkmnDef::SPECIAL_ATTACK ? 110 : stat == PkmnDef::SPECIAL_DEFENSE ? 90 : 100;
-        case Nature::CALM:
-            return stat == PkmnDef::SPECIAL_DEFENSE ? 110 : stat == PkmnDef::ATTACK ? 90 : 100;
-        case Nature::GENTLE:
-            return stat == PkmnDef::SPECIAL_DEFENSE ? 110 : stat == PkmnDef::DEFENSE ? 90 : 100;
-        case Nature::SASSY:
-            return stat == PkmnDef::SPECIAL_DEFENSE ? 110 : stat == PkmnDef::SPEED ? 90 : 100;
-        case Nature::CAREFUL:
-            return stat == PkmnDef::SPECIAL_DEFENSE ? 110 : stat == PkmnDef::SPECIAL_ATTACK ? 90 : 100;
-        case Nature::HARDY:
-        case Nature::DOCILE:
-        case Nature::SERIOUS:
-        case Nature::BASHFUL:
-        case Nature::QUIRKY:
-        default:
-            return 100;
-        }
-    };
+    auto natureMultiplier = [this](PkmnDef::Stat stat) { return natureFactor(nature, stat); };
 
     stats[PkmnDef::HP] =
         (((2 * baseStats[PkmnDef::HP] + IVs.at(PkmnDef::HP) + EVs.at(PkmnDef::HP) / 4) * level) / 100) + level + 10;
@@ -79,6 +88,16 @@ std::map<PkmnDef::Stat, size_t> Pkmn::getStats() const
         stats[stat]             = (statValue * natureMultiplier(stat)) / 100;
     }
     return stats;
+}
+
+size_t Pkmn::statFromBase(PkmnDef::Stat stat, size_t base) const
+{
+    std::map<PkmnDef::Stat, size_t> IVs = getIVs();
+    std::map<PkmnDef::Stat, size_t> EVs = getEVs();
+    if (stat == PkmnDef::HP)
+        return (((2 * base + IVs.at(stat) + EVs.at(stat) / 4) * level) / 100) + level + 10;
+    size_t statValue = ((((2 * base + IVs.at(stat) + EVs.at(stat) / 4) * level) / 100) + 5);
+    return (statValue * natureFactor(nature, stat)) / 100;
 }
 
 size_t Pkmn::getTotalHP() const
@@ -143,6 +162,18 @@ void Pkmn::generateFromPkmnDef()
     hp        = getStats()[PkmnDef::HP];
     happiness = definition->getHappiness();
     shiny     = Utils::randuint(0, std::numeric_limits<unsigned short>::max()) < 8;
+    generateEffectiveAbility();
+}
+
+void Pkmn::generateEffectiveAbility()
+{
+    if (!definition)
+        return;
+
+    auto const& regular = definition->getAbilities();
+    if (regular.empty())
+        return;
+    setAbilityId(regular.at(Utils::randuint(0, regular.size() - 1)));
 }
 
 void Pkmn::addMovesFromPkmnDef()
@@ -392,6 +423,36 @@ void Pkmn::setCaptureBall(std::string const& newCaptureBall)
     captureBall = newCaptureBall.empty() ? "POKEBALL" : newCaptureBall;
 }
 
+std::string const& Pkmn::getAbilityId() const
+{
+    return abilityId;
+}
+
+void Pkmn::setAbilityId(std::string const& id)
+{
+    if (id.empty())
+    {
+        abilityId.clear();
+        return;
+    }
+    if (!definition)
+        return;
+    auto listed = [&](std::vector<std::string> const& ids) {
+        return std::find(ids.begin(), ids.end(), id) != ids.end();
+    };
+    if (listed(definition->getAbilities()) || listed(definition->getHiddenAbilities()))
+        abilityId = id;
+}
+
+std::string Pkmn::effectiveAbilityId() const
+{
+    if (!abilityId.empty())
+        return abilityId;
+    if (definition && !definition->getAbilities().empty())
+        return definition->getAbilities().front();
+    return {};
+}
+
 std::string Pkmn::getDisplayName() const
 {
     if (nickName.empty())
@@ -447,7 +508,8 @@ void tag_invoke(js::value_from_tag, js::value& jv, Pkmn::PkmnPtr const& o)
             {"firstTrainerId", o->firstTrainerId},
             {"heldItem", js::value_from<Item::ItemPtr const&>(o->heldItem)},
             {"captureBall", o->captureBall},
-            {"shiny", o->shiny}
+            {"shiny", o->shiny},
+            {"abilityId", o->abilityId}
         };
     }
     else
@@ -462,7 +524,9 @@ Pkmn::PkmnPtr tag_invoke(js::value_to_tag<Pkmn::PkmnPtr>, js::value const& jv)
     if (obj.empty())
         return nullptr;
 
-    auto   definition     = Game::instance()->data.pkmnDefFor(js::value_to<std::string>(obj.at("definition")));
+    auto definition = Game::instance()->data.pkmnDefFor(js::value_to<std::string>(obj.at("definition")));
+    if (!definition)
+        return nullptr;
     size_t level          = js::value_to<size_t>(obj.at("level"));
     auto   pkmn           = std::make_shared<Pkmn>(definition, level);
     pkmn->exp             = js::value_to<size_t>(obj.at("exp"));
@@ -497,6 +561,8 @@ Pkmn::PkmnPtr tag_invoke(js::value_to_tag<Pkmn::PkmnPtr>, js::value const& jv)
         js::object const& obj                                                  = value.as_object();
         pkmn->EVs[static_cast<PkmnDef::Stat>(js::value_to<int>(obj.at("id")))] = js::value_to<size_t>(obj.at("value"));
     }
+    if (obj.contains("abilityId"))
+        pkmn->setAbilityId(js::value_to<std::string>(obj.at("abilityId")));
     if (obj.contains("shiny"))
         pkmn->shiny = js::value_to<bool>(obj.at("shiny"));
     else

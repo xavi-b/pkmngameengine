@@ -653,7 +653,20 @@ void PkmnInfoScene::drawPage(RenderSizes rs)
             labelMove(row.y, SkillsValueRight, lc::translate(row.label), value);
         }
 
-        std::string ability = "---";
+        std::string ability = pkmn->effectiveAbilityId();
+        if (ability.empty())
+            ability = "---";
+        else
+        {
+            for (auto const& known : Game::instance()->data.abilities)
+            {
+                if (known && known->getId() == ability)
+                {
+                    ability = known->getName();
+                    break;
+                }
+            }
+        }
         labelMove(284, 496, lc::translate("ABILITY"), ability);
         break;
     }

@@ -1,5 +1,6 @@
 #include "game.h"
 
+#include "ability.h"
 #include "renderutils.h"
 #include "scenes/leavescene.h"
 #include "scenes/mapscene.h"
@@ -68,6 +69,8 @@ Game::Game(int argc, char* argv[])
     data.moves = js::value_to<std::vector<MoveDef::MoveDefPtr>>(json.as_object()["moves"]);
     // Items
     data.items = js::value_to<std::vector<ItemDef::ItemDefPtr>>(json.as_object()["items"]);
+    if (json.as_object().contains("abilities"))
+        data.abilities = js::value_to<std::vector<Ability::AbilityPtr>>(json.as_object()["abilities"]);
 
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
     TTF_Init();

@@ -69,6 +69,7 @@ public:
     Pkmn(PkmnDef::PkmnDefPtr definition, size_t level);
 
     std::map<PkmnDef::Stat, size_t> getStats() const;
+    size_t                          statFromBase(PkmnDef::Stat stat, size_t base) const;
     size_t                          getTotalHP() const;
 
     std::map<PkmnDef::Stat, size_t> getIVs() const;
@@ -81,6 +82,7 @@ public:
     std::array<Move::MovePtr, 4>&       getMoves();
     void                                setMoves(std::array<Move::MovePtr, 4> const& newMoves);
     void                                generateFromPkmnDef();
+    void                                generateEffectiveAbility();
     void                                addMovesFromPkmnDef();
 
     size_t getLevel() const;
@@ -128,6 +130,11 @@ public:
 
     std::string getDisplayName() const;
 
+    // Stored ability used in battle. Empty still means the species' first ability.
+    std::string const& getAbilityId() const;
+    void               setAbilityId(std::string const& id);
+    std::string        effectiveAbilityId() const;
+
     bool isShiny() const;
 
     uint64_t getFirstTrainerId() const;
@@ -151,6 +158,7 @@ private:
     std::string                     captureBall     = "POKEBALL";
     bool                            shiny           = false;
     uint64_t                        firstTrainerId  = 0;
+    std::string                     abilityId;
 };
 
 #endif // PKMN_H

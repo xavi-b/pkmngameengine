@@ -1,6 +1,7 @@
 #ifndef GAMEDATA_H
 #define GAMEDATA_H
 
+#include "ability.h"
 #include "entities/player.h"
 #include "gametime.h"
 #include "itemdef.h"
@@ -25,6 +26,7 @@ public:
     std::vector<PkmnDef::PkmnDefPtr> pkmns;
     std::vector<MoveDef::MoveDefPtr> moves;
     std::vector<ItemDef::ItemDefPtr> items;
+    std::vector<Ability::AbilityPtr> abilities;
 
     Player      player;
     GameTime    time;
