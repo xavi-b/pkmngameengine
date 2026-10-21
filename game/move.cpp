@@ -49,6 +49,8 @@ Move::MovePtr tag_invoke(js::value_to_tag<Move::MovePtr>, js::value const& jv)
         return nullptr;
 
     auto definition = Game::instance()->data.moveDefFor(js::value_to<std::string>(obj.at("definition")));
+    if (!definition)
+        return nullptr;
     auto move       = std::make_shared<Move>(definition);
     move->currentPP = js::value_to<size_t>(obj.at("currentPP"));
     return move;
