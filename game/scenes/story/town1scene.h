@@ -24,6 +24,8 @@ public:
 
     virtual std::string currentLocation() const override;
 
+    virtual bool itemfinderResponds() const override;
+
 protected:
     virtual bool updateAmbient(Inputs const* inputs) override;
     virtual bool updateBeforeMovement(Inputs const* inputs) override;

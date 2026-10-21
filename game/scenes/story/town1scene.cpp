@@ -230,3 +230,33 @@ std::string Town1Scene::currentLocation() const
 {
     return lc::translate("Town 1");
 }
+
+bool Town1Scene::itemfinderResponds() const
+{
+    auto const& flags = Game::instance()->data.flags;
+    auto        found = flags.find("town1_potion_found");
+    if (found != flags.end() && found->second)
+        return false;
+
+    auto const& player = Game::instance()->data.player;
+    if (!map)
+        return false;
+    for (size_t y = 0; y < map->getNRow(); ++y)
+    {
+        for (size_t x = 0; x < map->getNCol(); ++x)
+        {
+            auto event = eventAt(x, y, player.l);
+            if (!event || event->getId() != "HiddenItem1")
+                continue;
+            int dx = static_cast<int>(player.x) - static_cast<int>(x);
+            int dy = static_cast<int>(player.y) - static_cast<int>(y);
+            if (dx < 0)
+                dx = -dx;
+            if (dy < 0)
+                dy = -dy;
+            // FireRed answers inside 7 tiles across and 5 tiles down, ignoring its map border.
+            return dx <= 7 && dy <= 5;
+        }
+    }
+    return false;
+}

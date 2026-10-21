@@ -734,7 +734,7 @@ bool ItemUtils::useItemInField(Player& player, Item::ItemPtr const& item, std::s
             used = true;
             break;
         }
-        used = true; // The other direct items still to come.
+        used = false;
         break;
     }
     case ItemDef::FieldUse::OnPkmn:

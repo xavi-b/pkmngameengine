@@ -37,6 +37,8 @@ public:
 
     uint64_t money = 0;
     uint64_t id    = 0;
+    // Game Corner coins. The Coin Case reports this. It starts at 0.
+    uint64_t coins = 0;
 
     // Used for field poison (1 HP every 4 steps). Persist across saves.
     size_t stepCount = 0;

@@ -134,6 +134,8 @@ public:
     virtual bool allowBike() const;
     // Fades to this cave's door exit. False outside a cave.
     virtual bool beginEscapeRope();
+    // True when an unfound hidden item on this map is within the Itemfinder's range.
+    virtual bool itemfinderResponds() const;
 
     bool turnOnFlash();
     void startCurrentLocationOverlay();

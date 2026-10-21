@@ -57,6 +57,7 @@ void tag_invoke(js::value_from_tag, js::value& jv, Player const& o)
         {"name", o.name},
         {"gender", static_cast<int>(o.getGender())},
         {"money", o.money},
+        {"coins", o.coins},
         {"id", o.id},
         {"stepCount", o.stepCount},
         {"repelSteps", o.repelSteps},
@@ -78,6 +79,8 @@ Player tag_invoke(js::value_to_tag<Player>, js::value const& jv)
         p.id = Utils::randuint64(1, std::numeric_limits<uint64_t>::max());
     if (obj.contains("money"))
         p.money = js::value_to<uint64_t>(obj.at("money"));
+    if (obj.contains("coins"))
+        p.coins = js::value_to<uint64_t>(obj.at("coins"));
     if (obj.contains("stepCount"))
         p.stepCount = js::value_to<size_t>(obj.at("stepCount"));
     if (obj.contains("repelSteps"))

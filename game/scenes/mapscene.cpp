@@ -2477,6 +2477,35 @@ void MapScene::popReset()
             startFishing(itemId);
             closeStartMenu = keyItem;
         }
+        else if (itemId == "ITEMFINDER" || itemId == "TOWNMAP" || itemId == "COINCASE")
+        {
+            std::string message;
+            if (itemId == "ITEMFINDER")
+            {
+                if (itemfinderResponds())
+                    message = lc::translate(
+                        "Huh?\nThe ITEMFINDER's responding!\nThere's an item buried around here!");
+                else
+                    message = lc::translate("Nope!\nThere's no response.");
+            }
+            else if (itemId == "TOWNMAP")
+            {
+                message = currentLocation();
+                if (message.empty())
+                    message = lc::translate("It won't have any effect.");
+            }
+            else
+            {
+                message = (boost::format(lc::translate("Your COINS:\n%1%")) % Game::instance()->data.player.coins).str();
+            }
+            closeStartMenu = keyItem;
+            if (!message.empty() && itemSpeech)
+            {
+                itemSpeech->setTexts({message});
+                itemSpeech->reset();
+                itemSpeech->start();
+            }
+        }
         else if (itemId == "ESCAPEROPE")
         {
             std::string message;
@@ -2721,6 +2750,11 @@ bool MapScene::allowBike() const
 }
 
 bool MapScene::beginEscapeRope()
+{
+    return false;
+}
+
+bool MapScene::itemfinderResponds() const
 {
     return false;
 }
