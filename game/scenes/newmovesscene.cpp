@@ -435,7 +435,7 @@ void NewMovesScene::drawMoveSelection(RenderSizes rs)
             {
                 rowDef       = move->getDefinition();
                 size_t curPP = move->getCurrentPP();
-                size_t maxPP = rowDef->getTotalPP();
+                size_t maxPP = move->maxPP();
                 ppText       = (boost::format("%1%/%2%") % curPP % maxPP).str();
                 if (maxPP > 0 && curPP == 0)
                     ppColor = {192, 32, 32, 255};

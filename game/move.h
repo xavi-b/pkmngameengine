@@ -20,11 +20,17 @@ public:
     void   setCurrentPP(size_t newCurrentPP);
     void   decreasePP();
 
+    // 0–3 PP Ups. Max PP is base + base * 20 * ups / 100.
+    size_t getPpUps() const;
+    void   setPpUps(size_t newPpUps);
+    size_t maxPP() const;
+
     MoveDef::MoveDefPtr getDefinition() const;
 
 private:
     MoveDef::MoveDefPtr definition;
     size_t              currentPP = 0;
+    size_t              ppUps     = 0;
 };
 
 #endif // MOVE_H

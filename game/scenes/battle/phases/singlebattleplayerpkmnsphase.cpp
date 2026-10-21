@@ -172,7 +172,7 @@ void SingleBattlePlayerPkmnsPhase::update(Inputs const* inputs)
             for (auto& slot : data->playerPkmn->getMoves())
             {
                 if (slot && slot->getDefinition())
-                    slot->setCurrentPP(slot->getDefinition()->getTotalPP());
+                    slot->setCurrentPP(slot->maxPP());
             }
         }
         data->pendingAbilityMessages.push_back(

@@ -278,7 +278,7 @@ void MoveSelection::draw(Fps const* /*fps*/, RenderSizes rs)
                                   rect.y + dstPaddingY + textAdjustY);
 
         auto formatPP =
-            boost::format("%1%/%2%") % currentMove->getCurrentPP() % currentMove->getDefinition()->getTotalPP();
+            boost::format("%1%/%2%") % currentMove->getCurrentPP() % currentMove->maxPP();
         RenderUtils::drawGreyTextRightAligned(renderer,
                                               rs,
                                               formatPP.str(),

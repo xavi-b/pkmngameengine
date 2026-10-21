@@ -26,6 +26,9 @@ struct HeldItemTickResult
 
 bool useItemOnPkmn(Item::ItemPtr const& item, Pkmn::PkmnPtr const& target, bool inBattle);
 bool useItemOnMove(Item::ItemPtr const& item, Pkmn::PkmnPtr const& target); // Ether / Leppa / Max Ether
+// Ether, Max Ether, PP Up, and PP Max need the player to choose a move first.
+bool needsFieldMoveChoice(std::string const& itemId);
+bool useMoveItem(Item::ItemPtr const& item, Pkmn::PkmnPtr const& target, int slot);
 bool useItemOnBattler(Item::ItemPtr const& item,
                       Pkmn::PkmnPtr const&  target,
                       BattleBattler&       battler,

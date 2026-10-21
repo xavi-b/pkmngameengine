@@ -20,6 +20,7 @@
 #include "scenes/battle/statuscondition.h"
 #include "scenes/battle/trainerscene.h"
 #include "scenes/evolutionscene.h"
+#include "scenes/movepickscene.h"
 #include "scenes/newmovesscene.h"
 #include "sprites/bikesprite.h"
 #include "sprites/erasablesprite.h"
@@ -2242,6 +2243,9 @@ std::unique_ptr<BattleIntroAnimation> MapScene::manageBattleIntro()
 
 bool MapScene::pushScene() const
 {
+    if (openMovePick && selectedBagTargetPkmn)
+        return true;
+
     if ((moveToLearn && moveLearnPkmn) || (evolutionDef && evolutionPkmn))
         return true;
 
@@ -2325,7 +2329,29 @@ void MapScene::popReset()
         auto        item   = selectedBagItem;
         auto        def    = item->getDefinition();
         std::string itemId = def ? def->getId() : "";
-        if (ItemUtils::useItemOnPkmn(item, target, false))
+        if (ItemUtils::needsFieldMoveChoice(itemId))
+        {
+            if (chosenMoveSlot == -1)
+            {
+                openMovePick = true;
+                return;
+            }
+            int slot       = chosenMoveSlot;
+            chosenMoveSlot = -1;
+            openMovePick   = false;
+            if (slot >= 0 && ItemUtils::useMoveItem(item, target, slot))
+            {
+                closeStartMenu = def && def->hasFlag(ItemDef::Flag::KeyItem);
+                Game::instance()->data.player.removeOneItem(item->getDefinition());
+            }
+            else if (slot >= 0 && itemSpeech)
+            {
+                itemSpeech->setTexts({lc::translate("It won't have any effect.")});
+                itemSpeech->reset();
+                itemSpeech->start();
+            }
+        }
+        else if (ItemUtils::useItemOnPkmn(item, target, false))
         {
             closeStartMenu = def && def->hasFlag(ItemDef::Flag::KeyItem);
             Game::instance()->data.player.removeOneItem(item->getDefinition());
@@ -2454,6 +2480,9 @@ void MapScene::popReset()
 
 std::unique_ptr<Scene> MapScene::nextScene()
 {
+    if (openMovePick && selectedBagTargetPkmn && chosenMoveSlot == -1)
+        return std::make_unique<MovePickScene>(renderer, selectedBagTargetPkmn, chosenMoveSlot);
+
     bool speechOpen = itemSpeech && itemSpeech->isStarted() && !itemSpeech->shouldClose();
     if (moveToLearn && moveLearnPkmn)
     {

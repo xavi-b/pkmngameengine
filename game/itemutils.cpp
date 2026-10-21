@@ -77,7 +77,7 @@ bool restorePPOnMove(Move::MovePtr const& move, size_t amount, bool toMax)
 {
     if (!move || !move->getDefinition())
         return false;
-    size_t maxPp = move->getDefinition()->getTotalPP();
+    size_t maxPp = move->maxPP();
     size_t cur   = move->getCurrentPP();
     if (cur >= maxPp)
         return false;
@@ -108,7 +108,7 @@ bool restorePPForItem(std::string const& itemId, Pkmn::PkmnPtr const& target)
     }
     if (itemId == "ETHER" || itemId == "LEPPABERRY")
     {
-        // No move picker yet: restore the first move that is missing PP.
+        // Field Ether uses the move picker. This path is the battle item and Leppa.
         for (auto& move : target->getMoves())
         {
             if (restorePPOnMove(move, 10, false))
@@ -498,6 +498,40 @@ bool ItemUtils::useItemOnMove(Item::ItemPtr const& item, Pkmn::PkmnPtr const& ta
     if (!item || !item->getDefinition() || !target)
         return false;
     return restorePPForItem(item->getDefinition()->getId(), target);
+}
+
+bool ItemUtils::needsFieldMoveChoice(std::string const& itemId)
+{
+    return itemId == "ETHER" || itemId == "MAXETHER" || itemId == "PPUP" || itemId == "PPMAX";
+}
+
+bool ItemUtils::useMoveItem(Item::ItemPtr const& item, Pkmn::PkmnPtr const& target, int slot)
+{
+    if (!item || !item->getDefinition() || !target || slot < 0)
+        return false;
+    auto& moves = target->getMoves();
+    if (slot >= static_cast<int>(moves.size()))
+        return false;
+    auto move = moves.at(static_cast<size_t>(slot));
+    if (!move || !move->getDefinition())
+        return false;
+
+    std::string itemId = item->getDefinition()->getId();
+    if (itemId == "ETHER")
+        return restorePPOnMove(move, 10, false);
+    if (itemId == "MAXETHER")
+        return restorePPOnMove(move, 0, true);
+    if (itemId != "PPUP" && itemId != "PPMAX")
+        return false;
+    if (move->getPpUps() >= 3)
+        return false;
+    size_t before = move->maxPP();
+    move->setPpUps(itemId == "PPMAX" ? 3 : move->getPpUps() + 1);
+    size_t after = move->maxPP();
+    if (after > before)
+        move->setCurrentPP(std::min(after, move->getCurrentPP() + (after - before)));
+    changeFriendship(target, 5, 3, 2);
+    return true;
 }
 
 bool ItemUtils::useItemOnBattler(Item::ItemPtr const& item,
@@ -1028,7 +1062,7 @@ ItemUtils::HeldItemTickResult ItemUtils::eatBerry(Pkmn::PkmnPtr const& eater, Ba
             {
                 if (move && move->getDefinition() && move->getCurrentPP() == 0 && move->getDefinition()->getTotalPP() > 0)
                 {
-                    move->setCurrentPP(std::min<size_t>(10, move->getDefinition()->getTotalPP()));
+                    move->setCurrentPP(std::min<size_t>(10, move->maxPP()));
                     result.message = (boost::format(lc::translate("%1% restored PP to its %2% using its Leppa Berry!"))
                                       % eater->getDisplayName() % move->getDefinition()->getName())
                                          .str();
@@ -1161,9 +1195,9 @@ ItemUtils::HeldItemTickResult ItemUtils::tickHeldItem(Pkmn::PkmnPtr const& pkmn,
         for (auto& move : pkmn->getMoves())
         {
             if (move && move->getDefinition() && move->getCurrentPP() == 0
-                && move->getDefinition()->getTotalPP() > 0)
+                && move->maxPP() > 0)
             {
-                move->setCurrentPP(std::min<size_t>(10, move->getDefinition()->getTotalPP()));
+                move->setCurrentPP(std::min<size_t>(10, move->maxPP()));
                 result.message =
                     (boost::format(lc::translate("%1% restored PP to its %2% using its Leppa Berry!"))
                      % pkmn->getDisplayName() % move->getDefinition()->getName())

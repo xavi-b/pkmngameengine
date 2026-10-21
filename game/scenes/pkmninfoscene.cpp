@@ -681,7 +681,7 @@ void PkmnInfoScene::drawPage(RenderSizes rs)
             if (move && move->getDefinition())
             {
                 name = move->getDefinition()->getName();
-                pp   = (boost::format("%1%/%2%") % move->getCurrentPP() % move->getDefinition()->getTotalPP()).str();
+                pp   = (boost::format("%1%/%2%") % move->getCurrentPP() % move->maxPP()).str();
                 if (typesTexture)
                 {
                     int index = typeIconIndex(move->getDefinition()->getType());
