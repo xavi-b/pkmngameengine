@@ -1,6 +1,8 @@
 #ifndef SINGLEBATTLEUI_H
 #define SINGLEBATTLEUI_H
 
+#include "animations/shake/verticalshakeanimation.h"
+#include "battleanim.h"
 #include "fps.h"
 #include "pkmn.h"
 
@@ -8,7 +10,30 @@
 #include <SDL_mixer.h>
 
 #include <array>
+#include <memory>
 #include <string>
+#include <vector>
+
+inline char const* battleAnimationStatusScript(Pkmn::StatusCondition status)
+{
+    switch (status)
+    {
+    case Pkmn::StatusCondition::BURN:
+        return "Status_Burn";
+    case Pkmn::StatusCondition::FREEZE:
+        return "Status_Freeze";
+    case Pkmn::StatusCondition::PARALYSIS:
+        return "Status_Paralysis";
+    case Pkmn::StatusCondition::POISON:
+    case Pkmn::StatusCondition::BADLY_POISON:
+        return "Status_Poison";
+    case Pkmn::StatusCondition::SLEEP:
+        return "Status_Sleep";
+    case Pkmn::StatusCondition::NONE:
+    default:
+        return nullptr;
+    }
+}
 
 class SingleBattleUi
 {
@@ -18,6 +43,9 @@ public:
 
     void setFoePkmn(Pkmn::PkmnPtr const& newFoePkmn);
     void setPlayerPkmn(Pkmn::PkmnPtr const& newPlayerPkmn);
+    void syncDisguise(Pkmn::PkmnPtr const& playerShown, Pkmn::PkmnPtr const& foeShown);
+    // Reloads battle sprites when Forecast / Zen / Schooling / Ice Face / Hunger Switch change.
+    void syncFormeSprites(std::string const& playerSuffix, std::string const& foeSuffix);
 
     enum class LineupBall
     {
@@ -40,9 +68,10 @@ public:
     bool isPlayerSendOutStarted() const;
     bool isPlayerSendOutDone() const;
 
-    // Ball throw used when the player switches to another Pokémon.
     void startSwitchSendOut();
     bool isSwitchSendOutDone() const;
+
+    void startFoeSwitchSendOut();
 
     void incrementTicks();
 
@@ -52,9 +81,31 @@ public:
     bool isFaintRunning() const;
     bool hasFainted(bool playerSide) const;
 
-    // While set, the experience bar shows this amount instead of the Pokémon's stored exp.
     void setDisplayedExp(size_t shown, size_t span);
     void clearDisplayedExp();
+
+    // Confusion stars and major-status overlays follow the active battlers.
+    void setOverlays(bool                    playerConfused,
+                     bool                    foeConfused,
+                     Pkmn::StatusCondition   playerStatus,
+                     Pkmn::StatusCondition   foeStatus);
+    void setSemiInvulnerable(bool playerSide, bool foeSide);
+
+    void startMoveAnim(bool                attackerIsPlayer,
+                       bool                targetIsPlayer,
+                       std::string const&  moveId,
+                       std::string const&  moveType,
+                       std::string const&  moveName,
+                       int                 turn,
+                       int                 power,
+                       int                 damage);
+    void startHit(bool playerSide, std::string const& moveType, std::string const& moveName = {});
+    void startStatRise(bool playerSide);
+    void startHeal(bool playerSide);
+    bool startBattleAnimationScript(bool attackerIsPlayer, bool targetIsPlayer, std::string const& scriptName);
+    void startCapture();
+    void incrementPresentation();
+    bool isPresentationRunning() const;
 
     void draw(Fps const* fps, RenderSizes rs);
 
@@ -71,7 +122,9 @@ private:
         PlayerAppear,
         Shown,
         SwitchThrow,
-        SwitchAppear
+        SwitchAppear,
+        FoeSwitchThrow,
+        FoeSwitchAppear
     };
 
     void loadTrainerBack();
@@ -120,6 +173,12 @@ private:
 
     Pkmn::PkmnPtr foePkmn;
     Pkmn::PkmnPtr playerPkmn;
+    Pkmn::PkmnPtr foeDisguise;
+    Pkmn::PkmnPtr playerDisguise;
+    std::string   playerFormeSuffix;
+    std::string   foeFormeSuffix;
+    void          loadGraphic(Pkmn::PkmnPtr const& look, bool back, SDL_Surface*& surface, SDL_Texture*& texture,
+                              std::string const& formeSuffix = {});
 
     Stage stage                 = Stage::Shown;
     int   ticks                 = 0;
@@ -141,6 +200,67 @@ private:
     size_t expShownPrev = 0;
     size_t expShownCur  = 0;
     size_t expSpan      = 1;
+
+    struct AnimSheet
+    {
+        SDL_Surface* surface = nullptr;
+        SDL_Texture* texture = nullptr;
+        std::string  path;
+    };
+
+    void      ensureSheet(AnimSheet& sheet, std::string const& path);
+    void      freeSheet(AnimSheet& sheet);
+    void      drawSheet(AnimSheet const& sheet, SDL_Rect const& anchor, int frameIndex, bool firstRowOnly = false) const;
+    int       sheetColumns(AnimSheet const& sheet) const;
+    float     shownRatio(float prev, float cur, Fps const* fps) const;
+    AnimSheet statusSheetFor(Pkmn::StatusCondition status);
+
+    float foeHpPrev    = 1.f;
+    float foeHpCur     = 1.f;
+    float playerHpPrev = 1.f;
+    float playerHpCur  = 1.f;
+
+    bool                  playerConfused        = false;
+    bool                  foeConfused           = false;
+    bool                  playerSemiInvulnerable = false;
+    bool                  foeSemiInvulnerable    = false;
+    Pkmn::StatusCondition playerStatus   = Pkmn::StatusCondition::NONE;
+    Pkmn::StatusCondition foeStatus      = Pkmn::StatusCondition::NONE;
+    int                   overlayTicks   = 0;
+
+    std::unique_ptr<BattleAnimPlayer> moveAnim;
+    struct ScriptCue
+    {
+        std::string name;
+        bool        attackerIsPlayer = true;
+        bool        targetIsPlayer   = true;
+    };
+    std::vector<ScriptCue> scriptQueue;
+    bool                   overlayBaseline = false;
+    Pkmn::StatusCondition  seenPlayerStatus = Pkmn::StatusCondition::NONE;
+    Pkmn::StatusCondition  seenFoeStatus    = Pkmn::StatusCondition::NONE;
+    bool                   seenPlayerConfused = false;
+    bool                   seenFoeConfused    = false;
+
+    bool        hitRunning = false;
+    bool        hitPlayer  = false;
+    int         hitTicks   = 0;
+    int         captureTicks = -1;
+    std::string hitType;
+    std::unique_ptr<VerticalShakeAnimation> hitShake;
+
+    bool        fxRunning = false;
+    bool        fxPlayer  = false;
+    int         fxTicks   = 0;
+    AnimSheet   fxSheet;
+
+    AnimSheet typeSheet;
+    AnimSheet confusionSheet;
+    AnimSheet burnSheet;
+    AnimSheet freezeSheet;
+    AnimSheet paralysisSheet;
+    AnimSheet poisonSheet;
+    AnimSheet sleepSheet;
 };
 
 #endif // SINGLEBATTLEUI_H

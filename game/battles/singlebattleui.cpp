@@ -7,8 +7,22 @@
 #include "utils.h"
 
 #include <algorithm>
+#include <cctype>
 #include <cmath>
 #include <filesystem>
+#include <map>
+
+namespace
+{
+class BriefShake final : public VerticalShakeAnimation
+{
+public:
+    explicit BriefShake(SDL_Renderer* renderer) : VerticalShakeAnimation(renderer)
+    {
+        ticksDuration = 6;
+    }
+};
+} // namespace
 
 namespace
 {
@@ -16,7 +30,10 @@ constexpr int FoeEntranceTicks = 12;
 constexpr int ThrowTicks       = 8;
 constexpr int AppearTicks      = 8;
 
-constexpr int BallFrame = 32;
+constexpr int BallFrameW     = 32;
+constexpr int BallFrameH     = 64;
+constexpr int BallFrameCount = 8;
+constexpr int AnimCell       = 192;
 
 float clampf(float value, float lo, float hi)
 {
@@ -59,7 +76,9 @@ SingleBattleUi::LineupBall lineupBallFor(Pkmn::PkmnPtr const& pkmn)
 }
 } // namespace
 
-SingleBattleUi::SingleBattleUi(SDL_Renderer* renderer) : renderer(renderer)
+SingleBattleUi::SingleBattleUi(SDL_Renderer* renderer)
+    : renderer(renderer)
+    , moveAnim(std::make_unique<BattleAnimPlayer>(renderer))
 {
     playerUiSurface  = IMG_Load("resources/Graphics/UI/Battle/databox_normal.png");
     playerUiTexture  = SDL_CreateTextureFromSurface(renderer, playerUiSurface);
@@ -180,6 +199,15 @@ SingleBattleUi::~SingleBattleUi()
         Mix_HaltChannel(0);
         Mix_FreeChunk(cryChunk);
     }
+
+    freeSheet(typeSheet);
+    freeSheet(fxSheet);
+    freeSheet(confusionSheet);
+    freeSheet(burnSheet);
+    freeSheet(freezeSheet);
+    freeSheet(paralysisSheet);
+    freeSheet(poisonSheet);
+    freeSheet(sleepSheet);
 }
 
 void SingleBattleUi::loadTrainerBack()
@@ -258,70 +286,80 @@ void SingleBattleUi::playCry(Pkmn::PkmnPtr const& pkmn)
 
 void SingleBattleUi::setFoePkmn(Pkmn::PkmnPtr const& newFoePkmn)
 {
-    if (foeFrontTexture)
-        SDL_DestroyTexture(foeFrontTexture);
-    if (foeFrontSurface)
-        SDL_FreeSurface(foeFrontSurface);
-
     foePkmn          = newFoePkmn;
-    std::string file = "resources/Graphics/Pokemon/Front";
-    if (newFoePkmn->isShiny())
-        file += " shiny";
-    file += "/";
-    file += newFoePkmn->getDefinition()->getId();
-    if (newFoePkmn->isFemale())
-    {
-        std::string femaleFile = file + ".png";
-        foeFrontSurface        = IMG_Load(femaleFile.c_str());
-        if (foeFrontSurface)
-        {
-            foeFrontTexture = SDL_CreateTextureFromSurface(renderer, foeFrontSurface);
-            foeFainted      = false;
-            if (foeFrontTexture)
-                SDL_SetTextureBlendMode(foeFrontTexture, SDL_BLENDMODE_BLEND);
-            return;
-        }
-    }
-    file += ".png";
-    foeFrontSurface = IMG_Load(file.c_str());
-    foeFrontTexture = SDL_CreateTextureFromSurface(renderer, foeFrontSurface);
-    foeFainted      = false;
-    if (foeFrontTexture)
-        SDL_SetTextureBlendMode(foeFrontTexture, SDL_BLENDMODE_BLEND);
+    foeDisguise.reset();
+    foeFormeSuffix.clear();
+    foeHpPrev        = foeHpCur = newFoePkmn ? newFoePkmn->getPercentageHP() : 0.f;
+    loadGraphic(newFoePkmn, false, foeFrontSurface, foeFrontTexture);
+    foeFainted = false;
 }
 
 void SingleBattleUi::setPlayerPkmn(Pkmn::PkmnPtr const& newPlayerPkmn)
 {
-    if (playerBackTexture)
-        SDL_DestroyTexture(playerBackTexture);
-    if (playerBackSurface)
-        SDL_FreeSurface(playerBackSurface);
-
     playerPkmn       = newPlayerPkmn;
-    std::string file = "resources/Graphics/Pokemon/Back";
-    if (newPlayerPkmn->isShiny())
-        file += " shiny";
-    file += "/";
-    file += newPlayerPkmn->getDefinition()->getId();
-    if (newPlayerPkmn->isFemale())
+    playerDisguise.reset();
+    playerFormeSuffix.clear();
+    playerHpPrev     = playerHpCur = newPlayerPkmn ? newPlayerPkmn->getPercentageHP() : 0.f;
+    loadGraphic(newPlayerPkmn, true, playerBackSurface, playerBackTexture);
+    playerFainted = false;
+}
+
+void SingleBattleUi::loadGraphic(Pkmn::PkmnPtr const& look, bool back, SDL_Surface*& surface, SDL_Texture*& texture,
+                                 std::string const& formeSuffix)
+{
+    if (texture)
+        SDL_DestroyTexture(texture);
+    if (surface)
+        SDL_FreeSurface(surface);
+    surface = nullptr;
+    texture = nullptr;
+    if (!look || !look->getDefinition())
+        return;
+
+    std::string dir = std::string("resources/Graphics/Pokemon/") + (back ? "Back" : "Front");
+    if (look->isShiny())
+        dir += " shiny";
+    dir += "/";
+    std::string stem = look->getDefinition()->getId();
+    surface          = IMG_Load((dir + stem + formeSuffix + ".png").c_str());
+    if (!surface && !formeSuffix.empty())
+        surface = IMG_Load((dir + stem + ".png").c_str());
+    if (!surface)
+        return;
+    texture = SDL_CreateTextureFromSurface(renderer, surface);
+    if (texture)
+        SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+}
+
+void SingleBattleUi::syncDisguise(Pkmn::PkmnPtr const& playerShown, Pkmn::PkmnPtr const& foeShown)
+{
+    if (playerShown != playerDisguise)
     {
-        std::string femaleFile = file + ".png";
-        playerBackSurface      = IMG_Load(femaleFile.c_str());
-        if (playerBackSurface)
-        {
-            playerBackTexture = SDL_CreateTextureFromSurface(renderer, playerBackSurface);
-            playerFainted     = false;
-            if (playerBackTexture)
-                SDL_SetTextureBlendMode(playerBackTexture, SDL_BLENDMODE_BLEND);
-            return;
-        }
+        playerDisguise = playerShown;
+        loadGraphic(playerDisguise ? playerDisguise : playerPkmn, true, playerBackSurface, playerBackTexture,
+                    playerFormeSuffix);
     }
-    file += ".png";
-    playerBackSurface = IMG_Load(file.c_str());
-    playerBackTexture = SDL_CreateTextureFromSurface(renderer, playerBackSurface);
-    playerFainted     = false;
-    if (playerBackTexture)
-        SDL_SetTextureBlendMode(playerBackTexture, SDL_BLENDMODE_BLEND);
+    if (foeShown != foeDisguise)
+    {
+        foeDisguise = foeShown;
+        loadGraphic(foeDisguise ? foeDisguise : foePkmn, false, foeFrontSurface, foeFrontTexture, foeFormeSuffix);
+    }
+}
+
+void SingleBattleUi::syncFormeSprites(std::string const& playerSuffix, std::string const& foeSuffix)
+{
+    if (playerSuffix != playerFormeSuffix)
+    {
+        playerFormeSuffix = playerSuffix;
+        if (!playerDisguise)
+            loadGraphic(playerPkmn, true, playerBackSurface, playerBackTexture, playerFormeSuffix);
+    }
+    if (foeSuffix != foeFormeSuffix)
+    {
+        foeFormeSuffix = foeSuffix;
+        if (!foeDisguise)
+            loadGraphic(foePkmn, false, foeFrontSurface, foeFrontTexture, foeFormeSuffix);
+    }
 }
 
 void SingleBattleUi::startIntro(bool                             foeFromBall,
@@ -347,7 +385,7 @@ void SingleBattleUi::startIntro(bool                             foeFromBall,
     else
     {
         stage = Stage::FoeEntrance;
-        playCry(foePkmn);
+        playCry(foeDisguise ? foeDisguise : foePkmn);
     }
 }
 
@@ -376,6 +414,14 @@ bool SingleBattleUi::isFoeSendOutDone() const
     return foeSendOutFinished;
 }
 
+void SingleBattleUi::startFoeSwitchSendOut()
+{
+    stage              = Stage::FoeSwitchThrow;
+    ticks              = 0;
+    foeSendOutFinished = false;
+    playThrowSound();
+}
+
 void SingleBattleUi::startPlayerSendOut()
 {
     if (stage != Stage::AwaitSendOut)
@@ -400,7 +446,7 @@ void SingleBattleUi::startSwitchSendOut()
 {
     stage                 = Stage::SwitchThrow;
     ticks                 = 0;
-    playerSendOutFinished = true;
+    playerSendOutFinished = false;
     playThrowSound();
 }
 
@@ -478,15 +524,23 @@ void SingleBattleUi::incrementTicks()
         break;
     case Stage::FoeThrow:
         stage = Stage::FoeAppear;
-        playCry(foePkmn);
+        playCry(foeDisguise ? foeDisguise : foePkmn);
         break;
     case Stage::FoeAppear:
         stage              = Stage::AwaitSendOut;
         foeSendOutFinished = true;
         break;
+    case Stage::FoeSwitchThrow:
+        stage = Stage::FoeSwitchAppear;
+        playCry(foeDisguise ? foeDisguise : foePkmn);
+        break;
+    case Stage::FoeSwitchAppear:
+        stage              = Stage::Shown;
+        foeSendOutFinished = true;
+        break;
     case Stage::PlayerThrow:
         stage = Stage::PlayerAppear;
-        playCry(playerPkmn);
+        playCry(playerDisguise ? playerDisguise : playerPkmn);
         break;
     case Stage::PlayerAppear:
         stage                 = Stage::Shown;
@@ -494,10 +548,11 @@ void SingleBattleUi::incrementTicks()
         break;
     case Stage::SwitchThrow:
         stage = Stage::SwitchAppear;
-        playCry(playerPkmn);
+        playCry(playerDisguise ? playerDisguise : playerPkmn);
         break;
     case Stage::SwitchAppear:
-        stage = Stage::Shown;
+        stage                 = Stage::Shown;
+        playerSendOutFinished = true;
         break;
     default:
         break;
@@ -515,10 +570,12 @@ int SingleBattleUi::stageDuration() const
     case Stage::FoeThrow:
     case Stage::PlayerThrow:
     case Stage::SwitchThrow:
+    case Stage::FoeSwitchThrow:
         return ThrowTicks;
     case Stage::FoeAppear:
     case Stage::PlayerAppear:
     case Stage::SwitchAppear:
+    case Stage::FoeSwitchAppear:
         return AppearTicks;
     default:
         return 1;
@@ -545,6 +602,343 @@ void SingleBattleUi::setDisplayedExp(size_t shown, size_t span)
 void SingleBattleUi::clearDisplayedExp()
 {
     expOverride = false;
+}
+
+void SingleBattleUi::freeSheet(AnimSheet& sheet)
+{
+    if (sheet.texture)
+        SDL_DestroyTexture(sheet.texture);
+    if (sheet.surface)
+        SDL_FreeSurface(sheet.surface);
+    sheet.texture = nullptr;
+    sheet.surface = nullptr;
+    sheet.path.clear();
+}
+
+void SingleBattleUi::ensureSheet(AnimSheet& sheet, std::string const& path)
+{
+    if (sheet.path == path && sheet.texture)
+        return;
+    freeSheet(sheet);
+    sheet.path    = path;
+    sheet.surface = IMG_Load(path.c_str());
+    if (sheet.surface)
+        sheet.texture = SDL_CreateTextureFromSurface(renderer, sheet.surface);
+    if (sheet.texture)
+        SDL_SetTextureBlendMode(sheet.texture, SDL_BLENDMODE_BLEND);
+}
+
+void SingleBattleUi::drawSheet(AnimSheet const& sheet, SDL_Rect const& anchor, int frameIndex, bool firstRowOnly) const
+{
+    if (!sheet.texture || !sheet.surface || sheet.surface->w <= 0 || sheet.surface->h <= 0)
+        return;
+
+    int cols  = std::max(1, sheet.surface->w / AnimCell);
+    int rows  = std::max(1, sheet.surface->h / AnimCell);
+    int srcW  = std::min(AnimCell, sheet.surface->w);
+    int srcH  = std::min(AnimCell, sheet.surface->h);
+    int count = std::max(1, firstRowOnly ? cols : cols * rows);
+    int frame = frameIndex % count;
+
+    SDL_Rect src;
+    src.w = srcW;
+    src.h = srcH;
+    src.x = (frame % cols) * srcW;
+    src.y = firstRowOnly ? 0 : (frame / cols) * srcH;
+
+    SDL_Rect dst;
+    dst.w = std::max(1, anchor.w);
+    dst.h = std::max(1, anchor.w);
+    dst.x = anchor.x + (anchor.w - dst.w) / 2;
+    dst.y = anchor.y + anchor.h - dst.h;
+    SDL_RenderCopy(renderer, sheet.texture, &src, &dst);
+}
+
+int SingleBattleUi::sheetColumns(AnimSheet const& sheet) const
+{
+    if (!sheet.surface || sheet.surface->w < AnimCell)
+        return 1;
+    return std::max(1, sheet.surface->w / AnimCell);
+}
+
+float SingleBattleUi::shownRatio(float prev, float cur, Fps const* fps) const
+{
+    float partial = fps ? fps->tickPercentage() : 1.f;
+    return clampf(prev + (cur - prev) * partial, 0.f, 1.f);
+}
+
+SingleBattleUi::AnimSheet SingleBattleUi::statusSheetFor(Pkmn::StatusCondition status)
+{
+    switch (status)
+    {
+    case Pkmn::StatusCondition::BURN:
+        ensureSheet(burnSheet, "resources/Graphics/Animations/015-Fire01.png");
+        return burnSheet;
+    case Pkmn::StatusCondition::FREEZE:
+        ensureSheet(freezeSheet, "resources/Graphics/Animations/Ice1.png");
+        return freezeSheet;
+    case Pkmn::StatusCondition::PARALYSIS:
+        ensureSheet(paralysisSheet, "resources/Graphics/Animations/017-Thunder01.png");
+        return paralysisSheet;
+    case Pkmn::StatusCondition::POISON:
+    case Pkmn::StatusCondition::BADLY_POISON:
+        ensureSheet(poisonSheet, "resources/Graphics/Animations/poison.png");
+        return poisonSheet;
+    case Pkmn::StatusCondition::SLEEP:
+        ensureSheet(sleepSheet, "resources/Graphics/Animations/028-State01.png");
+        return sleepSheet;
+    case Pkmn::StatusCondition::NONE:
+    default:
+        return {};
+    }
+}
+
+void SingleBattleUi::setOverlays(bool                  playerConfusedIn,
+                                 bool                  foeConfusedIn,
+                                 Pkmn::StatusCondition playerStatusIn,
+                                 Pkmn::StatusCondition foeStatusIn)
+{
+    playerConfused = playerConfusedIn;
+    foeConfused    = foeConfusedIn;
+    playerStatus   = playerStatusIn;
+    foeStatus      = foeStatusIn;
+
+    if (!overlayBaseline)
+    {
+        overlayBaseline    = true;
+        seenPlayerStatus   = playerStatusIn;
+        seenFoeStatus      = foeStatusIn;
+        seenPlayerConfused = playerConfusedIn;
+        seenFoeConfused    = foeConfusedIn;
+        return;
+    }
+
+    auto playChange = [this](bool playerSide, Pkmn::StatusCondition previous, Pkmn::StatusCondition current, bool wasConfused,
+                             bool confused) {
+        if (current != previous)
+        {
+            if (char const* script = battleAnimationStatusScript(current))
+                startBattleAnimationScript(playerSide, playerSide, script);
+        }
+        if (confused && !wasConfused)
+            startBattleAnimationScript(playerSide, playerSide, "Status_Confusion");
+    };
+    playChange(true, seenPlayerStatus, playerStatusIn, seenPlayerConfused, playerConfusedIn);
+    playChange(false, seenFoeStatus, foeStatusIn, seenFoeConfused, foeConfusedIn);
+    seenPlayerStatus   = playerStatusIn;
+    seenFoeStatus      = foeStatusIn;
+    seenPlayerConfused = playerConfusedIn;
+    seenFoeConfused    = foeConfusedIn;
+}
+
+void SingleBattleUi::setSemiInvulnerable(bool playerSide, bool foeSide)
+{
+    playerSemiInvulnerable = playerSide;
+    foeSemiInvulnerable    = foeSide;
+}
+
+namespace
+{
+std::string normalized(std::string const& text)
+{
+    std::string out;
+    for (unsigned char c : text)
+    {
+        if (std::isalnum(c))
+            out.push_back(static_cast<char>(std::tolower(c)));
+    }
+    return out;
+}
+
+std::string sheetForMove(std::string const& moveName, std::string const& moveType)
+{
+    static std::map<std::string, std::string> named;
+    if (named.empty())
+    {
+        std::string dir = "resources/Graphics/Animations";
+        if (std::filesystem::exists(dir))
+        {
+            for (auto const& entry : std::filesystem::directory_iterator(dir))
+            {
+                if (!entry.is_regular_file())
+                    continue;
+                auto file = entry.path().filename().string();
+                if (file.size() < 4 || file.substr(file.size() - 4) != ".png")
+                    continue;
+                auto stem = file.substr(0, file.size() - 4);
+                if (stem.find("Anima") != std::string::npos || stem.find("efftest") != std::string::npos
+                    || stem.find("estranho") != std::string::npos || stem.find("zan03") != std::string::npos
+                    || stem.find("animsheet") != std::string::npos || stem.find("anim sheet") != std::string::npos)
+                    continue;
+                named[normalized(stem)] = dir + "/" + file;
+            }
+        }
+    }
+
+    auto found = named.find(normalized(moveName));
+    if (found != named.end())
+        return found->second;
+
+    if (moveType == "FIRE")
+        return "resources/Graphics/Animations/015-Fire01.png";
+    if (moveType == "WATER")
+        return "resources/Graphics/Animations/018-Water01.png";
+    if (moveType == "ELECTRIC")
+        return "resources/Graphics/Animations/017-Thunder01.png";
+    if (moveType == "ICE")
+        return "resources/Graphics/Animations/Ice1.png";
+    if (moveType == "DARK")
+        return "resources/Graphics/Animations/022-Darkness01.png";
+    if (moveType == "GHOST")
+        return "resources/Graphics/Animations/ghost1.png";
+    if (moveType == "GRASS")
+        return "resources/Graphics/Animations/grass.png";
+    if (moveType == "POISON")
+        return "resources/Graphics/Animations/poison.png";
+    if (moveType == "NORMAL")
+        return "resources/Graphics/Animations/normal1.png";
+    if (moveType == "FIGHTING")
+        return "resources/Graphics/Animations/punches.png";
+    if (moveType == "GROUND")
+        return "resources/Graphics/Animations/Earth1.png";
+    if (moveType == "ROCK")
+        return "resources/Graphics/Animations/Rock Tomb.png";
+    if (moveType == "FLYING")
+        return "resources/Graphics/Animations/Wind1.png";
+    if (moveType == "PSYCHIC")
+        return "resources/Graphics/Animations/Light1.png";
+    if (moveType == "DRAGON")
+        return "resources/Graphics/Animations/dragon claw.png";
+    if (moveType == "STEEL")
+        return "resources/Graphics/Animations/Iron Head.png";
+    return "resources/Graphics/Animations/030-Explosion01.png";
+}
+} // namespace
+
+void SingleBattleUi::startMoveAnim(bool               attackerIsPlayer,
+                                 bool               targetIsPlayer,
+                                 std::string const& moveId,
+                                 std::string const& moveType,
+                                 std::string const& moveName,
+                                 int                turn,
+                                 int                power,
+                                 int                damage)
+{
+    if (moveAnim && moveAnim->canPlay(moveId))
+    {
+        moveAnim->start(moveId, attackerIsPlayer, targetIsPlayer, turn, power, damage);
+        return;
+    }
+    startHit(targetIsPlayer, moveType, moveName);
+}
+
+void SingleBattleUi::startHit(bool playerSide, std::string const& moveType, std::string const& moveName)
+{
+    hitPlayer  = playerSide;
+    hitRunning = true;
+    hitTicks   = 0;
+    hitType    = moveType;
+
+    ensureSheet(typeSheet, sheetForMove(moveName, moveType));
+
+    if (!hitShake)
+        hitShake = std::make_unique<BriefShake>(renderer);
+    hitShake->reset();
+    hitShake->start();
+}
+
+bool SingleBattleUi::startBattleAnimationScript(bool attackerIsPlayer, bool targetIsPlayer, std::string const& scriptName)
+{
+    if (!moveAnim || !moveAnim->canPlayScript(scriptName))
+        return false;
+    if (moveAnim->running() || !scriptQueue.empty())
+    {
+        if (scriptQueue.size() < 8)
+            scriptQueue.push_back(ScriptCue{scriptName, attackerIsPlayer, targetIsPlayer});
+        return true;
+    }
+    moveAnim->startScript(scriptName, attackerIsPlayer, targetIsPlayer);
+    return moveAnim->running();
+}
+
+void SingleBattleUi::startStatRise(bool playerSide)
+{
+    if (startBattleAnimationScript(playerSide, playerSide, "General_StatsChange"))
+        return;
+    fxPlayer  = playerSide;
+    fxRunning = true;
+    fxTicks   = 0;
+    ensureSheet(fxSheet, "resources/Graphics/Animations/Growl.png");
+}
+
+void SingleBattleUi::startHeal(bool playerSide)
+{
+    if (startBattleAnimationScript(playerSide, playerSide, "General_WishHeal"))
+        return;
+    fxPlayer  = playerSide;
+    fxRunning = true;
+    fxTicks   = 0;
+    ensureSheet(fxSheet, "resources/Graphics/Animations/Heal3.png");
+}
+
+void SingleBattleUi::startCapture()
+{
+    captureTicks = 0;
+    playThrowSound();
+}
+
+void SingleBattleUi::incrementPresentation()
+{
+    auto stepHp = [](float& prev, float& cur, float target) {
+        prev       = cur;
+        float gap  = target - cur;
+        if (std::fabs(gap) < 0.008f)
+            cur = target;
+        else
+            cur += gap * 0.4f;
+    };
+
+    if (foePkmn)
+        stepHp(foeHpPrev, foeHpCur, foePkmn->getPercentageHP());
+    if (playerPkmn)
+        stepHp(playerHpPrev, playerHpCur, playerPkmn->getPercentageHP());
+
+    if (moveAnim && moveAnim->running())
+        moveAnim->tick();
+    if (moveAnim && !moveAnim->running() && !scriptQueue.empty())
+    {
+        ScriptCue cue = scriptQueue.front();
+        scriptQueue.erase(scriptQueue.begin());
+        if (moveAnim->canPlayScript(cue.name))
+            moveAnim->startScript(cue.name, cue.attackerIsPlayer, cue.targetIsPlayer);
+    }
+
+    ++overlayTicks;
+    if (captureTicks >= 0)
+    {
+        ++captureTicks;
+        if (captureTicks >= BallFrameCount)
+            captureTicks = -1;
+    }
+    if (fxRunning)
+    {
+        ++fxTicks;
+        if (fxTicks >= sheetColumns(fxSheet) * 2)
+            fxRunning = false;
+    }
+    if (!hitRunning)
+        return;
+
+    ++hitTicks;
+    if (hitShake)
+        hitShake->incrementTicks();
+    if (hitTicks >= sheetColumns(typeSheet) * 2)
+        hitRunning = false;
+}
+
+bool SingleBattleUi::isPresentationRunning() const
+{
+    return hitRunning || fxRunning || (moveAnim && moveAnim->running());
 }
 
 void SingleBattleUi::draw(Fps const* fps, RenderSizes rs)
@@ -733,14 +1127,45 @@ void SingleBattleUi::draw(Fps const* fps, RenderSizes rs)
         drawBurst   = progress < 0.7f;
         burstT      = progress;
         break;
+    case Stage::FoeSwitchThrow:
+        drawFoeSprite    = false;
+        drawFoeBox       = false;
+        drawBall         = true;
+        ballFromOpponent = true;
+        ballT            = progress;
+        break;
+    case Stage::FoeSwitchAppear:
+        foeScale   = 0.25f + 0.75f * progress;
+        foeBoxDx   = static_cast<int>((1.f - progress) * -(foeUiSurface->w * rs.ww / rs.aw));
+        drawBurst  = progress < 0.75f;
+        burstT     = progress;
+        burstOnFoe = true;
+        break;
     case Stage::Shown:
         break;
     }
 
-    if (foeFainted)
+    if (foeFainted || (foeSemiInvulnerable && stage == Stage::Shown))
         drawFoeSprite = false;
-    if (playerFainted)
+    if (playerFainted || (playerSemiInvulnerable && stage == Stage::Shown))
         drawPlayerSprite = false;
+    if (moveAnim && moveAnim->running())
+    {
+        if (moveAnim->battlerHidden(false))
+            drawFoeSprite = false;
+        if (moveAnim->battlerHidden(true))
+            drawPlayerSprite = false;
+    }
+
+    if (moveAnim)
+    {
+        SDL_Rect battleArea;
+        battleArea.x = 0;
+        battleArea.y = 0;
+        battleArea.w = rs.ww;
+        battleArea.h = std::max(1, rs.wh - dstBottomMargin);
+        moveAnim->drawBackground(battleArea);
+    }
 
     SDL_Rect foeBox;
     foeBox.w = foeUiSurface->w * rs.ww / rs.aw;
@@ -768,6 +1193,43 @@ void SingleBattleUi::draw(Fps const* fps, RenderSizes rs)
 
     SDL_Rect foeSpriteDrawn    = scaledFromFeet(foeSprite, foeScale);
     SDL_Rect playerSpriteDrawn = scaledFromFeet(playerSprite, playerScale);
+    auto     applyMovePose     = [&](SDL_Rect& rect, bool playerSide) {
+        if (!moveAnim || !moveAnim->running())
+            return;
+        float scaleX = moveAnim->monScaleX(playerSide);
+        float scaleY = moveAnim->monScaleY(playerSide);
+        int   width  = std::max(1, static_cast<int>(rect.w * scaleX));
+        int   height = std::max(1, static_cast<int>(rect.h * scaleY));
+        rect.x += (rect.w - width) / 2 + moveAnim->offsetX(playerSide, rect.w);
+        rect.y += rect.h - height + moveAnim->offsetY(playerSide, rect.h);
+        rect.w = width;
+        rect.h = height;
+    };
+    applyMovePose(foeSpriteDrawn, false);
+    applyMovePose(playerSpriteDrawn, true);
+
+    int shakeY = (hitRunning && hitShake) ? hitShake->getShakeY(fps, rs) : 0;
+    if (hitRunning && !hitPlayer)
+        foeSpriteDrawn.y += shakeY;
+    if (hitRunning && hitPlayer)
+        playerSpriteDrawn.y += shakeY;
+
+    auto drawBattlerFx = [&](bool playerSide, SDL_Rect const& anchor) {
+        auto status   = playerSide ? playerStatus : foeStatus;
+        bool confused = playerSide ? playerConfused : foeConfused;
+        bool scripted = moveAnim && moveAnim->canPlayScript("Status_Confusion");
+        if (!scripted && status != Pkmn::StatusCondition::NONE)
+            drawSheet(statusSheetFor(status), anchor, overlayTicks / 3);
+        if (!scripted && confused)
+        {
+            ensureSheet(confusionSheet, "resources/Graphics/Animations/confused.png");
+            drawSheet(confusionSheet, anchor, overlayTicks / 2);
+        }
+        if (hitRunning && hitPlayer == playerSide)
+            drawSheet(typeSheet, anchor, hitTicks / 2, true);
+        if (fxRunning && fxPlayer == playerSide)
+            drawSheet(fxSheet, anchor, fxTicks / 2, true);
+    };
 
     SDL_Rect opponentRect{};
     if (opponentSurface)
@@ -854,8 +1316,18 @@ void SingleBattleUi::draw(Fps const* fps, RenderSizes rs)
             foeSpriteDrawn.y += static_cast<int>(foeSpriteDrawn.h * drop);
             SDL_SetTextureAlphaMod(foeFrontTexture, static_cast<Uint8>(255 * (1.f - drop)));
         }
+        Uint8 foeRed = 255, foeGreen = 255, foeBlue = 255;
+        if (moveAnim)
+            moveAnim->battlerColor(false, foeRed, foeGreen, foeBlue);
+        if (hitRunning && !hitPlayer)
+            foeGreen = foeBlue = 160;
+        SDL_SetTextureColorMod(foeFrontTexture, foeRed, foeGreen, foeBlue);
+        if (moveAnim && moveAnim->running())
+            SDL_SetTextureAlphaMod(foeFrontTexture, moveAnim->battlerAlpha(false));
         SDL_RenderCopy(renderer, foeFrontTexture, nullptr, &foeSpriteDrawn);
         SDL_SetTextureAlphaMod(foeFrontTexture, 255);
+        SDL_SetTextureColorMod(foeFrontTexture, 255, 255, 255);
+        drawBattlerFx(false, foeSpriteDrawn);
     }
 
     if (drawOpponent && opponentTexture)
@@ -896,15 +1368,29 @@ void SingleBattleUi::draw(Fps const* fps, RenderSizes rs)
             playerSpriteDrawn.y += static_cast<int>(playerSpriteDrawn.h * drop);
             SDL_SetTextureAlphaMod(playerBackTexture, static_cast<Uint8>(255 * (1.f - drop)));
         }
+        Uint8 playerRed = 255, playerGreen = 255, playerBlue = 255;
+        if (moveAnim)
+            moveAnim->battlerColor(true, playerRed, playerGreen, playerBlue);
+        if (hitRunning && hitPlayer)
+            playerGreen = playerBlue = 160;
+        SDL_SetTextureColorMod(playerBackTexture, playerRed, playerGreen, playerBlue);
+        if (moveAnim && moveAnim->running())
+            SDL_SetTextureAlphaMod(playerBackTexture, moveAnim->battlerAlpha(true));
         SDL_RenderCopy(renderer, playerBackTexture, nullptr, &playerSpriteDrawn);
         SDL_SetTextureAlphaMod(playerBackTexture, 255);
+        SDL_SetTextureColorMod(playerBackTexture, 255, 255, 255);
+        drawBattlerFx(true, playerSpriteDrawn);
     }
+
+    if (moveAnim)
+        moveAnim->drawSprites(playerSpriteDrawn, foeSpriteDrawn);
 
     if (drawBall && ballTexture && ballSurface)
     {
-        int ballSize = 40 * rs.ww / rs.aw;
-        if (ballSize < 1)
-            ballSize = 1;
+        int ballW = 40 * rs.ww / rs.aw;
+        if (ballW < 1)
+            ballW = 1;
+        int ballH = ballW * BallFrameH / BallFrameW;
 
         float startX = 0;
         float startY = 0;
@@ -914,49 +1400,88 @@ void SingleBattleUi::draw(Fps const* fps, RenderSizes rs)
         {
             startX = static_cast<float>(opponentRect.x + opponentRect.w * 0.35f);
             startY = static_cast<float>(opponentRect.y + opponentRect.h * 0.35f);
-            endX   = static_cast<float>(foeSprite.x + foeSprite.w / 2 - ballSize / 2);
-            endY   = static_cast<float>(foeSprite.y + foeSprite.h / 2 - ballSize / 2);
+            endX   = static_cast<float>(foeSprite.x + foeSprite.w / 2 - ballW / 2);
+            endY   = static_cast<float>(foeSprite.y + foeSprite.h / 2 - ballH / 2);
         }
         else if (ballFromOpponent)
         {
-            startX = static_cast<float>(rs.ww + ballSize);
+            startX = static_cast<float>(rs.ww + ballW);
             startY = static_cast<float>(foeSprite.y + foeSprite.h / 4);
-            endX   = static_cast<float>(foeSprite.x + foeSprite.w / 2 - ballSize / 2);
-            endY   = static_cast<float>(foeSprite.y + foeSprite.h / 2 - ballSize / 2);
+            endX   = static_cast<float>(foeSprite.x + foeSprite.w / 2 - ballW / 2);
+            endY   = static_cast<float>(foeSprite.y + foeSprite.h / 2 - ballH / 2);
         }
         else if (ballFromCorner)
         {
             startX = 0;
             startY = static_cast<float>(playerSprite.y + playerSprite.h);
-            endX   = static_cast<float>(playerSprite.x + playerSprite.w / 2 - ballSize / 2);
-            endY   = static_cast<float>(playerSprite.y + playerSprite.h / 3 - ballSize / 2);
+            endX   = static_cast<float>(playerSprite.x + playerSprite.w / 2 - ballW / 2);
+            endY   = static_cast<float>(playerSprite.y + playerSprite.h / 3 - ballH / 2);
         }
         else
         {
             startX = static_cast<float>(playerSprite.x + playerSprite.w * 0.15f);
             startY = static_cast<float>(playerSprite.y + playerSprite.h * 0.55f);
-            endX   = static_cast<float>(playerSprite.x + playerSprite.w * 0.45f - ballSize / 2);
-            endY   = static_cast<float>(playerSprite.y + playerSprite.h * 0.35f - ballSize / 2);
+            endX   = static_cast<float>(playerSprite.x + playerSprite.w * 0.45f - ballW / 2);
+            endY   = static_cast<float>(playerSprite.y + playerSprite.h * 0.35f - ballH / 2);
         }
 
         float arc = std::sin(clampf(ballT, 0.f, 1.f) * 3.14159265f) * (56.f * rs.wh / rs.ah);
         SDL_Rect ball;
-        ball.w = ballSize;
-        ball.h = ballSize;
+        ball.w = ballW;
+        ball.h = ballH;
         ball.x = static_cast<int>(startX + (endX - startX) * ballT);
         ball.y = static_cast<int>(startY + (endY - startY) * ballT - arc);
 
+        int frame = std::clamp(ticks, 0, BallFrameCount - 1);
         SDL_Rect src;
-        src.x = 0;
-        src.y = 16;
-        src.w = BallFrame;
-        src.h = BallFrame;
-        if (src.y + src.h > ballSurface->h)
+        src.x = frame * BallFrameW;
+        src.y = 0;
+        src.w = BallFrameW;
+        src.h = BallFrameH;
+        if (src.x + src.w > ballSurface->w || src.h > ballSurface->h)
         {
+            src.x = 0;
             src.y = 0;
+            src.w = ballSurface->w;
             src.h = ballSurface->h;
         }
         SDL_RenderCopy(renderer, ballTexture, &src, &ball);
+    }
+
+    if (captureTicks >= 0 && captureTicks < BallFrameCount && ballTexture && ballSurface)
+    {
+        float t = clampf((captureTicks + (fps ? fps->tickPercentage() : 0.f)) / static_cast<float>(BallFrameCount), 0.f, 1.f);
+        int ballW = 32 * rs.ww / rs.aw;
+        if (ballW < 1)
+            ballW = 1;
+        int ballH = ballW * BallFrameH / BallFrameW;
+        SDL_Rect ball;
+        ball.w = ballW;
+        ball.h = ballH;
+        ball.x = static_cast<int>((1.f - t) * (playerSprite.x + playerSprite.w / 2) + t * (foeSprite.x + foeSprite.w / 2));
+        ball.y = static_cast<int>((1.f - t) * (playerSprite.y + playerSprite.h / 3) + t * (foeSprite.y + foeSprite.h / 2));
+        SDL_Rect src;
+        src.x = captureTicks * BallFrameW;
+        src.y = 0;
+        src.w = BallFrameW;
+        src.h = BallFrameH;
+        SDL_RenderCopy(renderer, ballTexture, &src, &ball);
+    }
+
+    if (hitRunning)
+    {
+        int   span  = std::max(1, sheetColumns(typeSheet) * 2);
+        float fade  = 1.f - clampf(static_cast<float>(hitTicks) / static_cast<float>(span), 0.f, 1.f);
+        Uint8 alpha = static_cast<Uint8>(160.f * fade);
+        SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, alpha);
+        SDL_Rect flash;
+        flash.x = 0;
+        flash.y = 0;
+        flash.w = rs.ww;
+        flash.h = rs.wh;
+        SDL_RenderFillRect(renderer, &flash);
+        SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
     }
 
     if (drawLineup)
@@ -973,15 +1498,15 @@ void SingleBattleUi::draw(Fps const* fps, RenderSizes rs)
         dstFoeNameRect.y += dstDataboxMargin / 2;
         textWidth = RenderUtils::drawGreyText(renderer,
                                               rs,
-                                              foePkmn->getDisplayName(),
+                                              (foeDisguise ? foeDisguise : foePkmn)->getDisplayName(),
                                               fontSize,
                                               dstFoeNameRect.x,
                                               dstFoeNameRect.y);
         dstFoeNameRect.x += textWidth * rs.ww / rs.aw;
-        genderColor = PkmnUtils::genderColor(foePkmn->getGender());
+        genderColor = PkmnUtils::genderColor((foeDisguise ? foeDisguise : foePkmn)->getGender());
         RenderUtils::drawUnicodeSymbol(renderer,
                                        rs,
-                                       PkmnUtils::genderSymbol(foePkmn->getGender()),
+                                       PkmnUtils::genderSymbol((foeDisguise ? foeDisguise : foePkmn)->getGender()),
                                        genderColor,
                                        genderBgColor,
                                        fontSize,
@@ -994,7 +1519,7 @@ void SingleBattleUi::draw(Fps const* fps, RenderSizes rs)
         boost::format foeLvl = boost::format("Lv%1%") % foePkmn->getLevel();
         RenderUtils::drawGreyTextRightAligned(renderer, rs, foeLvl.str(), fontSize, dstFoeLvlRect.x, dstFoeLvlRect.y);
 
-        float    foePercentageHP = foePkmn->getPercentageHP();
+        float    foePercentageHP = shownRatio(foeHpPrev, foeHpCur, fps);
         SDL_Rect dstFoeHpRect    = foeBox;
         dstFoeHpRect.x += 118 * rs.ww / rs.aw;
         dstFoeHpRect.y += 40 * rs.wh / rs.ah;
@@ -1033,15 +1558,15 @@ void SingleBattleUi::draw(Fps const* fps, RenderSizes rs)
         dstPlayerNameRect.y += dstDataboxMargin / 2;
         textWidth = RenderUtils::drawGreyText(renderer,
                                               rs,
-                                              playerPkmn->getDisplayName(),
+                                              (playerDisguise ? playerDisguise : playerPkmn)->getDisplayName(),
                                               fontSize,
                                               dstPlayerNameRect.x,
                                               dstPlayerNameRect.y);
         dstPlayerNameRect.x += textWidth * rs.ww / rs.aw;
-        genderColor = PkmnUtils::genderColor(playerPkmn->getGender());
+        genderColor = PkmnUtils::genderColor((playerDisguise ? playerDisguise : playerPkmn)->getGender());
         RenderUtils::drawUnicodeSymbol(renderer,
                                        rs,
-                                       PkmnUtils::genderSymbol(playerPkmn->getGender()),
+                                       PkmnUtils::genderSymbol((playerDisguise ? playerDisguise : playerPkmn)->getGender()),
                                        genderColor,
                                        genderBgColor,
                                        fontSize,
@@ -1059,7 +1584,7 @@ void SingleBattleUi::draw(Fps const* fps, RenderSizes rs)
                                               dstPlayerLvlRect.x,
                                               dstPlayerLvlRect.y);
 
-        float    playerPercentageHP = playerPkmn->getPercentageHP();
+        float    playerPercentageHP = shownRatio(playerHpPrev, playerHpCur, fps);
         SDL_Rect dstPlayerHpRect    = playerBox;
         dstPlayerHpRect.x += 136 * rs.ww / rs.aw;
         dstPlayerHpRect.y += 40 * rs.wh / rs.ah;
@@ -1108,7 +1633,10 @@ void SingleBattleUi::draw(Fps const* fps, RenderSizes rs)
         SDL_Rect dstPlayerHpTextRect = playerBox;
         dstPlayerHpTextRect.x += 232 * rs.ww / rs.aw;
         dstPlayerHpTextRect.y += (56 - fontSize / 3) * rs.wh / rs.ah;
-        boost::format playerHp = boost::format("%1% / %2%") % playerPkmn->getHP() % playerPkmn->getTotalHP();
+        size_t shownPlayerHp = playerPkmn->getHP();
+        if (std::fabs(playerPercentageHP - playerPkmn->getPercentageHP()) >= 0.01f)
+            shownPlayerHp = static_cast<size_t>(std::lround(playerPercentageHP * playerPkmn->getTotalHP()));
+        boost::format playerHp = boost::format("%1% / %2%") % shownPlayerHp % playerPkmn->getTotalHP();
         RenderUtils::drawGreyTextRightAligned(renderer,
                                               rs,
                                               playerHp.str(),
