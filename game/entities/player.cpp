@@ -59,6 +59,7 @@ void tag_invoke(js::value_from_tag, js::value& jv, Player const& o)
         {"money", o.money},
         {"id", o.id},
         {"stepCount", o.stepCount},
+        {"repelSteps", o.repelSteps},
         {"pkmns", js::value_from<std::array<Pkmn::PkmnPtr, 6> const&>(o.pkmns)},
         {"items", js::value_from<std::array<std::vector<Item::ItemPtr>, ItemDef::NumberOfPockets> const&>(o.items)}
     };
@@ -78,6 +79,8 @@ Player tag_invoke(js::value_to_tag<Player>, js::value const& jv)
         p.money = js::value_to<uint64_t>(obj.at("money"));
     if (obj.contains("stepCount"))
         p.stepCount = js::value_to<size_t>(obj.at("stepCount"));
+    if (obj.contains("repelSteps"))
+        p.repelSteps = js::value_to<size_t>(obj.at("repelSteps"));
     p.pkmns = js::value_to<std::array<Pkmn::PkmnPtr, 6>>(obj.at("pkmns"));
     if (obj.contains("items"))
         p.items = js::value_to<std::array<std::vector<Item::ItemPtr>, ItemDef::NumberOfPockets>>(obj.at("items"));

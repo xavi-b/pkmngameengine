@@ -41,6 +41,9 @@ public:
     // Used for field poison (1 HP every 4 steps). Persist across saves.
     size_t stepCount = 0;
 
+    // Remaining steps of Repel, Super Repel, or Max Repel. Zero means none is active.
+    size_t repelSteps = 0;
+
 private:
     Gender gender = Gender::BOY;
 };

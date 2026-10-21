@@ -53,7 +53,7 @@ struct CaptureContext
 };
 
 bool useCaptureBall(Item::ItemPtr const& ball, Pkmn::PkmnPtr const& foePkmn, CaptureContext const& context);
-bool useItemInField(Player& player, Item::ItemPtr const& item);
+bool useItemInField(Player& player, Item::ItemPtr const& item, std::string& message);
 bool allowFaintedTarget(Item::ItemPtr const& item);
 bool curesConfusion(std::string const& itemId);
 bool isEscapeItem(std::string const& itemId);

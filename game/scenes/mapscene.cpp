@@ -794,6 +794,13 @@ void MapScene::onPlayerTileStepped()
     auto& player = Game::instance()->data.player;
 
     ++player.stepCount;
+    if (player.repelSteps > 0 && --player.repelSteps == 0 && itemSpeech)
+    {
+        itemSpeech->setTexts({lc::translate("The Repel wore off!")});
+        itemSpeech->reset();
+        itemSpeech->start();
+        stop(player);
+    }
     if (player.stepCount % 4 != 0)
         return;
 
@@ -1997,6 +2004,22 @@ bool MapScene::manageEncounters()
             if (pkmnEncounter < it->getDensity())
             {
                 encounteredPkmn = rollEncounter(*it);
+                if (encounteredPkmn && player.repelSteps > 0)
+                {
+                    size_t leadLevel = 0;
+                    bool   haveLead  = false;
+                    for (auto const& mon : player.pkmns)
+                    {
+                        if (mon && !mon->isKO())
+                        {
+                            leadLevel = mon->getLevel();
+                            haveLead  = true;
+                            break;
+                        }
+                    }
+                    if (!haveLead || encounteredPkmn->getLevel() < leadLevel)
+                        encounteredPkmn.reset();
+                }
                 return encounteredPkmn != nullptr;
             }
         }
@@ -2339,9 +2362,20 @@ void MapScene::popReset()
             startFishing(itemId);
             closeStartMenu = keyItem;
         }
-        else if (ItemUtils::useItemInField(Game::instance()->data.player, selectedBagItem))
+        else
         {
-            closeStartMenu = keyItem;
+            std::string message;
+            bool        used = ItemUtils::useItemInField(Game::instance()->data.player, selectedBagItem, message);
+            if (!used && message.empty())
+                message = lc::translate("It won't have any effect.");
+            if (!message.empty() && itemSpeech)
+            {
+                itemSpeech->setTexts({message});
+                itemSpeech->reset();
+                itemSpeech->start();
+            }
+            if (used)
+                closeStartMenu = keyItem;
         }
     }
     else if (awaitingMoveScene)

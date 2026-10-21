@@ -554,8 +554,9 @@ bool ItemUtils::useCaptureBall(Item::ItemPtr const&        ball,
     return true;
 }
 
-bool ItemUtils::useItemInField(Player& player, Item::ItemPtr const& item)
+bool ItemUtils::useItemInField(Player& player, Item::ItemPtr const& item, std::string& message)
 {
+    message.clear();
     if (!item || !item->getDefinition())
         return false;
 
@@ -563,8 +564,29 @@ bool ItemUtils::useItemInField(Player& player, Item::ItemPtr const& item)
     switch (item->getDefinition()->getFieldUse())
     {
     case ItemDef::FieldUse::Direct:
-        used = true; // Repels / flutes / honey — field map effects TBD
+    {
+        std::string itemId = item->getDefinition()->getId();
+        if (itemId == "REPEL" || itemId == "SUPERREPEL" || itemId == "MAXREPEL")
+        {
+            if (player.repelSteps > 0)
+            {
+                message = lc::translate("It won't have any effect.");
+                return false;
+            }
+            if (itemId == "REPEL")
+                player.repelSteps = 100;
+            else if (itemId == "SUPERREPEL")
+                player.repelSteps = 200;
+            else
+                player.repelSteps = 250;
+            message = (boost::format(lc::translate("%1% used the %2%.")) % player.name % item->getDefinition()->getName())
+                           .str();
+            used = true;
+            break;
+        }
+        used = true; // Flutes and the other direct items still to come.
         break;
+    }
     case ItemDef::FieldUse::OnPkmn:
         for (auto const& pkmn : player.pkmns)
         {
