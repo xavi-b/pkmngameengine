@@ -12,6 +12,24 @@
 
 #include <SDL_image.h>
 
+class WeatherAnimation;
+
+struct DamageAdjustments
+{
+    bool  useTargetAttack     = false;
+    bool  useUserDefense      = false;
+    bool  usePhysicalDefense  = false;
+    bool  forcePhysical       = false;
+    bool  forceSpecial        = false;
+    bool  ignoreDefenseStages = false;
+    bool  ignoreAttackStages  = false;
+    bool  includeFlying       = false;
+    bool  pierceGroundImmunity = false;
+    bool  blockCrit           = false;
+    float multiplier          = 1.f;
+    float stabBonus           = 0.f;
+};
+
 class SingleBattleScene : public Scene
 {
 public:
@@ -35,19 +53,35 @@ public:
     virtual std::string name() override;
 
     void changeWeather(Map::Weather weather);
+    void applyFieldWeather(Map::Weather weather);
+    WeatherAnimation* fieldWeatherAnim() const;
 
-    void setPlayerPkmn(Pkmn::PkmnPtr const& newPlayerPkmn);
-    void setOpponentPkmn(Pkmn::PkmnPtr const& newOpponentPkmn);
+    void setPlayerPkmn(Pkmn::PkmnPtr const& newPlayerPkmn, bool deferSwitchInAbility = false);
+    void setOpponentPkmn(Pkmn::PkmnPtr const& newOpponentPkmn, bool deferSwitchInAbility = false);
+    // True when an Eject Pack switch changed the battle state.
+    bool consumeEjectSwitch();
     void resolveOpponentFaint();
 
-    static size_t computeDamage(Pkmn::PkmnPtr const&     attacker,
-                                Pkmn::PkmnPtr const&     defender,
-                                Move::MovePtr const&     move,
-                                Map::Weather const&      weather,
-                                BattleBattler const*     attackerBattler = nullptr,
-                                BattleBattler const*     defenderBattler = nullptr,
-                                size_t                   powerOverride   = 0,
-                                bool                     forceNoCrit     = false);
+    struct DamageRoll
+    {
+        size_t amount         = 0;
+        bool   critical       = false;
+        float  effectiveness  = 1.f;
+    };
+
+    static DamageRoll computeDamage(Pkmn::PkmnPtr const& attacker,
+                                    Pkmn::PkmnPtr const& defender,
+                                    Move::MovePtr const& move,
+                                    Map::Weather const&  weather,
+                                    BattleBattler const* attackerBattler = nullptr,
+                                    BattleBattler const* defenderBattler = nullptr,
+                                    size_t               powerOverride   = 0,
+                                    bool                 forceNoCrit       = false,
+                                    bool                 forceCrit         = false,
+                                    float                screenMultiplier = 1.f,
+                                    bool                 wonderRoom       = false,
+                                    std::string const&   typeOverride     = {},
+                                    DamageAdjustments    adjustments  = {});
 
 protected:
     virtual std::string encounterStartText() const    = 0;
@@ -59,6 +93,7 @@ protected:
 
     std::unique_ptr<BattleBackground> battleBackground;
     std::unique_ptr<SingleBattleUi>   singleBattleUi;
+    std::unique_ptr<WeatherAnimation> fieldWeather;
 
     SingleBattlePhase* currentPhase();
     virtual void       initPhases();

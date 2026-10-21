@@ -1,5 +1,6 @@
 #include "encounterscene.h"
 
+#include "abilitybattle.h"
 #include "encounterscenedata.h"
 #include "phases/encounter/encounterexperiencephase.h"
 #include "phases/encounter/encounteropponentmovesphase.h"
@@ -29,10 +30,19 @@ void EncounterScene::setEncounterPkmn(Pkmn::PkmnPtr const& newEncounterPkmn)
     setOpponentPkmn(newEncounterPkmn);
 }
 
+void EncounterScene::setCaptureContext(bool atNight, bool inCave, bool underwater, bool fishing)
+{
+    data->captureAtNight    = atNight;
+    data->captureInCave     = inCave;
+    data->captureUnderwater = underwater;
+    data->captureFishing    = fishing;
+}
+
 std::string EncounterScene::encounterStartText() const
 {
-    boost::format pkmnEncounterText = boost::format(lc::translate("A wild %1% appears !"))
-                                    % (data->opponentPkmn ? data->opponentPkmn->getDisplayName() : "#ERROR");
+    boost::format pkmnEncounterText =
+        boost::format(lc::translate("A wild %1% appears !"))
+        % (data->opponentPkmn ? battleDisplayName(data->opponentPkmn, data->opponentBattler) : "#ERROR");
     return pkmnEncounterText.str();
 }
 
