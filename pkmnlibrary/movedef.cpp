@@ -636,6 +636,16 @@ void MoveDef::setCategory(Category newCategory)
     category = newCategory;
 }
 
+MoveDef::Category MoveDef::battleCategory() const
+{
+    if (category == STATUS || power == 0)
+        return STATUS;
+    if (type == "FIRE" || type == "WATER" || type == "GRASS" || type == "ELECTRIC" || type == "PSYCHIC"
+        || type == "ICE" || type == "DRAGON" || type == "DARK")
+        return SPECIAL;
+    return PHYSICAL;
+}
+
 int MoveDef::getPriority() const
 {
     return priority;

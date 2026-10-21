@@ -517,6 +517,8 @@ public:
 
     Category getCategory() const;
     void     setCategory(Category newCategory);
+    // Status stays status. A damaging move is physical or special from its type.
+    Category battleCategory() const;
 
     int  getPriority() const;
     void setPriority(int newPriority);
