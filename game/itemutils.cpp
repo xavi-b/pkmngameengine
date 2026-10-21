@@ -326,6 +326,16 @@ bool isPoisonType(Pkmn::PkmnPtr const& pkmn, BattleBattler const* battler = null
     return hasType(pkmn, "POISON", battler);
 }
 
+void changeFriendship(Pkmn::PkmnPtr const& pkmn, int low, int mid, int high)
+{
+    if (!pkmn)
+        return;
+    int happy = static_cast<int>(pkmn->getHappiness());
+    int delta = happy <= 99 ? low : (happy <= 199 ? mid : high);
+    int next  = std::clamp(happy + delta, 0, 255);
+    pkmn->setHappiness(static_cast<unsigned char>(next));
+}
+
 } // namespace
 
 bool ItemUtils::curesConfusion(std::string const& itemId)
@@ -404,6 +414,16 @@ bool ItemUtils::useItemOnPkmn(Item::ItemPtr const& item, Pkmn::PkmnPtr const& ta
     // Elixir family is BattleUse::OnPokemon in PBS
     if (restorePPForItem(itemId, target))
         used = true;
+
+    if (used)
+    {
+        if (itemId == "ENERGYPOWDER" || itemId == "HEALPOWDER")
+            changeFriendship(target, -5, -5, -10);
+        else if (itemId == "ENERGYROOT")
+            changeFriendship(target, -10, -10, -15);
+        else if (itemId == "REVIVALHERB")
+            changeFriendship(target, -15, -15, -20);
+    }
 
     return used;
 }
