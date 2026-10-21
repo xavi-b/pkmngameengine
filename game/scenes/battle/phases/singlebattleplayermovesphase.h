@@ -26,11 +26,15 @@ private:
     enum class Step
     {
         MajorStatus,
+        Flinch,
         Confusion,
+        Attraction,
         AnnounceMove,
         ExecuteMove,
         Advance,
         GoToPkmns,
+        GoToOpponentPkmns,
+        GoToOpponentRun,
         GoToEnd,
         GoToExperience,
         AwaitFaint,
@@ -50,6 +54,7 @@ private:
     bool                        pendingPlayerFaint   = false;
     bool                        pendingOpponentFaint = false;
     bool                        pendingSwitchUser    = false;
+    bool                        pendingSwitchTarget  = false;
 };
 
 #endif // SINGLEBATTLEPLAYERMOVESPHASE_H

@@ -1,5 +1,7 @@
 #include "encounterplayerrunphase.h"
 
+#include "../../statuscondition.h"
+#include "itemutils.h"
 #include "utils.h"
 
 EncounterPlayerRunPhase::EncounterPlayerRunPhase(SingleBattleScene&                     scene,
@@ -16,18 +18,18 @@ bool EncounterPlayerRunPhase::canPlayerRun() const
 
 bool EncounterPlayerRunPhase::tryPlayerRun()
 {
+    bool runAway = !data->playerBattler.abilitySuppressed && data->playerBattler.abilityId == "RUNAWAY";
+    bool smoke   = ItemUtils::activeHeldId(data->playerPkmn, &data->playerBattler) == "SMOKEBALL";
+    if (runAway || smoke)
+        return true;
+
     ++data->runAttemps;
-    bool   run       = true;
-    size_t wildSpeed = data->opponentPkmn ? data->opponentPkmn->getStats()[PkmnDef::SPEED] : 0;
-
-    if (wildSpeed > 0)
-    {
-        // https://bulbapedia.bulbagarden.net/wiki/Escape#Generation_III_and_IV
-        size_t playerSpeed = data->playerPkmn ? data->playerPkmn->getStats()[PkmnDef::SPEED] : 0;
-        size_t odds        = ((playerSpeed * 128 / wildSpeed) + 30 * data->runAttemps) % 256;
-        size_t random      = Utils::randuint(0, 255);
-        run                = random < odds;
-    }
-
-    return run;
+    size_t playerSpeed = battleSpeed(data->playerPkmn, &data->playerBattler, data->fieldWeather(), false);
+    size_t wildSpeed   = battleSpeed(data->opponentPkmn, &data->opponentBattler, data->fieldWeather(), false);
+    if (wildSpeed == 0)
+        return true;
+    size_t odds = playerSpeed * 128 / wildSpeed + 30 * data->runAttemps;
+    if (odds > 255)
+        return true;
+    return Utils::randuint(0, 255) < odds;
 }

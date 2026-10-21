@@ -1,7 +1,6 @@
 #ifndef SINGLEBATTLEWEATHERPHASE_H
 #define SINGLEBATTLEWEATHERPHASE_H
 
-#include "animations/weather/weatheranimation.h"
 #include "map.h"
 #include "singlebattlephase.h"
 #include "textspeech.h"
@@ -32,9 +31,8 @@ private:
     void buildResidualMessages();
     void finishTurn();
 
-    Step                              step = Step::Weather;
-    std::unique_ptr<WeatherAnimation> weatherAnimation;
-    std::unique_ptr<TextSpeech>       weatherSpeech;
+    Step                        step = Step::Weather;
+    std::unique_ptr<TextSpeech> weatherSpeech;
     std::unique_ptr<TextSpeech>       residualSpeech;
     std::vector<std::string>          residualMessages;
     bool                              residualsApplied          = false;

@@ -25,11 +25,15 @@ private:
     enum class Step
     {
         MajorStatus,
+        Flinch,
         Confusion,
+        Attraction,
         AnnounceMove,
         ExecuteMove,
         Advance,
         GoToPkmns,
+        GoToOpponentPkmns,
+        GoToOpponentRun,
         GoToEnd,
         GoToExperience,
         GoToPlayerFaint,
@@ -48,6 +52,8 @@ private:
     std::vector<std::string>    pendingMessages;
     bool                        pendingPlayerFaint   = false;
     bool                        pendingOpponentFaint = false;
+    bool                        pendingSwitchUser    = false;
+    bool                        pendingSwitchTarget  = false;
 };
 
 #endif // SINGLEBATTLEOPPONENTMOVESPHASE_H

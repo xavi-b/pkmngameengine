@@ -286,6 +286,25 @@ void SingleBattleExperiencePhase::update(Inputs const* inputs)
         if (onExperienceResolvedNextPkmn())
             return;
 
+        if (data->pendingPlayerReplace
+            || (data->playerPkmn && data->playerPkmn->isKO()))
+        {
+            data->pendingPlayerReplace = false;
+            bool hasNext = false;
+            for (auto const& pkmn : Game::instance()->data.player.pkmns)
+            {
+                if (pkmn && !pkmn->isKO())
+                {
+                    hasNext = true;
+                    break;
+                }
+            }
+            data->playerPkmn = nullptr;
+            data->playerConfusion.clear();
+            data->state = hasNext ? PKMNS : END;
+            return;
+        }
+
         showEndSpeech(victoryTexts());
         return;
     }

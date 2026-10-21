@@ -1,8 +1,11 @@
 #include "singlebattleplayermovesphase.h"
 
+#include "../abilitybattle.h"
 #include "../confusionstatus.h"
+#include "../moveeffects.h"
 #include "../moveresolver.h"
 #include "../singlebattlescene.h"
+#include "../trainerscenedata.h"
 #include "../statuscondition.h"
 #include "game.h"
 #include "textspeech.h"
@@ -140,6 +143,7 @@ void SingleBattlePlayerMovesPhase::handlePlayerFaintFromMove(std::vector<std::st
     }
 
     texts.push_back((boost::format(lc::translate("%1% fainted !")) % data->playerPkmn->getDisplayName()).str());
+    clearTrapsOnLeave(*data, true);
     data->playerPkmn = nullptr;
     if (hasNext)
     {
@@ -156,31 +160,53 @@ void SingleBattlePlayerMovesPhase::handlePlayerFaintFromMove(std::vector<std::st
 
 void SingleBattlePlayerMovesPhase::executePlayerMove()
 {
+    bool wasCharging     = data->playerBattler.charging;
     auto result          = MoveResolver::resolve(*data, true, data->playerMove);
+    if (result.hit && data->playerMove && data->playerMove->getDefinition())
+    {
+        auto const definition = data->playerMove->getDefinition();
+        battleUi()->startMoveAnim(true,
+                                  result.hitPlayerSide,
+                                  definition->getId(),
+                                  definition->getType(),
+                                  definition->getName(),
+                                  wasCharging ? 1 : 0,
+                                  static_cast<int>(definition->getPower()),
+                                  static_cast<int>(result.damageDealt));
+    }
+    if (result.statRose)
+        battleUi()->startStatRise(!result.statRoseOnTarget);
+    if (result.healed)
+        battleUi()->startHeal(true);
     pendingMessages      = result.messages;
     pendingPlayerFaint   = result.userFainted && data->playerPkmn && data->playerPkmn->isKO();
     pendingOpponentFaint = result.targetFainted && data->opponentPkmn && data->opponentPkmn->isKO();
+    if (pendingPlayerFaint)
+        data->playerFaintedThisTurn = true;
+    if (pendingOpponentFaint)
+        data->opponentFaintedThisTurn = true;
     pendingSwitchUser    = result.shouldSwitchUser;
+    pendingSwitchTarget  = result.shouldSwitchTarget;
     step                 = Step::AwaitFaint;
     continueAfterPlayerMove();
 }
 
 void SingleBattlePlayerMovesPhase::continueAfterPlayerMove()
 {
+    if (battleUi()->isPresentationRunning())
+        return;
+
     if (pendingOpponentFaint && !playFaint(false))
         return;
     if (pendingPlayerFaint && !playFaint(true))
         return;
 
-    if (pendingPlayerFaint)
-    {
-        handlePlayerFaintFromMove(pendingMessages);
-        return;
-    }
-
     if (pendingOpponentFaint)
     {
         data->opponentConfusion.clear();
+        clearTrapsOnLeave(*data, false);
+        if (pendingPlayerFaint)
+            data->pendingPlayerReplace = true;
         if (!pendingMessages.empty())
         {
             showSpeech(pendingMessages);
@@ -188,6 +214,25 @@ void SingleBattlePlayerMovesPhase::continueAfterPlayerMove()
             return;
         }
         awardExperienceForOpponentKo();
+        return;
+    }
+
+    if (pendingPlayerFaint)
+    {
+        handlePlayerFaintFromMove(pendingMessages);
+        return;
+    }
+
+    if (data->forceWildEnd)
+    {
+        data->forceWildEnd = false;
+        if (!pendingMessages.empty())
+        {
+            showSpeech(pendingMessages);
+            step = Step::GoToOpponentRun;
+            return;
+        }
+        data->state = OPPONENT_RUN;
         return;
     }
 
@@ -203,6 +248,32 @@ void SingleBattlePlayerMovesPhase::continueAfterPlayerMove()
         return;
     }
 
+    if (pendingSwitchTarget && data->opponentPkmn && !data->opponentPkmn->isKO())
+    {
+        auto trainerData = std::dynamic_pointer_cast<TrainerSceneData>(data);
+        if (trainerData && trainerData->opponentTrainer)
+        {
+            std::vector<Pkmn::PkmnPtr> candidates;
+            for (auto const& pkmn : trainerData->opponentTrainer->pkmns)
+            {
+                if (pkmn && !pkmn->isKO() && pkmn != data->opponentPkmn)
+                    candidates.push_back(pkmn);
+            }
+            if (!candidates.empty())
+            {
+                trainerData->nextOpponentPkmn = candidates[Utils::randuint(0, candidates.size() - 1)];
+                if (!pendingMessages.empty())
+                {
+                    showSpeech(pendingMessages);
+                    step = Step::GoToOpponentPkmns;
+                    return;
+                }
+                data->state = OPPONENT_PKMNS;
+                return;
+            }
+        }
+    }
+
     if (!pendingMessages.empty())
     {
         showSpeech(pendingMessages);
@@ -215,6 +286,13 @@ void SingleBattlePlayerMovesPhase::continueAfterPlayerMove()
 
 void SingleBattlePlayerMovesPhase::update(Inputs const* inputs)
 {
+    if (!speech && step == Step::MajorStatus && !data->pendingAbilityMessages.empty())
+    {
+        showSpeech(data->pendingAbilityMessages);
+        data->pendingAbilityMessages.clear();
+        return;
+    }
+
     if (speech)
     {
         inputs->setHandler(speech->inputId());
@@ -230,6 +308,12 @@ void SingleBattlePlayerMovesPhase::update(Inputs const* inputs)
             return;
         case Step::GoToPkmns:
             data->state = PKMNS;
+            return;
+        case Step::GoToOpponentPkmns:
+            data->state = OPPONENT_PKMNS;
+            return;
+        case Step::GoToOpponentRun:
+            data->state = OPPONENT_RUN;
             return;
         case Step::GoToEnd:
             data->state = END;
@@ -258,23 +342,47 @@ void SingleBattlePlayerMovesPhase::update(Inputs const* inputs)
         }
 
         std::vector<std::string> messages;
-        auto                     result = tickMajorStatus(data->playerPkmn, messages);
+        auto                     result = tickMajorStatus(data->playerPkmn, messages, &data->playerBattler);
         switch (result)
         {
         case MajorStatusActionResult::Prevented:
+            if (data->playerPkmn->getStatusCondition() == Pkmn::StatusCondition::SLEEP && data->playerMove
+                && canMoveWhileAsleep(data->playerMove->getDefinition()))
+            {
+                step = Step::Flinch;
+                break;
+            }
+            cancelTwoTurnCharge(*data, true);
+            data->playerBattler.flinched = false;
+            if (char const* script = battleAnimationStatusScript(data->playerPkmn->getStatusCondition()))
+                battleUi()->startBattleAnimationScript(true, true, script);
             showSpeech(messages);
             step = Step::Advance;
             return;
         case MajorStatusActionResult::WokeUp:
         case MajorStatusActionResult::Thawed:
             showSpeech(messages);
-            step = Step::Confusion;
+            step = Step::Flinch;
             return;
         case MajorStatusActionResult::CanAct:
         default:
-            step = Step::Confusion;
+            step = Step::Flinch;
             break;
         }
+        [[fallthrough]];
+    }
+    case Step::Flinch: {
+        if (data->playerBattler.flinched)
+        {
+            data->playerBattler.flinched = false;
+            cancelTwoTurnCharge(*data, true);
+            showSpeech({(boost::format(lc::translate("%1% flinched and couldn't move!"))
+                         % data->playerPkmn->getDisplayName())
+                            .str()});
+            step = Step::Advance;
+            return;
+        }
+        step = Step::Confusion;
         [[fallthrough]];
     }
     case Step::Confusion: {
@@ -291,7 +399,7 @@ void SingleBattlePlayerMovesPhase::update(Inputs const* inputs)
             boost::format snapText =
                 boost::format(lc::translate("%1% snapped out of confusion!")) % data->playerPkmn->getDisplayName();
             showSpeech({snapText.str()});
-            step = Step::AnnounceMove;
+            step = Step::Attraction;
             return;
         }
         case ConfusionTickResult::HurtSelf: {
@@ -301,7 +409,13 @@ void SingleBattlePlayerMovesPhase::update(Inputs const* inputs)
             texts.push_back(confusedText.str());
             texts.push_back(lc::translate("It hurt itself in its confusion!"));
 
-            data->playerPkmn->decreaseHP(computeConfusionDamage(data->playerPkmn));
+            bool magicGuard = !data->playerBattler.abilitySuppressed && data->playerBattler.abilityId == "MAGICGUARD";
+            size_t confusionDamage = magicGuard ? 0 : computeConfusionDamage(data->playerPkmn, &data->playerBattler);
+            if (!magicGuard)
+                data->playerPkmn->decreaseHP(confusionDamage);
+            cancelTwoTurnCharge(*data, true);
+            if (!battleUi()->startBattleAnimationScript(true, true, "General_MonHit"))
+                battleUi()->startHit(true, {});
             if (data->playerPkmn->isKO())
             {
                 pendingMessages = texts;
@@ -316,15 +430,42 @@ void SingleBattlePlayerMovesPhase::update(Inputs const* inputs)
         case ConfusionTickResult::Continues: {
             boost::format confusedText =
                 boost::format(lc::translate("%1% is confused!")) % data->playerPkmn->getDisplayName();
+            battleUi()->startBattleAnimationScript(true, true, "Status_Confusion");
             showSpeech({confusedText.str()});
-            step = Step::AnnounceMove;
+            step = Step::Attraction;
             return;
         }
         case ConfusionTickResult::None:
         default:
-            step = Step::AnnounceMove;
+            step = Step::Attraction;
             break;
         }
+        [[fallthrough]];
+    }
+    case Step::Attraction: {
+        if (data->playerBattler.infatuated)
+        {
+            std::string loved = data->opponentPkmn ? data->opponentPkmn->getDisplayName() : std::string("the foe");
+            std::vector<std::string> texts;
+            texts.push_back((boost::format(lc::translate("%1% is in love with %2%!"))
+                             % data->playerPkmn->getDisplayName() % loved)
+                                .str());
+            battleUi()->startBattleAnimationScript(true, true, "Status_Infatuation");
+            if (Utils::randuint(0, 1) == 0)
+            {
+                texts.push_back((boost::format(lc::translate("%1% is immobilized by love!"))
+                                 % data->playerPkmn->getDisplayName())
+                                    .str());
+                cancelTwoTurnCharge(*data, true);
+                showSpeech(texts);
+                step = Step::Advance;
+                return;
+            }
+            showSpeech(texts);
+            step = Step::AnnounceMove;
+            return;
+        }
+        step = Step::AnnounceMove;
         [[fallthrough]];
     }
     case Step::AnnounceMove: {
@@ -356,6 +497,12 @@ void SingleBattlePlayerMovesPhase::update(Inputs const* inputs)
         return;
     case Step::GoToPkmns:
         data->state = PKMNS;
+        return;
+    case Step::GoToOpponentPkmns:
+        data->state = OPPONENT_PKMNS;
+        return;
+    case Step::GoToOpponentRun:
+        data->state = OPPONENT_RUN;
         return;
     case Step::GoToEnd:
         data->state = END;

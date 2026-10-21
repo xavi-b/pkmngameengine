@@ -1,5 +1,6 @@
 #include "trainerexperiencephase.h"
 
+#include "../../abilitybattle.h"
 #include "../../singlebattlescene.h"
 #include "../../trainerscenedata.h"
 #include "game.h"
@@ -22,9 +23,27 @@ std::vector<std::string> TrainerExperiencePhase::victoryTexts()
     auto trainerData = std::static_pointer_cast<TrainerSceneData>(data);
     if (trainerData->opponentTrainer && trainerData->opponentTrainer->money > 0)
     {
-        Game::instance()->data.player.money += trainerData->opponentTrainer->money;
+        size_t prize = trainerData->opponentTrainer->money;
+        bool doubled = trainerData->doublePrize;
+        if (!doubled)
+        {
+            for (auto const& mon : trainerData->participatingPlayerPkmns)
+            {
+                if (!mon || !mon->getHeldItem() || !mon->getHeldItem()->getDefinition())
+                    continue;
+                auto const& itemId = mon->getHeldItem()->getDefinition()->getId();
+                if (itemId == "AMULETCOIN" || itemId == "LUCKINCENSE")
+                {
+                    doubled = true;
+                    break;
+                }
+            }
+        }
+        if (doubled)
+            prize *= 2;
+        Game::instance()->data.player.money += prize;
         boost::format prizeText =
-            boost::format(lc::translate("You got $%1% for winning !")) % trainerData->opponentTrainer->money;
+            boost::format(lc::translate("You got $%1% for winning !")) % prize;
         texts.push_back(prizeText.str());
     }
 
@@ -55,13 +74,14 @@ bool TrainerExperiencePhase::onExperienceResolvedNextPkmn()
         {
             boost::format sendOutText = boost::format(lc::translate("Trainer %1% sent out %2% !"))
                                       % trainerData->opponentTrainer->name
-                                      % trainerData->nextOpponentPkmn->getDisplayName();
+                                      % predictedIllusionName(trainerData->nextOpponentPkmn, false, *data);
             texts.push_back(sendOutText.str());
         }
         else
         {
             boost::format sendOutText =
-                boost::format(lc::translate("Foe sent out %1% !")) % trainerData->nextOpponentPkmn->getDisplayName();
+                boost::format(lc::translate("Foe sent out %1% !"))
+                % predictedIllusionName(trainerData->nextOpponentPkmn, false, *data);
             texts.push_back(sendOutText.str());
         }
 
@@ -70,14 +90,9 @@ bool TrainerExperiencePhase::onExperienceResolvedNextPkmn()
         return true;
     }
 
-    trainerData->shouldSwitchOpponentPkmn = false;
     if (!trainerData->nextOpponentPkmn)
         return false;
 
-    scene.setOpponentPkmn(trainerData->nextOpponentPkmn);
-    trainerData->nextOpponentPkmn.reset();
-    trainerData->defeatedOpponentPkmnName.clear();
-    trainerData->opponentSwitchAnnounced = false;
-    data->state                          = WEATHER;
+    data->state = OPPONENT_PKMNS;
     return true;
 }

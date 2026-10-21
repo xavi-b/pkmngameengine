@@ -18,7 +18,13 @@ public:
 
 private:
     std::unique_ptr<TextSpeech> pkmnEnterSpeech;
-    bool                        sendOutStarted = false;
+    std::unique_ptr<TextSpeech> hazardSpeech;
+    bool                        sendOutStarted      = false;
+    bool                        hazardsDone         = false;
+    bool                        hazardFainted       = false;
+    bool                        pursuitResolved     = false;
+    bool                        pursuitConsumedTurn = false;
+    bool                        trapChecked         = false;
 };
 
 #endif // SINGLEBATTLEPLAYERPKMNSPHASE_H

@@ -79,6 +79,14 @@ void SingleBattlePlayerRunPhase::update(Inputs const* inputs)
         return;
     }
 
+    if (data->fairyLock || data->playerBattler.trapped)
+    {
+        failedRunSpeech = std::make_unique<TextSpeech>(renderer);
+        failedRunSpeech->setTexts({lc::translate("It can't escape!")});
+        failedRunSpeech->start();
+        return;
+    }
+
     bool run = tryPlayerRun();
 
     if (Game::instance()->isDebug())
