@@ -733,13 +733,30 @@ bool MapScene::handleActionButton(Inputs const* inputs)
     return false;
 }
 
+namespace
+{
+bool playerHasItem(Player const& player, std::string const& itemId)
+{
+    for (auto const& pocket : player.items)
+    {
+        for (auto const& item : pocket)
+        {
+            if (item && item->getDefinition() && item->getDefinition()->getId() == itemId)
+                return true;
+        }
+    }
+    return false;
+}
+} // namespace
+
 void MapScene::updatePlayerInput(Inputs const* inputs)
 {
     inputs->setHandler(inputId(), Inputs::Handler::MapScene);
 
-    auto& player = Game::instance()->data.player;
+    auto& player   = Game::instance()->data.player;
+    bool  ownsBike = playerHasItem(player, "BICYCLE");
 
-    if (inputs->select && !player.surfing && !player.sliding && allowBike())
+    if (inputs->select && ownsBike && !player.surfing && !player.sliding && allowBike())
     {
         if (player.speed == Entity::Speed::BIKE)
             player.speed = Entity::Speed::WALK;
@@ -747,7 +764,7 @@ void MapScene::updatePlayerInput(Inputs const* inputs)
             player.speed = Entity::Speed::BIKE;
     }
 
-    if (player.speed != Entity::Speed::BIKE || player.surfing || player.sliding || !allowBike())
+    if (player.speed != Entity::Speed::BIKE || !ownsBike || player.surfing || player.sliding || !allowBike())
     {
         if (inputs->bHeld && !player.surfing && !player.sliding)
             player.speed = Entity::Speed::RUN;
@@ -2459,6 +2476,28 @@ void MapScene::popReset()
         {
             startFishing(itemId);
             closeStartMenu = keyItem;
+        }
+        else if (itemId == "BICYCLE")
+        {
+            auto&       player = Game::instance()->data.player;
+            std::string message;
+            if (!allowBike() || player.surfing || player.sliding)
+                message = lc::translate("It won't have any effect.");
+            else
+            {
+                if (player.speed == Entity::Speed::BIKE)
+                    player.speed = Entity::Speed::WALK;
+                else
+                    player.speed = Entity::Speed::BIKE;
+                message        = (boost::format(lc::translate("%1% used the %2%.")) % player.name % def->getName()).str();
+                closeStartMenu = keyItem;
+            }
+            if (!message.empty() && itemSpeech)
+            {
+                itemSpeech->setTexts({message});
+                itemSpeech->reset();
+                itemSpeech->start();
+            }
         }
         else
         {
