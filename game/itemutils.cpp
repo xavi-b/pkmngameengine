@@ -326,6 +326,25 @@ bool isPoisonType(Pkmn::PkmnPtr const& pkmn, BattleBattler const* battler = null
     return hasType(pkmn, "POISON", battler);
 }
 
+bool vitaminStat(std::string const& itemId, PkmnDef::Stat& stat)
+{
+    if (itemId == "HPUP")
+        stat = PkmnDef::HP;
+    else if (itemId == "PROTEIN")
+        stat = PkmnDef::ATTACK;
+    else if (itemId == "IRON")
+        stat = PkmnDef::DEFENSE;
+    else if (itemId == "CALCIUM")
+        stat = PkmnDef::SPECIAL_ATTACK;
+    else if (itemId == "ZINC")
+        stat = PkmnDef::SPECIAL_DEFENSE;
+    else if (itemId == "CARBOS")
+        stat = PkmnDef::SPEED;
+    else
+        return false;
+    return true;
+}
+
 void changeFriendship(Pkmn::PkmnPtr const& pkmn, int low, int mid, int high)
 {
     if (!pkmn)
@@ -358,6 +377,22 @@ bool ItemUtils::useItemOnPkmn(Item::ItemPtr const& item, Pkmn::PkmnPtr const& ta
 
     std::string itemId = item->getDefinition()->getId();
     bool        used   = false;
+
+    if (!inBattle)
+    {
+        PkmnDef::Stat stat;
+        if (vitaminStat(itemId, stat))
+        {
+            auto   evs = target->getEVs();
+            size_t ev  = evs[stat];
+            if (ev >= 100)
+                return false;
+            evs[stat] = std::min<size_t>(100, ev + 10);
+            target->setEVs(evs);
+            changeFriendship(target, 5, 3, 2);
+            return true;
+        }
+    }
 
     if (itemId == "RARECANDY")
     {

@@ -2357,6 +2357,12 @@ void MapScene::popReset()
                 }
             }
         }
+        else if (itemSpeech)
+        {
+            itemSpeech->setTexts({lc::translate("It won't have any effect.")});
+            itemSpeech->reset();
+            itemSpeech->start();
+        }
     }
     else if (selectedBagItem)
     {
