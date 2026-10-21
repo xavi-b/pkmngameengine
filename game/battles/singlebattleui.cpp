@@ -824,6 +824,7 @@ void SingleBattleUi::startMoveAnim(bool               attackerIsPlayer,
                                  int                power,
                                  int                damage)
 {
+    deferHpDrop = true;
     if (moveAnim && moveAnim->canPlay(moveId))
     {
         moveAnim->start(moveId, attackerIsPlayer, targetIsPlayer, turn, power, damage);
@@ -834,8 +835,9 @@ void SingleBattleUi::startMoveAnim(bool               attackerIsPlayer,
 
 void SingleBattleUi::startHit(bool playerSide, std::string const& moveType, std::string const& moveName)
 {
-    hitPlayer  = playerSide;
-    hitRunning = true;
+    deferHpDrop = true;
+    hitPlayer   = playerSide;
+    hitRunning  = true;
     hitTicks   = 0;
     hitType    = moveType;
 
@@ -889,22 +891,22 @@ void SingleBattleUi::startCapture()
 
 void SingleBattleUi::incrementPresentation()
 {
-    auto stepHp = [](float& prev, float& cur, float target) {
-        prev       = cur;
-        float gap  = target - cur;
-        if (std::fabs(gap) < 0.008f)
-            cur = target;
-        else
-            cur += gap * 0.4f;
-    };
-
-    if (foePkmn)
-        stepHp(foeHpPrev, foeHpCur, foePkmn->getPercentageHP());
-    if (playerPkmn)
-        stepHp(playerHpPrev, playerHpCur, playerPkmn->getPercentageHP());
-
     if (moveAnim && moveAnim->running())
         moveAnim->tick();
+
+    if (hitRunning)
+    {
+        ++hitTicks;
+        if (hitShake)
+            hitShake->incrementTicks();
+        if (hitTicks >= sheetColumns(typeSheet) * 2)
+            hitRunning = false;
+    }
+
+    // The attack animation has finished. Follow-up scripts can start, and the bar may drop.
+    if (deferHpDrop && !hitRunning && !(moveAnim && moveAnim->running()))
+        deferHpDrop = false;
+
     if (moveAnim && !moveAnim->running() && !scriptQueue.empty())
     {
         ScriptCue cue = scriptQueue.front();
@@ -926,19 +928,36 @@ void SingleBattleUi::incrementPresentation()
         if (fxTicks >= sheetColumns(fxSheet) * 2)
             fxRunning = false;
     }
-    if (!hitRunning)
-        return;
 
-    ++hitTicks;
-    if (hitShake)
-        hitShake->incrementTicks();
-    if (hitTicks >= sheetColumns(typeSheet) * 2)
-        hitRunning = false;
+    auto stepHp = [](float& prev, float& cur, float target) {
+        prev      = cur;
+        float gap = target - cur;
+        if (std::fabs(gap) < 0.008f)
+            cur = target;
+        else
+            cur += gap * 0.4f;
+    };
+    auto stepBar = [&](float& prev, float& cur, float target) {
+        // Damage waits until the move animation is over. Healing can start immediately.
+        if (deferHpDrop && target < cur)
+            return;
+        stepHp(prev, cur, target);
+    };
+
+    if (foePkmn)
+        stepBar(foeHpPrev, foeHpCur, foePkmn->getPercentageHP());
+    if (playerPkmn)
+        stepBar(playerHpPrev, playerHpCur, playerPkmn->getPercentageHP());
 }
 
 bool SingleBattleUi::isPresentationRunning() const
 {
-    return hitRunning || fxRunning || (moveAnim && moveAnim->running());
+    auto unsettled = [](float shown, float actual) {
+        return std::fabs(actual - shown) >= 0.008f;
+    };
+    bool hpMoving = (foePkmn && unsettled(foeHpCur, foePkmn->getPercentageHP()))
+                 || (playerPkmn && unsettled(playerHpCur, playerPkmn->getPercentageHP()));
+    return hitRunning || fxRunning || (moveAnim && moveAnim->running()) || hpMoving;
 }
 
 void SingleBattleUi::draw(Fps const* fps, RenderSizes rs)

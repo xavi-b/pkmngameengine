@@ -219,6 +219,8 @@ private:
     float foeHpCur     = 1.f;
     float playerHpPrev = 1.f;
     float playerHpCur  = 1.f;
+    // A damaging move keeps the bar where it was until that animation ends.
+    bool deferHpDrop = false;
 
     bool                  playerConfused        = false;
     bool                  foeConfused           = false;
