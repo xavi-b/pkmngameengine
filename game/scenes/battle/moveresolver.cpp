@@ -180,6 +180,7 @@ MoveResolveResult MoveResolver::resolve(SingleBattleSceneData& data, bool player
 
     if (targetsUser(def->getTarget()))
         target = user;
+    result.hitPlayerSide = target == data.playerPkmn;
 
     if (!user)
         return result;

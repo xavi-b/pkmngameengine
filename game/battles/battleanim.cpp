@@ -587,11 +587,8 @@ struct BattleAnimPlayer::Impl
 
     void initTarget(Sprite& sprite, bool picture)
     {
-        if (!picture)
-        {
-            sprite.x = logicalX(targetIsPlayer, false);
-            sprite.y = logicalY(targetIsPlayer, false);
-        }
+        sprite.x = logicalX(targetIsPlayer, picture);
+        sprite.y = logicalY(targetIsPlayer, picture);
         offsetXArg(sprite, arg(0));
         sprite.y += arg(1);
     }
@@ -1165,6 +1162,49 @@ void crossImpact(BattleAnimPlayer::Impl& anim, BattleAnimPlayer::Impl::Sprite* s
     };
 }
 
+void roarNoiseLine(BattleAnimPlayer::Impl& anim, BattleAnimPlayer::Impl::Sprite* sprite)
+{
+    int xOffset = anim.arg(0);
+    if (!anim.attackerIsPlayer)
+        xOffset = -xOffset;
+    sprite->x = anim.logicalX(anim.attackerIsPlayer, false) + xOffset;
+    sprite->y = anim.logicalY(anim.attackerIsPlayer, false) + anim.arg(1);
+
+    int travelX = 0x280;
+    int travelY = 0;
+    bool verticalFlip = false;
+    if (anim.arg(2) == 0)
+        travelY = -0x280;
+    else if (anim.arg(2) == 1)
+    {
+        verticalFlip = true;
+        travelY      = 0x280;
+    }
+    else if (sprite->anims.size() > 1)
+        sprite->animNum = 1;
+
+    if (!anim.attackerIsPlayer)
+    {
+        travelX = -travelX;
+        sprite->hFlip = true;
+    }
+    sprite->vFlip = verticalFlip;
+    sprite->data[0] = travelX;
+    sprite->data[1] = travelY;
+    sprite->data[2] = sprite->hFlip ? 1 : 0;
+    sprite->data[3] = verticalFlip ? 1 : 0;
+    sprite->callback = [](BattleAnimPlayer::Impl& engine, BattleAnimPlayer::Impl::Sprite* current) {
+        current->hFlip = current->data[2] != 0;
+        current->vFlip = current->data[3] != 0;
+        current->data[6] += current->data[0];
+        current->data[7] += current->data[1];
+        current->x2 = current->data[6] >> 8;
+        current->y2 = current->data[7] >> 8;
+        if (++current->data[5] == 14)
+            engine.destroySprite(*current);
+    };
+}
+
 void confusionDuck(BattleAnimPlayer::Impl& anim, BattleAnimPlayer::Impl::Sprite* sprite)
 {
     anim.initTarget(*sprite, true);
@@ -1621,6 +1661,8 @@ bool BattleAnimPlayer::Impl::dispatchSprite(std::string const& name, Sprite& spr
         flashingHit(*this, &sprite);
     else if (name == "AnimConfusionDuck")
         confusionDuck(*this, &sprite);
+    else if (name == "AnimRoarNoiseLine")
+        roarNoiseLine(*this, &sprite);
     else if (name == "AnimRainDrop")
     {
         sprite.callback = [](BattleAnimPlayer::Impl& engine, BattleAnimPlayer::Impl::Sprite* current) {
