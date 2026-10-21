@@ -182,6 +182,7 @@ protected:
 
     Pkmn::PkmnPtr                                                       emptyPkmnPtr          = nullptr;
     Item::ItemPtr                                                       selectedBagItem       = nullptr;
+    Item::ItemPtr                                                       pendingMachineItem    = nullptr;
     Pkmn::PkmnPtr                                                       selectedBagTargetPkmn = nullptr;
     bool                                                                openMovePick          = false;
     int                                                                 chosenMoveSlot        = -1;

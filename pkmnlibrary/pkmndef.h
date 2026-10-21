@@ -115,6 +115,10 @@ public:
     std::vector<MoveToLearn> const& getMovesToLearn() const;
     void                            setMovesToLearn(std::vector<MoveToLearn> const& newMovesToLearn);
 
+    // TM and HM move ids this species can learn. Separate from level-up moves.
+    std::vector<std::string> const& getMachines() const;
+    bool                            canLearnMachine(std::string const& moveId) const;
+
     std::map<PkmnDef::Stat, size_t> const& getBaseStats() const;
     void                                   setBaseStats(std::map<PkmnDef::Stat, size_t> const& newBaseStats);
 
@@ -146,6 +150,7 @@ private:
     std::vector<std::string>                abilities;
     std::vector<std::string>                hiddenAbilities;
     std::vector<MoveToLearn>                movesToLearn;
+    std::vector<std::string>                machines;
     std::map<PkmnDef::Stat, size_t>         baseStats;
     std::map<PkmnDef::Stat, size_t>         EVsToLearn;
     GrowthRate                              growthRate = GrowthRate::MEDIUM_SLOW;

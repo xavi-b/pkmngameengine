@@ -324,6 +324,21 @@ void PkmnDef::setMovesToLearn(std::vector<MoveToLearn> const& newMovesToLearn)
     movesToLearn = newMovesToLearn;
 }
 
+std::vector<std::string> const& PkmnDef::getMachines() const
+{
+    return machines;
+}
+
+bool PkmnDef::canLearnMachine(std::string const& moveId) const
+{
+    for (auto const& id : machines)
+    {
+        if (id == moveId)
+            return true;
+    }
+    return false;
+}
+
 std::map<PkmnDef::Stat, size_t> const& PkmnDef::getBaseStats() const
 {
     return baseStats;
@@ -423,6 +438,9 @@ void tag_invoke(js::value_from_tag, js::value& jv, PkmnDef::PkmnDefPtr const& o)
                 {"level", e.level},
                 {"move",  e.id   }
             });
+        js::array jsMachines;
+        for (auto const& e : o->machines)
+            jsMachines.push_back(js::value(e));
         js::array jsBaseStats;
         for (auto const& e : o->baseStats)
             jsBaseStats.push_back(js::value{
@@ -444,6 +462,7 @@ void tag_invoke(js::value_from_tag, js::value& jv, PkmnDef::PkmnDefPtr const& o)
             {"abilities",       jsAbilities                       },
             {"hiddenAbilities", jsHiddenAbilities                 },
             {"movesToLearn",    jsMovesToLearn                    },
+            {"machines",        jsMachines                        },
             {"stats",           jsBaseStats                       },
             {"baseExp",         o->baseExp                        },
             {"catchRate",       o->catchRate                      },
@@ -491,6 +510,11 @@ PkmnDef::PkmnDefPtr tag_invoke(js::value_to_tag<PkmnDef::PkmnDefPtr>, js::value 
             size_t            level = js::value_to<size_t>(obj.at("level"));
             std::string       id    = js::value_to<std::string>(obj.at("move"));
             pkmn->movesToLearn.push_back({level, id});
+        }
+        if (obj.contains("machines"))
+        {
+            for (auto& value : obj.at("machines").as_array())
+                pkmn->machines.push_back(js::value_to<std::string>(value));
         }
         for (auto& value : obj.at("stats").as_array())
         {

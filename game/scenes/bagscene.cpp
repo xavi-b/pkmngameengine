@@ -127,12 +127,16 @@ void BagScene::update(Inputs const* inputs)
                 }
                 break;
             case Mode::Field:
-                if (def->getFieldUse() == ItemDef::FieldUse::OnPkmn)
+                if (def->getFieldUse() == ItemDef::FieldUse::OnPkmn
+                    || def->getFieldUse() == ItemDef::FieldUse::TR
+                    || def->getFieldUse() == ItemDef::FieldUse::HM)
                 {
                     pendingItem = item;
                     selectedPkmn.reset();
-                    allowFaintedTarget = ItemUtils::allowFaintedTarget(item);
-                    openPkmnScene      = true;
+                    allowFaintedTarget = ItemUtils::allowFaintedTarget(item)
+                                         || def->getFieldUse() == ItemDef::FieldUse::TR
+                                         || def->getFieldUse() == ItemDef::FieldUse::HM;
+                    openPkmnScene = true;
                     return;
                 }
                 break;

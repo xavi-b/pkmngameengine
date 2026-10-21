@@ -2351,6 +2351,48 @@ void MapScene::popReset()
                 itemSpeech->start();
             }
         }
+        else if (def
+                 && (def->getFieldUse() == ItemDef::FieldUse::TR || def->getFieldUse() == ItemDef::FieldUse::HM))
+        {
+            std::string moveId  = def->getMoveId();
+            auto        moveDef = moveId.empty() ? nullptr : Game::instance()->data.moveDefFor(moveId);
+            bool        compatible =
+                target && target->getDefinition() && target->getDefinition()->canLearnMachine(moveId);
+            if (!moveDef || !compatible || MoveLearn::knowsMove(target, moveId))
+            {
+                if (itemSpeech)
+                {
+                    itemSpeech->setTexts({lc::translate("It won't have any effect.")});
+                    itemSpeech->reset();
+                    itemSpeech->start();
+                }
+            }
+            else
+            {
+                int slot = MoveLearn::firstEmptySlot(target);
+                if (slot >= 0)
+                {
+                    MoveLearn::teachMove(target, moveDef, slot);
+                    if (def->getFieldUse() != ItemDef::FieldUse::HM)
+                        Game::instance()->data.player.removeOneItem(def);
+                    if (itemSpeech)
+                    {
+                        boost::format learned = boost::format(lc::translate("%1% learned %2% !"))
+                                                % target->getDisplayName() % moveDef->getName();
+                        itemSpeech->setTexts({learned.str()});
+                        itemSpeech->reset();
+                        itemSpeech->start();
+                    }
+                }
+                else
+                {
+                    moveToLearn        = moveDef;
+                    moveLearnPkmn      = target;
+                    awaitingMoveScene  = true;
+                    pendingMachineItem = item;
+                }
+            }
+        }
         else if (std::string evolutionId = PkmnUtils::canEvolveByItem(target, itemId); !evolutionId.empty())
         {
             auto evolved = Game::instance()->data.pkmnDefFor(evolutionId);
@@ -2437,16 +2479,28 @@ void MapScene::popReset()
     else if (awaitingMoveScene)
     {
         auto pkmn         = moveLearnPkmn;
+        auto machine      = pendingMachineItem;
         awaitingMoveScene = false;
+        pendingMachineItem.reset();
         moveToLearn.reset();
         moveLearnPkmn.reset();
-        std::vector<std::string> lines;
-        takeLevelMoves(pkmn, lines, false);
-        if (!lines.empty() && itemSpeech)
+        if (machine && machine->getDefinition())
         {
-            itemSpeech->setTexts(lines);
-            itemSpeech->reset();
-            itemSpeech->start();
+            // A TM leaves the bag only after the move is actually learned. An HM stays.
+            if (machine->getDefinition()->getFieldUse() != ItemDef::FieldUse::HM
+                && MoveLearn::knowsMove(pkmn, machine->getDefinition()->getMoveId()))
+                Game::instance()->data.player.removeOneItem(machine->getDefinition());
+        }
+        else
+        {
+            std::vector<std::string> lines;
+            takeLevelMoves(pkmn, lines, false);
+            if (!lines.empty() && itemSpeech)
+            {
+                itemSpeech->setTexts(lines);
+                itemSpeech->reset();
+                itemSpeech->start();
+            }
         }
     }
     else if (awaitingEvolution && evolutionDef && evolutionPkmn)
