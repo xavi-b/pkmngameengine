@@ -2,6 +2,7 @@
 #define MOVESELECTION_H
 
 #include "fps.h"
+#include "scenes/battle/battlebattler.h"
 #include "inputs.h"
 #include "pkmn.h"
 #include "textspeech.h"
@@ -35,6 +36,11 @@ public:
     bool shouldQuit() const;
 
     void setPkmn(Pkmn::PkmnPtr const& pkmn);
+    void setBattlers(BattleBattler const* userBattler, Pkmn::PkmnPtr const& foe, BattleBattler const* foeBattler);
+    void setGravity(bool gravity);
+
+    bool moveUsable(size_t index) const;
+    bool anyMoveUsable() const;
 
     size_t inputId() const
     {
@@ -54,7 +60,11 @@ private:
     int  currentIndex = 0;
     bool quit         = false;
 
-    Pkmn::PkmnPtr pkmn;
+    Pkmn::PkmnPtr          pkmn;
+    BattleBattler const*   userBattler = nullptr;
+    Pkmn::PkmnPtr          foe;
+    BattleBattler const*   foeBattler  = nullptr;
+    bool                   sceneGravity = false;
 };
 
 #endif // MOVESELECTION_H

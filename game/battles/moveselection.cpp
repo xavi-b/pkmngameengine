@@ -1,11 +1,16 @@
 #include "moveselection.h"
 
 #include "game.h"
+#include "itemutils.h"
+#include "movedef.h"
 #include "renderutils.h"
+#include "scenes/battle/moveeffects.h"
 #include "textspeech.h"
 #include "utils.h"
 
 #include <SDL_ttf.h>
+#include <algorithm>
+#include <boost/format.hpp>
 #include <iostream>
 
 MoveSelection::MoveSelection(SDL_Renderer* renderer) : renderer(renderer)
@@ -29,6 +34,100 @@ void MoveSelection::init()
     reset();
 }
 
+bool MoveSelection::moveUsable(size_t index) const
+{
+    if (!pkmn || index >= pkmn->getMoves().size())
+        return false;
+    auto move = pkmn->getMoves().at(index);
+    if (!move || !move->getDefinition())
+        return false;
+    auto def = move->getDefinition();
+    if (!userBattler)
+        return move->getCurrentPP() > 0;
+    if (userBattler->recharging)
+        return true; // selection is ignored; resolver forces the recharge turn
+    if (move->getCurrentPP() == 0)
+        return false;
+    if (userBattler->disableTurns > 0 && userBattler->disabledMoveId == def->getId())
+        return false;
+    if (userBattler->encoreTurns > 0 && !userBattler->encoreMoveId.empty())
+    {
+        // Encore ends when the locked move has 0 PP.
+        bool encoreAlive = false;
+        for (auto const& slot : pkmn->getMoves())
+        {
+            if (slot && slot->getDefinition() && slot->getDefinition()->getId() == userBattler->encoreMoveId
+                && slot->getCurrentPP() > 0)
+            {
+                encoreAlive = true;
+                break;
+            }
+        }
+        if (encoreAlive && userBattler->encoreMoveId != def->getId())
+            return false;
+    }
+    if (userBattler->charging)
+    {
+        if (!isTwoTurnChargingMove(def->getFunctionCode()))
+            return false;
+        if (!userBattler->lastMoveId.empty() && userBattler->lastMoveId != def->getId())
+            return false;
+    }
+    if (userBattler->torment && userBattler->lastMoveId == def->getId())
+        return false;
+    if (userBattler->tauntTurns > 0 && def->getCategory() == MoveDef::STATUS)
+        return false;
+    if (userBattler->soundBlockTurns > 0 && def->hasFlag(MoveDef::Flag::Sound))
+        return false;
+    bool gorilla = !userBattler->abilitySuppressed && userBattler->abilityId == "GORILLATACTICS";
+    bool klutz   = !userBattler->abilitySuppressed && userBattler->abilityId == "KLUTZ";
+    std::string held;
+    if (!userBattler->itemsBlocked && !klutz)
+        held = ItemUtils::activeHeldId(pkmn, userBattler);
+    bool choiceLocked = gorilla
+                     || held == "CHOICEBAND" || held == "CHOICESPECS" || held == "CHOICESCARF";
+    if (choiceLocked && !userBattler->choiceLock.empty() && userBattler->choiceLock != def->getId())
+        return false;
+    if (held == "ASSAULTVEST" && def->getCategory() == MoveDef::STATUS)
+        return false;
+    if (userBattler->multiTurnLock > 0)
+    {
+        if (!userBattler->rolloutMoveId.empty() && userBattler->rolloutMoveId != def->getId())
+            return false;
+        if (!userBattler->rampageMoveId.empty() && userBattler->rampageMoveId != def->getId())
+            return false;
+    }
+    if (userBattler->bideActive
+        && def->getFunctionCode() != MoveDef::FunctionCode::MultiTurnAttackBideThenReturnDoubleDamage)
+        return false;
+    if (userBattler->uproarTurns > 0 && !userBattler->uproarMoveId.empty()
+        && userBattler->uproarMoveId != def->getId())
+        return false;
+    if (sceneGravity && gravityBlocksMove(def->getFunctionCode()))
+        return false;
+    if (foeBattler && foeBattler->imprison && foe)
+    {
+        for (auto const& slot : foe->getMoves())
+        {
+            if (slot && slot->getDefinition() && slot->getDefinition()->getId() == def->getId())
+                return false;
+        }
+    }
+    return true;
+}
+
+bool MoveSelection::anyMoveUsable() const
+{
+    if (!pkmn)
+        return false;
+    for (size_t i = 0; i < pkmn->getMoves().size(); ++i)
+    {
+        if (moveUsable(i))
+            return true;
+    }
+    return false;
+}
+
 void MoveSelection::update(Inputs const* inputs)
 {
     auto const nonNullMovesResult = std::find(pkmn->getMoves().begin(), pkmn->getMoves().end(), nullptr);
@@ -36,7 +135,8 @@ void MoveSelection::update(Inputs const* inputs)
 
     if (inputs->A)
     {
-        selected = true;
+        if (moveUsable(static_cast<size_t>(currentIndex)))
+            selected = true;
         if (Game::instance()->isDebug())
             std::cout << "MoveSelection selected: " << currentIndex << std::endl;
     }
@@ -90,10 +190,14 @@ void MoveSelection::update(Inputs const* inputs)
 void MoveSelection::draw(Fps const* /*fps*/, RenderSizes rs)
 {
     std::vector<std::string> movesTexts;
+    std::vector<bool>        usableFlags;
     for (size_t i = 0; i < pkmn->getMoves().size(); ++i)
     {
         if (pkmn->getMoves().at(i))
+        {
             movesTexts.push_back(pkmn->getMoves().at(i)->getDefinition()->getName());
+            usableFlags.push_back(moveUsable(i));
+        }
     }
 
     int borderSize     = TextSpeech::TextBoxBorderSize;
@@ -132,13 +236,17 @@ void MoveSelection::draw(Fps const* /*fps*/, RenderSizes rs)
     int i = 0;
     for (auto const& text : movesTexts)
     {
-        RenderUtils::drawGreyText(renderer,
-                                  rs,
-                                  text,
-                                  fontSize,
-                                  rect.x + dstBorderSizeX + dstPaddingX + dstSelectionSurfaceWidth
-                                      + (i % 2) * (dstSelectionTotalWidth + dstPaddingX) + textAdjustX,
-                                  rect.y + dstPaddingY + (i / 2) * (dstTextHeight + dstPaddingY) + textAdjustY);
+        int x = rect.x + dstBorderSizeX + dstPaddingX + dstSelectionSurfaceWidth
+              + (i % 2) * (dstSelectionTotalWidth + dstPaddingX) + textAdjustX;
+        int y = rect.y + dstPaddingY + (i / 2) * (dstTextHeight + dstPaddingY) + textAdjustY;
+        if (usableFlags.at(static_cast<size_t>(i)))
+            RenderUtils::drawGreyText(renderer, rs, text, fontSize, x, y);
+        else
+        {
+            SDL_Color color   = {160, 160, 160, 255};
+            SDL_Color bgColor = {220, 220, 220, 255};
+            RenderUtils::drawText(renderer, rs, text, color, bgColor, fontSize, x, y, -1);
+        }
         if (i == currentIndex)
         {
             SDL_Rect selRect;
@@ -212,4 +320,17 @@ bool MoveSelection::shouldQuit() const
 void MoveSelection::setPkmn(Pkmn::PkmnPtr const& pkmn)
 {
     this->pkmn = pkmn;
+}
+
+void MoveSelection::setGravity(bool gravity)
+{
+    sceneGravity = gravity;
+}
+
+void MoveSelection::setBattlers(BattleBattler const* userBattler, Pkmn::PkmnPtr const& foe,
+                                BattleBattler const* foeBattler)
+{
+    this->userBattler = userBattler;
+    this->foe         = foe;
+    this->foeBattler  = foeBattler;
 }
