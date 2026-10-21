@@ -179,6 +179,7 @@ PkmnDef::PkmnDefPtr PkmnDef::fromPropertyTree(std::string const& id, pt::ptree c
     pkmn->baseExp    = pt.get<size_t>("BaseExp");
     pkmn->catchRate  = pt.get<size_t>("CatchRate");
     pkmn->happiness  = pt.get<size_t>("Happiness");
+    pkmn->weight     = pt.get<float>("Weight", 0.f);
 
     std::string token;
     char        delimiter = ',';
@@ -383,6 +384,16 @@ void PkmnDef::setHappiness(unsigned char newHappiness)
     happiness = newHappiness;
 }
 
+float PkmnDef::getWeight() const
+{
+    return weight;
+}
+
+void PkmnDef::setWeight(float newWeight)
+{
+    weight = newWeight;
+}
+
 std::multimap<PkmnDef::EvolutionType, PkmnDef::Evolution> const& PkmnDef::getEvolutions() const
 {
     return evolutions;
@@ -437,6 +448,7 @@ void tag_invoke(js::value_from_tag, js::value& jv, PkmnDef::PkmnDefPtr const& o)
             {"baseExp",         o->baseExp                        },
             {"catchRate",       o->catchRate                      },
             {"happiness",       o->happiness                      },
+            {"weight",          o->weight                         },
             {"evolutions",      jsEvolutions                      }
         };
     }
@@ -489,6 +501,8 @@ PkmnDef::PkmnDefPtr tag_invoke(js::value_to_tag<PkmnDef::PkmnDefPtr>, js::value 
         pkmn->baseExp   = js::value_to<size_t>(obj.at("baseExp"));
         pkmn->catchRate = js::value_to<size_t>(obj.at("catchRate"));
         pkmn->happiness = js::value_to<unsigned char>(obj.at("happiness"));
+        if (obj.contains("weight"))
+            pkmn->weight = static_cast<float>(js::value_to<double>(obj.at("weight")));
         for (auto& value : obj.at("evolutions").as_array())
         {
             js::object const& obj = value.as_object();

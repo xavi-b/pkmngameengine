@@ -133,6 +133,9 @@ public:
     unsigned char getHappiness() const;
     void          setHappiness(unsigned char newHappiness);
 
+    float getWeight() const;
+    void  setWeight(float newWeight);
+
     std::multimap<EvolutionType, Evolution> const& getEvolutions() const;
     void setEvolutions(std::multimap<EvolutionType, Evolution> const& newEvolutions);
 
@@ -149,6 +152,7 @@ private:
     size_t                                  baseExp    = 0;
     size_t                                  catchRate  = 0;
     unsigned char                           happiness  = 0;
+    float                                   weight     = 0.f;
     std::multimap<EvolutionType, Evolution> evolutions;
 };
 

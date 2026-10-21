@@ -73,6 +73,16 @@ PkmnWidget::PkmnWidget(QWidget* parent) : QWidget(parent)
     });
     generalForm->addRow(tr("Base Happiness"), happinessSpinBox);
 
+    weightSpinBox = new QDoubleSpinBox;
+    weightSpinBox->setDecimals(1);
+    weightSpinBox->setMinimum(0);
+    weightSpinBox->setMaximum(10000);
+    weightSpinBox->setSuffix(tr(" kg"));
+    connect(weightSpinBox, &QDoubleSpinBox::valueChanged, this, [=](double value) {
+        pkmn->setWeight(static_cast<float>(value));
+    });
+    generalForm->addRow(tr("Weight"), weightSpinBox);
+
     tabWidget->addTab(generalTab, tr("General"));
 
     QWidget*     learnsetTab    = new QWidget;
@@ -127,6 +137,7 @@ void PkmnWidget::setPkmn(PkmnDef::PkmnDefPtr const& newPkmn)
     baseExpSpinBox->setValue(newPkmn->getBaseExp());
     catchRateSpinBox->setValue(newPkmn->getCatchRate());
     happinessSpinBox->setValue(newPkmn->getHappiness());
+    weightSpinBox->setValue(newPkmn->getWeight());
     growthRateComboBox->setCurrentIndex(newPkmn->getGrowthRate());
     baseStatsWidget->setStats(newPkmn->getBaseStats());
     EVsToLearnWidget->setStats(newPkmn->getEVsToLearn());

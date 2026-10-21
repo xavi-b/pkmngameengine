@@ -14,6 +14,7 @@
 #include <QFormLayout>
 #include <QLabel>
 #include <QLineEdit>
+#include <QDoubleSpinBox>
 #include <QSpinBox>
 #include <QTabWidget>
 #include <QWidget>
@@ -46,6 +47,7 @@ private:
     QSpinBox*           baseExpSpinBox;
     QSpinBox*           catchRateSpinBox;
     QSpinBox*           happinessSpinBox;
+    QDoubleSpinBox*     weightSpinBox;
     StatsWidget*        baseStatsWidget;
     StatsWidget*        EVsToLearnWidget;
     AbilityIdsWidget*   abilitiesWidget;
