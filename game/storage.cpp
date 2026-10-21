@@ -23,6 +23,19 @@ Storage::Storage()
 {
 }
 
+bool Storage::containsSpecies(std::string const& speciesId) const
+{
+    for (auto const& box : boxes)
+    {
+        for (auto const& pkmn : box.pkmns)
+        {
+            if (pkmn && pkmn->getDefinition() && pkmn->getDefinition()->getId() == speciesId)
+                return true;
+        }
+    }
+    return false;
+}
+
 void Storage::addPkmn(Pkmn::PkmnPtr const& pkmn)
 {
     for (auto& box : boxes)

@@ -22,6 +22,7 @@ public:
     Storage();
 
     void addPkmn(Pkmn::PkmnPtr const& pkmn);
+    bool containsSpecies(std::string const& speciesId) const;
 
     friend void    tag_invoke(js::value_from_tag, js::value& jv, Storage const& o);
     friend Storage tag_invoke(js::value_to_tag<Storage>, js::value const& jv);
