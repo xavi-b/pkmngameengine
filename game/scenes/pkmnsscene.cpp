@@ -512,16 +512,19 @@ void PkmnsScene::draw(Fps const* fps, RenderSizes rs)
             srcOverlayHpRect.y = overlayYBasedOnPercentageHP(percentageHP) * overlayHpSurface->h / 3;
             SDL_RenderCopy(renderer, overlayHpTexture, &srcOverlayHpRect, &dstOverlayHpRect);
 
-            SDL_Rect dstStatusRect = dstHpRect;
-            dstStatusRect.y += dstHpRect.h + dstMargin;
-            dstStatusRect.w = statusSurface->w * rs.ww / rs.aw;
-            dstStatusRect.h = statusSurface->h * rs.wh / rs.ah / 6;
-            SDL_Rect srcStatusRect;
-            srcStatusRect.w = statusSurface->w;
-            srcStatusRect.h = statusSurface->h / 6;
-            srcStatusRect.x = 0;
-            srcStatusRect.y = statusYBasedOnStatus(pkmn->getStatusCondition()) * statusSurface->h / 6;
-            SDL_RenderCopy(renderer, statusTexture, &srcStatusRect, &dstStatusRect);
+            if (pkmn->getStatusCondition() != Pkmn::StatusCondition::NONE)
+            {
+                SDL_Rect dstStatusRect = dstHpRect;
+                dstStatusRect.y += dstHpRect.h + dstMargin;
+                dstStatusRect.w = statusSurface->w * rs.ww / rs.aw;
+                dstStatusRect.h = statusSurface->h * rs.wh / rs.ah / 6;
+                SDL_Rect srcStatusRect;
+                srcStatusRect.w = statusSurface->w;
+                srcStatusRect.h = statusSurface->h / 6;
+                srcStatusRect.x = 0;
+                srcStatusRect.y = statusYBasedOnStatus(pkmn->getStatusCondition()) * statusSurface->h / 6;
+                SDL_RenderCopy(renderer, statusTexture, &srcStatusRect, &dstStatusRect);
+            }
 
             SDL_Rect dstNameRect = dstPanelRect;
             dstNameRect.x        = dstHpRect.x;
