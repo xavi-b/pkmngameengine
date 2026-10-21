@@ -1,6 +1,8 @@
 #include "statuscondition.h"
 
+#include "abilitybattle.h"
 #include "battlebattler.h"
+#include "itemutils.h"
 #include "utils.h"
 
 #include <algorithm>
@@ -9,11 +11,18 @@
 
 namespace lc = boost::locale;
 
-bool hasType(Pkmn::PkmnPtr const& pkmn, std::string const& typeId)
+std::vector<std::string> activeTypes(Pkmn::PkmnPtr const& pkmn, BattleBattler const* battler)
 {
-    if (!pkmn || !pkmn->getDefinition())
-        return false;
-    auto const& types = pkmn->getDefinition()->getTypes();
+    if (battler && !battler->typesOverride.empty())
+        return battler->typesOverride;
+    if (pkmn && pkmn->getDefinition())
+        return pkmn->getDefinition()->getTypes();
+    return {};
+}
+
+bool hasType(Pkmn::PkmnPtr const& pkmn, std::string const& typeId, BattleBattler const* battler)
+{
+    auto types = activeTypes(pkmn, battler);
     return std::find(types.begin(), types.end(), typeId) != types.end();
 }
 
@@ -54,7 +63,17 @@ std::string statusInflictedMessage(Pkmn::PkmnPtr const& target)
     return text.str();
 }
 
-MajorStatusActionResult tickMajorStatus(Pkmn::PkmnPtr const& pkmn, std::vector<std::string>& messages)
+bool canMoveWhileAsleep(MoveDef::MoveDefPtr const& move)
+{
+    if (!move)
+        return false;
+    auto code = move->getFunctionCode();
+    return code == MoveDef::FunctionCode::FlinchTargetFailsIfUserNotAsleep
+        || code == MoveDef::FunctionCode::UseRandomUserMoveIfAsleep;
+}
+
+MajorStatusActionResult tickMajorStatus(Pkmn::PkmnPtr const& pkmn, std::vector<std::string>& messages,
+                                     BattleBattler* battler)
 {
     if (!pkmn)
         return MajorStatusActionResult::CanAct;
@@ -63,16 +82,20 @@ MajorStatusActionResult tickMajorStatus(Pkmn::PkmnPtr const& pkmn, std::vector<s
 
     if (status == Pkmn::StatusCondition::SLEEP)
     {
-        // Gen III–IV: sleep lasts 2–5 turns; final turn wakes and allows attacking.
-        if (pkmn->getStatusTurns() <= 1)
+        size_t step = 1;
+        if (battler && !battler->abilitySuppressed && battler->abilityId == "EARLYBIRD")
+            step = 2;
+        if (pkmn->getStatusTurns() <= step)
         {
             pkmn->setStatusCondition(Pkmn::StatusCondition::NONE);
+            if (battler)
+                battler->nightmare = false;
             boost::format text = boost::format(lc::translate("%1% woke up!")) % pkmn->getDisplayName();
             messages.push_back(text.str());
             return MajorStatusActionResult::WokeUp;
         }
 
-        pkmn->setStatusTurns(pkmn->getStatusTurns() - 1);
+        pkmn->setStatusTurns(pkmn->getStatusTurns() - step);
         boost::format text = boost::format(lc::translate("%1% is fast asleep.")) % pkmn->getDisplayName();
         messages.push_back(text.str());
         return MajorStatusActionResult::Prevented;
@@ -178,7 +201,8 @@ size_t statusEffectChance(MoveDef::MoveDefPtr const& move)
     return chance == 0 ? 100 : chance;
 }
 
-bool canApplyStatus(Pkmn::PkmnPtr const& target, Pkmn::StatusCondition status)
+bool canApplyStatus(Pkmn::PkmnPtr const& target, Pkmn::StatusCondition status, bool corrosion,
+                    BattleBattler const* battler)
 {
     if (!target || status == Pkmn::StatusCondition::NONE)
         return false;
@@ -188,13 +212,16 @@ bool canApplyStatus(Pkmn::PkmnPtr const& target, Pkmn::StatusCondition status)
     switch (status)
     {
     case Pkmn::StatusCondition::BURN:
-        return !hasType(target, "FIRE");
+        return !hasType(target, "FIRE", battler);
     case Pkmn::StatusCondition::FREEZE:
-        return !hasType(target, "ICE");
+        return !hasType(target, "ICE", battler);
     case Pkmn::StatusCondition::POISON:
     case Pkmn::StatusCondition::BADLY_POISON:
-        return !hasType(target, "POISON") && !hasType(target, "STEEL");
+        if (corrosion)
+            return true;
+        return !hasType(target, "POISON", battler) && !hasType(target, "STEEL", battler);
     case Pkmn::StatusCondition::PARALYSIS:
+        return true;
     case Pkmn::StatusCondition::SLEEP:
         return true;
     default:
@@ -202,14 +229,15 @@ bool canApplyStatus(Pkmn::PkmnPtr const& target, Pkmn::StatusCondition status)
     }
 }
 
-bool applyStatusCondition(Pkmn::PkmnPtr const& target, Pkmn::StatusCondition status, size_t& toxicCounter)
+bool applyStatusCondition(Pkmn::PkmnPtr const& target, Pkmn::StatusCondition status, size_t& toxicCounter, bool corrosion,
+                          BattleBattler const* battler)
 {
-    if (!canApplyStatus(target, status))
+    if (!canApplyStatus(target, status, corrosion, battler))
         return false;
 
     target->setStatusCondition(status);
     if (status == Pkmn::StatusCondition::SLEEP)
-        target->setStatusTurns(Utils::randuint(2, 5));
+        target->setStatusTurns(Utils::randuint(2, 4));
     else
         target->setStatusTurns(0);
 
@@ -254,7 +282,7 @@ bool tryInflictStatusFromMove(Pkmn::PkmnPtr const& target, MoveDef::MoveDefPtr c
     return applyStatusCondition(target, status, toxicCounter);
 }
 
-size_t residualStatusDamage(Pkmn::PkmnPtr const& pkmn, size_t& toxicCounter)
+size_t residualStatusDamage(Pkmn::PkmnPtr const& pkmn, size_t& toxicCounter, BattleBattler const* battler)
 {
     if (!pkmn || pkmn->isKO())
         return 0;
@@ -264,7 +292,7 @@ size_t residualStatusDamage(Pkmn::PkmnPtr const& pkmn, size_t& toxicCounter)
     switch (pkmn->getStatusCondition())
     {
     case Pkmn::StatusCondition::BURN:
-        // Gen II–VI: 1/8 max HP
+        (void)battler;
         return std::max<size_t>(1, maxHp / 8);
     case Pkmn::StatusCondition::POISON:
         // Gen II+: 1/8 max HP
@@ -279,16 +307,21 @@ size_t residualStatusDamage(Pkmn::PkmnPtr const& pkmn, size_t& toxicCounter)
     }
 }
 
-size_t battleSpeed(Pkmn::PkmnPtr const& pkmn, BattleBattler const* battler)
+size_t battleSpeed(Pkmn::PkmnPtr const& pkmn, BattleBattler const* battler, Map::Weather weather, bool electricTerrain)
 {
     if (!pkmn)
         return 1;
-    size_t speed = pkmn->getStats()[PkmnDef::SPEED];
+    size_t speed = pkmn->getStats().at(PkmnDef::SPEED);
+    if (battler && battler->speedOverride >= 0)
+        speed = static_cast<size_t>(battler->speedOverride);
     if (battler)
         speed = battler->effectiveStat(speed, BattleBattler::StageStat::Speed);
-    // Gen I–VI: paralysis reduces Speed to 25%.
+    (void)electricTerrain;
     if (pkmn->getStatusCondition() == Pkmn::StatusCondition::PARALYSIS)
         speed = speed / 4;
+    speed = static_cast<size_t>(static_cast<float>(speed) * ItemUtils::heldSpeedMultiplier(pkmn, battler));
+    if (battler)
+        speed = static_cast<size_t>(static_cast<float>(speed) * abilitySpeedMultiplier(pkmn, *battler, weather));
     return std::max<size_t>(1, speed);
 }
 

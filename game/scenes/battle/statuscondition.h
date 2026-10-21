@@ -2,6 +2,7 @@
 #define STATUSCONDITION_H
 
 #include "entities/player.h"
+#include "map.h"
 #include "movedef.h"
 #include "pkmn.h"
 
@@ -20,8 +21,11 @@ enum class MajorStatusActionResult
     Thawed
 };
 
-// Sleep / freeze / paralysis check before a Pokémon tries to move.
-MajorStatusActionResult tickMajorStatus(Pkmn::PkmnPtr const& pkmn, std::vector<std::string>& messages);
+MajorStatusActionResult tickMajorStatus(Pkmn::PkmnPtr const& pkmn, std::vector<std::string>& messages,
+                                     class BattleBattler* battler = nullptr);
+
+// Snore and Sleep Talk can be used on a turn that would otherwise be spent asleep.
+bool canMoveWhileAsleep(MoveDef::MoveDefPtr const& move);
 
 // Status a move can inflict on the target (NONE if none / special-cased).
 Pkmn::StatusCondition statusInflictedByMove(MoveDef::MoveDefPtr const& move);
@@ -30,31 +34,35 @@ bool isPrimaryStatusMove(MoveDef::MoveDefPtr const& move);
 
 size_t statusEffectChance(MoveDef::MoveDefPtr const& move);
 
-bool canApplyStatus(Pkmn::PkmnPtr const& target, Pkmn::StatusCondition status);
+bool canApplyStatus(Pkmn::PkmnPtr const& target, Pkmn::StatusCondition status, bool corrosion = false,
+                    class BattleBattler const* battler = nullptr);
 
 // Applies status if allowed. For BADLY_POISON, toxicCounter is reset to 0.
 // Returns false if it fails (already statused, type immune, etc.).
-bool applyStatusCondition(Pkmn::PkmnPtr const& target, Pkmn::StatusCondition status, size_t& toxicCounter);
+bool applyStatusCondition(Pkmn::PkmnPtr const& target, Pkmn::StatusCondition status, size_t& toxicCounter,
+                          bool corrosion = false, class BattleBattler const* battler = nullptr);
 
 // Chance (0-100) roll then apply. Handles Tri Attack random status.
 bool tryInflictStatusFromMove(Pkmn::PkmnPtr const& target, MoveDef::MoveDefPtr const& move, size_t& toxicCounter);
 
-size_t residualStatusDamage(Pkmn::PkmnPtr const& pkmn, size_t& toxicCounter);
+// Heatproof halves burn residual damage (1/32).
+size_t residualStatusDamage(Pkmn::PkmnPtr const& pkmn, size_t& toxicCounter,
+                            class BattleBattler const* battler = nullptr);
 
-// Gen I–VI: paralysis cuts Speed to 25%. Optional battler applies Speed stages.
-size_t battleSpeed(Pkmn::PkmnPtr const& pkmn, class BattleBattler const* battler = nullptr);
+// Paralysis halves Speed. Optional battler applies stages, items, and ability Speed.
+size_t battleSpeed(Pkmn::PkmnPtr const& pkmn, class BattleBattler const* battler = nullptr,
+                  Map::Weather weather = Map::Weather::NONE, bool electricTerrain = false);
 
-bool hasType(Pkmn::PkmnPtr const& pkmn, std::string const& typeId);
+bool hasType(Pkmn::PkmnPtr const& pkmn, std::string const& typeId, class BattleBattler const* battler = nullptr);
+
+std::vector<std::string> activeTypes(Pkmn::PkmnPtr const& pkmn, class BattleBattler const* battler = nullptr);
 
 std::string statusConditionName(Pkmn::StatusCondition status);
 
 std::string statusInflictedMessage(Pkmn::PkmnPtr const& target);
 
-// Fire-type damaging hits thaw a frozen target (Gen III+).
 void maybeThawFromFireHit(Pkmn::PkmnPtr const& target, MoveDef::MoveDefPtr const& move);
 
-// Gen I–IV / Essentials: poisoned party Pokémon lose 1 HP every 4 steps outside battle.
-// Appends faint messages. Returns true if any Pokémon took damage.
 bool tickFieldPoison(Player& player, std::vector<std::string>& messages);
 
 #endif // STATUSCONDITION_H
