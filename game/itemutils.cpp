@@ -345,6 +345,25 @@ bool vitaminStat(std::string const& itemId, PkmnDef::Stat& stat)
     return true;
 }
 
+bool evBerryStat(std::string const& itemId, PkmnDef::Stat& stat)
+{
+    if (itemId == "POMEGBERRY")
+        stat = PkmnDef::HP;
+    else if (itemId == "KELPSYBERRY")
+        stat = PkmnDef::ATTACK;
+    else if (itemId == "QUALOTBERRY")
+        stat = PkmnDef::DEFENSE;
+    else if (itemId == "HONDEWBERRY")
+        stat = PkmnDef::SPECIAL_ATTACK;
+    else if (itemId == "GREPABERRY")
+        stat = PkmnDef::SPECIAL_DEFENSE;
+    else if (itemId == "TAMATOBERRY")
+        stat = PkmnDef::SPEED;
+    else
+        return false;
+    return true;
+}
+
 void changeFriendship(Pkmn::PkmnPtr const& pkmn, int low, int mid, int high)
 {
     if (!pkmn)
@@ -390,6 +409,17 @@ bool ItemUtils::useItemOnPkmn(Item::ItemPtr const& item, Pkmn::PkmnPtr const& ta
             evs[stat] = std::min<size_t>(100, ev + 10);
             target->setEVs(evs);
             changeFriendship(target, 5, 3, 2);
+            return true;
+        }
+        if (evBerryStat(itemId, stat))
+        {
+            auto   evs = target->getEVs();
+            size_t ev  = evs[stat];
+            if (ev == 0)
+                return false;
+            evs[stat] = ev - std::min<size_t>(10, ev);
+            target->setEVs(evs);
+            changeFriendship(target, 10, 5, 2);
             return true;
         }
     }
