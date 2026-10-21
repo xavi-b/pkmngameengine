@@ -177,6 +177,19 @@ std::string canEvolve(Pkmn::PkmnPtr const& pkmn)
     return possibleEvolutions[index];
 }
 
+std::string canEvolveByItem(Pkmn::PkmnPtr const& pkmn, std::string const& itemId)
+{
+    if (!pkmn || !pkmn->getDefinition() || itemId.empty())
+        return {};
+
+    for (auto const& e : pkmn->getDefinition()->getEvolutions())
+    {
+        if (e.first == PkmnDef::Item && e.second.data == itemId)
+            return e.second.pkmnId;
+    }
+    return {};
+}
+
 void grantEmptySlotEvolution(Pkmn::PkmnPtr const& pkmn)
 {
     if (!pkmn || !pkmn->getDefinition())

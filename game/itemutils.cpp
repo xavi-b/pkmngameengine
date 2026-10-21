@@ -767,7 +767,9 @@ bool ItemUtils::allowFaintedTarget(Item::ItemPtr const& item)
     if (!item || !item->getDefinition())
         return false;
     auto const& id = item->getDefinition()->getId();
-    return id == "REVIVE" || id == "MAXREVIVE" || id == "REVIVALHERB" || id == "MAXHONEY";
+    if (id == "REVIVE" || id == "MAXREVIVE" || id == "REVIVALHERB" || id == "MAXHONEY")
+        return true;
+    return item->getDefinition()->hasFlag(ItemDef::Flag::EvolutionStone);
 }
 
 ItemUtils::HeldItemTickResult ItemUtils::consumeWhiteHerb(Pkmn::PkmnPtr const& pkmn, BattleBattler* battler)

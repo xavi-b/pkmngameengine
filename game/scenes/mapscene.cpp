@@ -2351,6 +2351,24 @@ void MapScene::popReset()
                 itemSpeech->start();
             }
         }
+        else if (std::string evolutionId = PkmnUtils::canEvolveByItem(target, itemId); !evolutionId.empty())
+        {
+            auto evolved = Game::instance()->data.pkmnDefFor(evolutionId);
+            if (evolved)
+            {
+                Game::instance()->data.player.removeOneItem(item->getDefinition());
+                evolutionPkmn     = target;
+                evolutionDef      = evolved;
+                keepEvolution     = true;
+                awaitingEvolution = true;
+            }
+            else if (itemSpeech)
+            {
+                itemSpeech->setTexts({lc::translate("It won't have any effect.")});
+                itemSpeech->reset();
+                itemSpeech->start();
+            }
+        }
         else if (ItemUtils::useItemOnPkmn(item, target, false))
         {
             closeStartMenu = def && def->hasFlag(ItemDef::Flag::KeyItem);

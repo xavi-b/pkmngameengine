@@ -9,6 +9,8 @@
 namespace PkmnUtils
 {
 std::string canEvolve(Pkmn::PkmnPtr const& pkmn);
+// Matching EvolutionType::Item, using the item id stored on the evolution.
+std::string canEvolveByItem(Pkmn::PkmnPtr const& pkmn, std::string const& itemId);
 
 // Places the empty-slot companion (Nincada's Shedinja) when an evolution succeeds.
 void grantEmptySlotEvolution(Pkmn::PkmnPtr const& pkmn);
