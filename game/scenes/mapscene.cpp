@@ -2071,6 +2071,7 @@ void MapScene::finishFishing()
             encounteredPkmn = rollEncounter(*it);
         if (encounteredPkmn)
         {
+            encounterWhileFishing = true;
             stop(Game::instance()->data.player);
             battleIntro = manageBattleIntro();
             if (battleIntro)
@@ -2142,7 +2143,7 @@ bool MapScene::updateFishing(Inputs const* /*inputs*/)
     fishingPhase        = FishingPhase::Result;
     if (itemSpeech)
     {
-        std::string text = fishingHooked ? std::string(lc::translate("A Pokémon's on the hook!"))
+        std::string text = fishingHooked ? std::string(lc::translate("Something's on the hook!"))
                                          : std::string(lc::translate("Not even a nibble…"));
         itemSpeech->setTexts({text});
         itemSpeech->reset();
@@ -2400,6 +2401,7 @@ void MapScene::popReset()
     openBag   = false;
     selectedBagItem.reset();
     encounteredPkmn.reset();
+    encounterWhileFishing = false;
     opponentTrainer.reset();
     battleIntro.reset();
 }
@@ -2436,6 +2438,9 @@ std::unique_ptr<Scene> MapScene::nextScene()
         auto scene = std::make_unique<EncounterScene>(renderer);
         scene->changeWeather(weather);
         scene->setEncounterPkmn(encounteredPkmn);
+        bool cave = name().find("Cave") != std::string::npos;
+        scene->setCaptureContext(Game::instance()->isNight(), cave, diving || encounterWhileFishing, encounterWhileFishing);
+        encounterWhileFishing = false;
         auto& pkmns = Game::instance()->data.player.pkmns;
         for (size_t i = 0; i < pkmns.size(); ++i)
         {

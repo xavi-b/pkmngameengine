@@ -239,6 +239,7 @@ protected:
     int          fishingDotsTarget = 0;
     int          fishingStep       = 0;
     bool         fishingHooked     = false;
+    bool         encounterWhileFishing = false;
     std::string  fishingRod;
     SDL_Surface* fishSurface = nullptr;
     SDL_Texture* fishTexture = nullptr;
