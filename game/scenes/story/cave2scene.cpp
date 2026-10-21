@@ -90,6 +90,16 @@ std::string Cave2Scene::name()
     return "Cave2Scene";
 }
 
+bool Cave2Scene::beginEscapeRope()
+{
+    if (!fadeOutAnimation || fadeOutAnimation->isStarted())
+        return false;
+    fadeOutAnimation->reset();
+    fadeOutAnimation->start();
+    goToScene = "Road2";
+    return true;
+}
+
 std::unique_ptr<Scene> Cave2Scene::nextScene()
 {
     auto& player = Game::instance()->data.player;

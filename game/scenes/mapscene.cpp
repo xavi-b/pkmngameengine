@@ -2477,6 +2477,26 @@ void MapScene::popReset()
             startFishing(itemId);
             closeStartMenu = keyItem;
         }
+        else if (itemId == "ESCAPEROPE")
+        {
+            std::string message;
+            if (def && beginEscapeRope())
+            {
+                Game::instance()->data.player.removeOneItem(def);
+                message = (boost::format(lc::translate("%1% used the %2%.")) % Game::instance()->data.player.name
+                           % def->getName())
+                              .str();
+                closeStartMenu = keyItem;
+            }
+            else
+                message = lc::translate("It won't have any effect.");
+            if (itemSpeech)
+            {
+                itemSpeech->setTexts({message});
+                itemSpeech->reset();
+                itemSpeech->start();
+            }
+        }
         else if (itemId == "BICYCLE")
         {
             auto&       player = Game::instance()->data.player;
@@ -2698,6 +2718,11 @@ void MapScene::changeWeather(Map::Weather weather)
 bool MapScene::allowBike() const
 {
     return true;
+}
+
+bool MapScene::beginEscapeRope()
+{
+    return false;
 }
 
 bool MapScene::turnOnFlash()

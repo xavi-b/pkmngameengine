@@ -60,6 +60,16 @@ std::string Cave1Scene::name()
     return "Cave1Scene";
 }
 
+bool Cave1Scene::beginEscapeRope()
+{
+    if (!fadeOutAnimation || fadeOutAnimation->isStarted())
+        return false;
+    fadeOutAnimation->reset();
+    fadeOutAnimation->start();
+    goToScene = "Road1";
+    return true;
+}
+
 std::unique_ptr<Scene> Cave1Scene::nextScene()
 {
     auto scene = MapScene::nextScene();

@@ -132,6 +132,8 @@ public:
 
     virtual bool shouldShowNightTextures() const = 0;
     virtual bool allowBike() const;
+    // Fades to this cave's door exit. False outside a cave.
+    virtual bool beginEscapeRope();
 
     bool turnOnFlash();
     void startCurrentLocationOverlay();

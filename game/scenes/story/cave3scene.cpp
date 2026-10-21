@@ -39,6 +39,16 @@ std::string Cave3Scene::name()
     return "Cave3Scene";
 }
 
+bool Cave3Scene::beginEscapeRope()
+{
+    if (!fadeOutAnimation || fadeOutAnimation->isStarted())
+        return false;
+    fadeOutAnimation->reset();
+    fadeOutAnimation->start();
+    goToScene = "Cave2";
+    return true;
+}
+
 std::unique_ptr<Scene> Cave3Scene::nextScene()
 {
     auto& player = Game::instance()->data.player;

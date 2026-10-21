@@ -21,6 +21,8 @@ public:
 
     virtual std::string currentLocation() const override;
 
+    virtual bool beginEscapeRope() override;
+
 protected:
     virtual void updateAfterMovement(Inputs const* inputs) override;
 };
